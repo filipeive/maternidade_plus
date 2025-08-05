@@ -1,0 +1,60 @@
+/* Cores personalizadas para Moçambique */
+:root {
+    --primary-color: #dc3545; /* Vermelho da bandeira */
+    --secondary-color: #28a745; /* Verde da bandeira */
+    --accent-color: #ffc107; /* Amarelo da bandeira */
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+}
+
+.sidebar-brand {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.card-stats {
+    border-left: 4px solid var(--primary-color);
+}
+
+.navbar-brand h1 {
+    color: var(--primary-color) !important;
+    font-weight: bold;
+}
+
+/* Adaptações para contexto hospitalar */
+.prenatal-card {
+    border-left: 4px solid var(--secondary-color);
+}
+
+.emergency-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+.exam-card {
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Responsividade para tablets/smartphones comuns em Moçambique */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
