@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
-use App\Models\ExamAttachment;
 use App\Models\Consultation;
 use App\Models\Patient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class ExamController extends Controller
@@ -178,40 +175,21 @@ class ExamController extends Controller
         return view('exams.result-form', compact('exam'));
     }
 
-    // No método storeResult
     public function storeResult(Request $request, Exam $exam)
     {
         $validated = $request->validate([
             'data_realizacao' => 'required|date|after_or_equal:' . $exam->data_solicitacao->format('Y-m-d'),
             'resultado' => 'required|string',
-            'observacoes' => 'nullable|string',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240' // 10MB max
+            'observacoes' => 'nullable|string'
         ]);
 
-        DB::transaction(function () use ($exam, $validated, $request) {
-            $exam->update([
-                'data_realizacao' => $validated['data_realizacao'],
-                'resultado' => $validated['resultado'],
-                'observacoes' => $validated['observacoes'] ?? $exam->observacoes,
-                'status' => 'realizado'
-            ]);
-
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $path = $file->store('exam_attachments/' . $exam->id, 'public');
-                    
-                    $exam->attachments()->create([
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'uploaded_by' => auth()->id()
-                    ]);
-                }
-            }
-        });
-
+        $exam->update([
+            'data_realizacao' => $validated['data_realizacao'],
+            'resultado' => $validated['resultado'],
+            'observacoes' => $validated['observacoes'] ?? $exam->observacoes,
+            'status' => 'realizado'
+        ]);
+        
         return redirect()->route('exams.show', $exam)
             ->with('success', 'Resultado do exame registrado com sucesso!');
     }
@@ -246,15 +224,4 @@ class ExamController extends Controller
         
         return view('exams.report', compact('exams'));
     }
-    public function downloadAttachment(ExamAttachment $attachment)
-    {   
-        if (!Storage::disk('public')->exists($attachment->file_path)) {
-            abort(404);
-        }
-
-        return Storage::disk('public')->download(
-            $attachment->file_path, 
-            $attachment->file_name
-        );
-    }                       
 }

@@ -27,11 +27,15 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        }
+            "Database\\Seeders\\": "database/seeders/"     
+        },
+        "files": [
+            "app/Helpers/MenuHelper.php",
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
-        "psr-4": {
+        "psr-clear4": {
             "Tests\\": "tests/"
         }
     },

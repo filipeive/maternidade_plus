@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Relations\HasMany; 
 class Exam extends Model
 {
     protected $fillable = [
@@ -26,6 +26,21 @@ class Exam extends Model
     public function consultation(): BelongsTo
     {
         return $this->belongsTo(Consultation::class);
+    }
+
+    public function patient(): BelongsTo
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
+    /**
+     * Define o relacionamento com os anexos do exame
+     * 
+     * @return HasMany<ExamAttachment>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ExamAttachment::class);
     }
 
     public function getTipoExameLabelAttribute(): string

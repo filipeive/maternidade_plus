@@ -13,7 +13,7 @@
         <a href="{{ route('consultations.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Nova Consulta
         </a>
-        <a href="{{ route('exams.pending') }}" class="btn btn-warning">
+        <a href="{{ route('exams.pending-results') }}" class="btn btn-warning">
             <i class="fas fa-flask me-1"></i>Exames Pendentes
         </a>
     </div>

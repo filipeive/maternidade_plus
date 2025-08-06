@@ -1,240 +1,274 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Gestante')
-@section('page-title', 'Editar Dados da Gestante')
+@section('title', 'Editar Consulta')
+@section('page-title', 'Editar Consulta')
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('consultations.index') }}">Consultas</a></li>
+    <li class="breadcrumb-item active">Editar</li>
+@endsection
 
 @section('content')
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Editar Dados da Gestante</h5>
+<div class="row justify-content-center">
+    {{-- erros --}}
+    
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Editar Consulta</h5>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <strong>Gestante:</strong> {{ $consultation->patient->nome_completo }} | 
+                        <strong>BI:</strong> {{ $consultation->patient->documento_bi }}
+                    </small>
                 </div>
-                <div class="card-body">
-                    <form action="{{ route('patients.update', $patient->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
+            </div>
+            <div class="card-body">
+                <!-- Seção de alertas de erro -->
+                @if ($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Erros encontrados:</strong>
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="nome_completo" class="form-label">Nome Completo <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('nome_completo') is-invalid @enderror"
-                                    id="nome_completo" name="nome_completo"
-                                    value="{{ old('nome_completo', $patient->nome_completo) }}" required>
-                                @error('nome_completo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="data_nascimento" class="form-label">Data de Nascimento <span
-                                        class="text-danger">*</span></label>
-                                <input type="date" class="form-control @error('data_nascimento') is-invalid @enderror"
-                                    id="data_nascimento" name="data_nascimento"
-                                    value="{{ old('data_nascimento', $patient->data_nascimento) }}" required>
-                                @error('data_nascimento')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="documento_bi" class="form-label">Documento (BI) <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('documento_bi') is-invalid @enderror"
-                                    id="documento_bi" name="documento_bi"
-                                    value="{{ old('documento_bi', $patient->documento_bi) }}" required>
-                                @error('documento_bi')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="contacto" class="form-label">Contacto <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control @error('contacto') is-invalid @enderror"
-                                    id="contacto" name="contacto" value="{{ old('contacto', $patient->contacto) }}"
-                                    required>
-                                @error('contacto')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                    id="email" name="email" value="{{ old('email', $patient->email) }}">
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="contacto_emergencia" class="form-label">Contacto de Emergência</label>
-                                <input type="tel"
-                                    class="form-control @error('contacto_emergencia') is-invalid @enderror"
-                                    id="contacto_emergencia" name="contacto_emergencia"
-                                    value="{{ old('contacto_emergencia', $patient->contacto_emergencia) }}">
-                                @error('contacto_emergencia')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="endereco" class="form-label">Endereço Completo <span
-                                    class="text-danger">*</span></label>
-                            <textarea class="form-control @error('endereco') is-invalid @enderror" id="endereco" name="endereco" rows="2"
-                                required>{{ old('endereco', $patient->endereco) }}</textarea>
-                            @error('endereco')
+                <!-- Seção de sucesso (se houver) -->
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+                <form action="{{ route('consultations.update', $consultation) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    
+                    <!-- Dados da Gestante (somente exibição) -->
+                    <div class="mb-3">
+                        <label class="form-label">Gestante</label>
+                        <input type="text" class="form-control" 
+                               value="{{ $consultation->patient->nome_completo }}" readonly>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="data_consulta" class="form-label">Data e Hora <span class="text-danger">*</span></label>
+                            <input type="datetime-local" 
+                                   class="form-control @error('data_consulta') is-invalid @enderror" 
+                                   id="data_consulta" name="data_consulta" 
+                                   value="{{ old('data_consulta', $consultation->data_consulta->format('Y-m-d\TH:i')) }}" required>
+                            @error('data_consulta')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="tipo_sanguineo" class="form-label">Tipo Sanguíneo</label>
-                                <select class="form-select @error('tipo_sanguineo') is-invalid @enderror"
-                                    id="tipo_sanguineo" name="tipo_sanguineo">
-                                    <option value="">Selecione</option>
-                                    @foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
-                                        <option value="{{ $tipo }}"
-                                            {{ old('tipo_sanguineo', $patient->tipo_sanguineo) === $tipo ? 'selected' : '' }}>
-                                            {{ $tipo }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('tipo_sanguineo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="data_ultima_menstruacao" class="form-label">Data da Última Menstruação</label>
-                                <input type="date"
-                                    class="form-control @error('data_ultima_menstruacao') is-invalid @enderror"
-                                    id="data_ultima_menstruacao" name="data_ultima_menstruacao"
-                                    value="{{ old('data_ultima_menstruacao', $patient->data_ultima_menstruacao) }}">
-                                @error('data_ultima_menstruacao')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Para calcular a data provável do parto</div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="numero_gestacoes" class="form-label">Nº de Gestações <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control @error('numero_gestacoes') is-invalid @enderror"
-                                    id="numero_gestacoes" name="numero_gestacoes"
-                                    value="{{ old('numero_gestacoes', $patient->numero_gestacoes) }}" min="1"
-                                    required>
-                                @error('numero_gestacoes')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="numero_partos" class="form-label">Nº de Partos <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control @error('numero_partos') is-invalid @enderror"
-                                    id="numero_partos" name="numero_partos"
-                                    value="{{ old('numero_partos', $patient->numero_partos) }}" min="0" required>
-                                @error('numero_partos')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="numero_abortos" class="form-label">Nº de Abortos</label>
-                                <input type="number" class="form-control @error('numero_abortos') is-invalid @enderror"
-                                    id="numero_abortos" name="numero_abortos"
-                                    value="{{ old('numero_abortos', $patient->numero_abortos) }}" min="0">
-                                @error('numero_abortos')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="alergias" class="form-label">Alergias</label>
-                            <textarea class="form-control @error('alergias') is-invalid @enderror" id="alergias" name="alergias"
-                                rows="2">{{ old('alergias', $patient->alergias) }}</textarea>
-                            @error('alergias')
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_consulta" class="form-label">Tipo de Consulta <span class="text-danger">*</span></label>
+                            <select class="form-select @error('tipo_consulta') is-invalid @enderror" 
+                                    id="tipo_consulta" name="tipo_consulta" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="1_trimestre" {{ old('tipo_consulta', $consultation->tipo_consulta) === '1_trimestre' ? 'selected' : '' }}>
+                                    1º Trimestre (até 12 semanas)
+                                </option>
+                                <option value="2_trimestre" {{ old('tipo_consulta', $consultation->tipo_consulta) === '2_trimestre' ? 'selected' : '' }}>
+                                    2º Trimestre (13-28 semanas)
+                                </option>
+                                <option value="3_trimestre" {{ old('tipo_consulta', $consultation->tipo_consulta) === '3_trimestre' ? 'selected' : '' }}>
+                                    3º Trimestre (29-40 semanas)
+                                </option>
+                                <option value="pos_parto" {{ old('tipo_consulta', $consultation->tipo_consulta) === 'pos_parto' ? 'selected' : '' }}>
+                                    Pós-parto
+                                </option>
+                                <option value="emergencia" {{ old('tipo_consulta', $consultation->tipo_consulta) === 'emergencia' ? 'selected' : '' }}>
+                                    Emergência
+                                </option>
+                            </select>
+                            @error('tipo_consulta')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div class="mb-3">
-                            <label for="historico_medico" class="form-label">Histórico Médico</label>
-                            <textarea class="form-control @error('historico_medico') is-invalid @enderror" id="historico_medico"
-                                name="historico_medico" rows="3">{{ old('historico_medico', $patient->historico_medico) }}</textarea>
-                            @error('historico_medico')
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="semanas_gestacao" class="form-label">Semanas de Gestação</label>
+                            <input type="number" 
+                                   class="form-control @error('semanas_gestacao') is-invalid @enderror" 
+                                   id="semanas_gestacao" name="semanas_gestacao" 
+                                   value="{{ old('semanas_gestacao', $consultation->semanas_gestacao) }}" 
+                                   min="1" max="42">
+                            @error('semanas_gestacao')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('patients.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times me-1"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>Salvar Alterações
-                            </button>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="peso" class="form-label">Peso (kg)</label>
+                            <input type="number" step="0.1" 
+                                   class="form-control @error('peso') is-invalid @enderror" 
+                                   id="peso" name="peso" 
+                                   value="{{ old('peso', $consultation->peso) }}" 
+                                   min="30" max="200">
+                            @error('peso')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                    </form>
-                </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="pressao_arterial" class="form-label">Pressão Arterial</label>
+                            <input type="text" 
+                                   class="form-control @error('pressao_arterial') is-invalid @enderror" 
+                                   id="pressao_arterial" name="pressao_arterial" 
+                                   value="{{ old('pressao_arterial', $consultation->pressao_arterial) }}" 
+                                   placeholder="Ex: 120/80">
+                            @error('pressao_arterial')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="batimentos_fetais" class="form-label">Batimentos Fetais (bpm)</label>
+                            <input type="number" 
+                                   class="form-control @error('batimentos_fetais') is-invalid @enderror" 
+                                   id="batimentos_fetais" name="batimentos_fetais" 
+                                   value="{{ old('batimentos_fetais', $consultation->batimentos_fetais) }}" 
+                                   min="110" max="180">
+                            @error('batimentos_fetais')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="altura_uterina" class="form-label">Altura Uterina (cm)</label>
+                            <input type="number" step="0.1" 
+                                   class="form-control @error('altura_uterina') is-invalid @enderror" 
+                                   id="altura_uterina" name="altura_uterina" 
+                                   value="{{ old('altura_uterina', $consultation->altura_uterina) }}" 
+                                   min="10" max="50">
+                            @error('altura_uterina')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações da Consulta</label>
+                        <textarea class="form-control @error('observacoes') is-invalid @enderror" 
+                                  id="observacoes" name="observacoes" rows="3" 
+                                  placeholder="Registre queixas, sintomas, achados do exame físico...">{{ old('observacoes', $consultation->observacoes) }}</textarea>
+                        @error('observacoes')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="orientacoes" class="form-label">Orientações e Recomendações</label>
+                        <textarea class="form-control @error('orientacoes') is-invalid @enderror" 
+                                  id="orientacoes" name="orientacoes" rows="3" 
+                                  placeholder="Orientações sobre alimentação, cuidados, medicamentos...">{{ old('orientacoes', $consultation->orientacoes) }}</textarea>
+                        @error('orientacoes')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="proxima_consulta" class="form-label">Próxima Consulta</label>
+                            <input type="date" 
+                                   class="form-control @error('proxima_consulta') is-invalid @enderror" 
+                                   id="proxima_consulta" name="proxima_consulta" 
+                                   value="{{ old('proxima_consulta', optional($consultation->proxima_consulta)->format('Y-m-d')) }}">
+                            @error('proxima_consulta')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select @error('status') is-invalid @enderror" 
+                                    id="status" name="status" required>
+                                <option value="agendada" {{ old('status', $consultation->status) === 'agendada' ? 'selected' : '' }}>
+                                    Agendada
+                                </option>
+                                <option value="confirmada" {{ old('status', $consultation->status) === 'confirmada' ? 'selected' : '' }}>
+                                    Confirmada
+                                </option>
+                                <option value="realizada" {{ old('status', $consultation->status) === 'realizada' ? 'selected' : '' }}>
+                                    Realizada
+                                </option>
+                                <option value="cancelada" {{ old('status', $consultation->status) === 'cancelada' ? 'selected' : '' }}>
+                                    Cancelada
+                                </option>
+                            </select>
+                            @error('status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('consultations.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        // Validação do formulário
-        document.addEventListener('DOMContentLoaded', function() {
-            const gestacoes = document.getElementById('numero_gestacoes');
-            const partos = document.getElementById('numero_partos');
-            const abortos = document.getElementById('numero_abortos');
-
-            function validateNumbers() {
-                const g = parseInt(gestacoes.value) || 0;
-                const p = parseInt(partos.value) || 0;
-                const a = parseInt(abortos.value) || 0;
-
-                if (p + a > g) {
-                    partos.setCustomValidity(
-                        'O número de partos + abortos não pode ser maior que o número de gestações');
-                    abortos.setCustomValidity(
-                        'O número de partos + abortos não pode ser maior que o número de gestações');
-                } else {
-                    partos.setCustomValidity('');
-                    abortos.setCustomValidity('');
-                }
-            }
-
-            gestacoes.addEventListener('input', validateNumbers);
-            partos.addEventListener('input', validateNumbers);
-            abortos.addEventListener('input', validateNumbers);
-
-            // Calcular idade automaticamente
-            const dataNascimento = document.getElementById('data_nascimento');
-            dataNascimento.addEventListener('change', function() {
-                const hoje = new Date();
-                const nascimento = new Date(this.value);
-                const idade = hoje.getFullYear() - nascimento.getFullYear();
-
-                if (idade < 12 || idade > 50) {
-                    this.setCustomValidity(
-                    'Verifique a data de nascimento. Idade fora do padrão esperado.');
-                } else {
-                    this.setCustomValidity('');
-                }
-            });
-        });
-    </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação de pressão arterial
+    const pressaoInput = document.getElementById('pressao_arterial');
+    pressaoInput.addEventListener('blur', function() {
+        const value = this.value.trim();
+        if (value && !value.match(/^\d{2,3}\/\d{2,3}$/)) {
+            this.setCustomValidity('Formato inválido. Use: 120/80');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Auto-sugerir próxima consulta baseada no tipo
+    const tipoConsultaSelect = document.getElementById('tipo_consulta');
+    tipoConsultaSelect.addEventListener('change', function() {
+        const proximaConsultaInput = document.getElementById('proxima_consulta');
+        const hoje = new Date();
+        let diasProxima = 28; // 4 semanas por padrão
+        
+        switch(this.value) {
+            case '1_trimestre':
+                diasProxima = 28; // 4 semanas
+                break;
+            case '2_trimestre':
+                diasProxima = 21; // 3 semanas
+                break;
+            case '3_trimestre':
+                diasProxima = 14; // 2 semanas
+                break;
+            case 'emergencia':
+                diasProxima = 7; // 1 semana
+                break;
+        }
+        
+        const proximaData = new Date(hoje.getTime() + (diasProxima * 24 * 60 * 60 * 1000));
+        proximaConsultaInput.value = proximaData.toISOString().split('T')[0];
+    });
+});
+</script>
 @endpush
