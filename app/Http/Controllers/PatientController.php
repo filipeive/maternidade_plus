@@ -8,18 +8,67 @@ use Carbon\Carbon;
 
 class PatientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $patients = Patient::where('ativo', true)
-            ->with(['consultations' => function($query) {
-                $query->where('data_consulta', '>', now())
-                      ->orderBy('data_consulta')
-                      ->limit(1);
-            }])
-            ->orderBy('nome_completo')
-            ->paginate(15);
+        $query = Patient::where('ativo', true)
+            ->with(['consultations' => function($q) {
+                $q->where('data_consulta', '>', now())
+                  ->orderBy('data_consulta')
+                  ->limit(1);
+            }]);
+
+        // Funcionalidade de pesquisa
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nome_completo', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('contacto', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $patients = $query->orderBy('nome_completo')->paginate(15);
         
+        // Se é uma requisição AJAX (para pesquisa em tempo real)
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('patients.partials.patient-list', compact('patients'))->render(),
+                'pagination' => $patients->links()->render()
+            ]);
+        }
+
         return view('patients.index', compact('patients'));
+    }
+
+    public function search(Request $request)
+    {
+        $searchTerm = $request->get('q');
+        
+        if (strlen($searchTerm) < 2) {
+            return response()->json([]);
+        }
+
+        $patients = Patient::where('ativo', true)
+            ->where(function($query) use ($searchTerm) {
+                $query->where('nome_completo', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('contacto', 'LIKE', "%{$searchTerm}%");
+            })
+            ->select('id', 'nome_completo', 'documento_bi', 'contacto', 'data_nascimento')
+            ->limit(10)
+            ->get()
+            ->map(function($patient) {
+                return [
+                    'id' => $patient->id,
+                    'nome' => $patient->nome_completo,
+                    'documento' => $patient->documento_bi,
+                    'contacto' => $patient->contacto,
+                    'idade' => Carbon::parse($patient->data_nascimento)->age,
+                    'url' => route('patients.show', $patient->id)
+                ];
+            });
+
+        return response()->json($patients);
     }
 
     public function create()

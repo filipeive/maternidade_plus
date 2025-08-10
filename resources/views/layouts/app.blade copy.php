@@ -57,8 +57,15 @@
         }
 
         @keyframes movePattern {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-5px, -5px); }
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-5px, -5px);
+            }
         }
 
         /* Sidebar Moçambicana */
@@ -83,8 +90,13 @@
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .sidebar-brand {
@@ -98,8 +110,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .sidebar-brand h4 {
@@ -115,9 +134,19 @@
         }
 
         @keyframes wave {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
         }
 
         .sidebar-brand small {
@@ -217,64 +246,9 @@
         }
 
         /* Search melhorado */
-        .search-container {
-            position: relative;
-        }
-
-        .search-container .form-control {
-            border-radius: 25px;
-            border: 2px solid #e9ecef;
-            padding-left: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .search-container .form-control:focus {
+        .form-control:focus {
             border-color: var(--moz-green) !important;
             box-shadow: 0 0 0 0.2rem rgba(0, 150, 57, 0.15) !important;
-            transform: scale(1.02);
-        }
-
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 15px;
-            box-shadow: var(--shadow-strong);
-            z-index: 1050;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-            margin-top: 5px;
-        }
-
-        .search-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #f8f9fa;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .search-item:last-child {
-            border-bottom: none;
-        }
-
-        .search-item:hover,
-        .search-item.active {
-            background: rgba(0, 150, 57, 0.1);
-            color: var(--moz-green);
-        }
-
-        .search-item .fw-semibold {
-            color: #2d3436;
-            margin-bottom: 4px;
-        }
-
-        .search-item:hover .fw-semibold,
-        .search-item.active .fw-semibold {
-            color: var(--moz-green);
         }
 
         /* Localização */
@@ -289,8 +263,15 @@
         }
 
         @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
         }
 
         /* Dropdown melhorado */
@@ -449,10 +430,6 @@
             body::before {
                 animation: none;
             }
-
-            .search-container {
-                display: none !important;
-            }
         }
 
         /* Animações de Entrada */
@@ -465,34 +442,27 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Ripple effect */
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
+        /* Melhoramentos específicos para notificações */
+        .dropdown-menu[style*="width: 300px"] .dropdown-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* Loading spinner para search */
-        .search-loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid var(--moz-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .dropdown-menu[style*="width: 300px"] .dropdown-item:last-child {
+            border-bottom: none;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Footer customizado */
+        .main-content {
+            position: relative;
+            z-index: 1;
         }
     </style>
 
@@ -606,24 +576,17 @@
                 </div>
 
                 <div class="ms-auto d-flex align-items-center">
-                    {{-- Search melhorado --}}
-                    <div class="search-container d-none d-md-flex me-3">
-                        <div class="position-relative">
-                            <input class="form-control form-control-sm" 
-                                   type="search" 
-                                   id="patient-search"
-                                   placeholder="Pesquisar gestantes..."
-                                   aria-label="Search"
-                                   autocomplete="off"
-                                   style="width: 280px;">
-                            <div class="search-results" id="search-results"></div>
-                        </div>
-                    </div>
-                    
+                    {{-- search --}}
+                    <form class="d-none d-md-flex me-3" role="search">
+                        <input class="form-control form-control-sm" type="search" placeholder="Pesquisar gestantes..."
+                            aria-label="Search">
+                        <button class="btn btn-outline-secondary btn-sm ms-2" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+
                     <div class="me-4 text-end d-none d-md-block">
-                        <div class="text-muted small" id="current-date">
-                            {{ \Carbon\Carbon::now()->locale('pt')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}
-                        </div>
+                        <div class="text-muted small">{{ now()->isoFormat('dddd, D [de] MMMM [de] YYYY') }}</div>
                         <div class="text-primary small fw-semibold">
                             <i class="fas fa-map-marker-alt me-1"></i> Quelimane, Moçambique 🇲🇿
                         </div>
@@ -633,7 +596,9 @@
                         <button class="btn btn-light position-relative rounded-circle p-2" type="button"
                             data-bs-toggle="dropdown">
                             <i class="fas fa-bell text-muted"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill py-0.5 px-2 bg-danger" style="top:-4px;">
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill py-0.5 px-2 bg-danger"
+                                style="top:-4px;">
                                 3
                                 <span class="visually-hidden">notificações não lidas</span>
                             </span>
@@ -643,7 +608,9 @@
                             <li class="dropdown-header fw-bold text-primary">
                                 <i class="fas fa-bell me-2"></i>Notificações MISAU
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <a class="dropdown-item d-flex py-2" href="#">
                                     <div class="me-3 text-success">
@@ -677,7 +644,9 @@
                                     </div>
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <a class="dropdown-item text-center text-primary small fw-semibold" href="#">
                                     <i class="fas fa-eye me-1"></i>Ver todas as notificações
@@ -697,7 +666,9 @@
                             <li class="dropdown-header text-primary fw-bold">
                                 <i class="fas fa-user-md me-2"></i>Olá, {{ explode(' ', auth()->user()->name)[0] }}
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                     <i class="fas fa-user-cog me-2 text-muted"></i>Perfil
@@ -713,7 +684,9 @@
                                     <i class="fas fa-cog me-2 text-muted"></i>Configurações
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -767,7 +740,6 @@
                     @yield('content')
                 </div>
             </div>
-
             <!-- Footer Moçambicano -->
             <footer class="text-center py-4 mt-5"
                 style="color: #6c757d; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); border-radius: var(--border-radius);">
@@ -822,215 +794,6 @@
                 document.body.appendChild(overlay);
             }
         });
-
-        // Configurar Carbon para português
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDateTime();
-            setInterval(updateDateTime, 60000); // Atualizar a cada minuto
-        });
-
-        function updateDateTime() {
-            const now = new Date();
-            const options = {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            };
-
-            const ptDate = now.toLocaleDateString('pt-PT', options);
-            const formattedDate = ptDate.charAt(0).toUpperCase() + ptDate.slice(1);
-
-            const dateElement = document.getElementById('current-date');
-            if (dateElement) {
-                dateElement.textContent = formattedDate;
-            }
-        }
-
-        // ===== FUNCIONALIDADE DE PESQUISA CORRIGIDA =====
-        const searchInput = document.getElementById('patient-search');
-        const searchResults = document.getElementById('search-results');
-        let searchTimeout;
-
-        if (searchInput && searchResults) {
-            // Evento de input com debounce
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.trim();
-
-                clearTimeout(searchTimeout);
-
-                if (query.length < 2) {
-                    hideSearchResults();
-                    return;
-                }
-
-                searchTimeout = setTimeout(() => {
-                    performSearch(query);
-                }, 300);
-            });
-
-            // Navegação com teclado
-            searchInput.addEventListener('keydown', function(e) {
-                const items = searchResults.querySelectorAll('.search-item[data-url]');
-                const activeItem = searchResults.querySelector('.search-item.active');
-
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    navigateSearchResults(items, activeItem, 'down');
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    navigateSearchResults(items, activeItem, 'up');
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (activeItem && activeItem.dataset.url) {
-                        window.location.href = activeItem.dataset.url;
-                    }
-                } else if (e.key === 'Escape') {
-                    hideSearchResults();
-                    searchInput.blur();
-                }
-            });
-
-            // Ocultar resultados ao clicar fora
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                    hideSearchResults();
-                }
-            });
-        }
-
-        function navigateSearchResults(items, activeItem, direction) {
-            if (items.length === 0) return;
-
-            // Remove classe active de todos
-            items.forEach(item => item.classList.remove('active'));
-
-            let nextItem;
-            if (!activeItem) {
-                nextItem = direction === 'down' ? items[0] : items[items.length - 1];
-            } else {
-                const currentIndex = Array.from(items).indexOf(activeItem);
-                if (direction === 'down') {
-                    nextItem = items[currentIndex + 1] || items[0];
-                } else {
-                    nextItem = items[currentIndex - 1] || items[items.length - 1];
-                }
-            }
-
-            if (nextItem) {
-                nextItem.classList.add('active');
-                nextItem.scrollIntoView({ block: 'nearest' });
-            }
-        }
-
-        function performSearch(query) {
-            showSearchLoading();
-
-            // Verificar se a rota existe
-            const searchUrl = "{{ route('patients.search') }}";
-            
-            fetch(`${searchUrl}?q=${encodeURIComponent(query)}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                displaySearchResults(data);
-            })
-            .catch(error => {
-                console.error('Erro na pesquisa:', error);
-                showSearchError();
-            });
-        }
-
-        function showSearchLoading() {
-            searchResults.innerHTML = `
-                <div class="search-item text-center py-3">
-                    <div class="search-loading me-2"></div>
-                    Pesquisando gestantes...
-                </div>
-            `;
-            searchResults.style.display = 'block';
-        }
-
-        function showSearchError() {
-            searchResults.innerHTML = `
-                <div class="search-item text-center py-3 text-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Erro ao pesquisar. Verifique sua conexão.
-                </div>
-            `;
-        }
-
-        function displaySearchResults(patients) {
-            if (!Array.isArray(patients) || patients.length === 0) {
-                searchResults.innerHTML = `
-                    <div class="search-item text-center py-3 text-muted">
-                        <i class="fas fa-search me-2"></i>
-                        Nenhuma gestante encontrada
-                    </div>
-                `;
-            } else {
-                const html = patients.map(patient => `
-                    <div class="search-item" data-url="${patient.url || '#'}">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <i class="fas fa-venus text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">${patient.nome || 'Nome não disponível'}</div>
-                                <small class="text-muted">
-                                    BI: ${patient.documento || 'N/A'} | 
-                                    ${patient.idade || 'N/A'} anos | 
-                                    ${patient.contacto || 'N/A'}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-
-                searchResults.innerHTML = html;
-
-                // Adicionar eventos de clique e hover
-                searchResults.querySelectorAll('.search-item[data-url]').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const url = this.dataset.url;
-                        if (url && url !== '#') {
-                            window.location.href = url;
-                        }
-                    });
-
-                    item.addEventListener('mouseenter', function() {
-                        // Remove active de outros items
-                        searchResults.querySelectorAll('.search-item').forEach(i => i.classList.remove('active'));
-                        // Adiciona active no item atual
-                        this.classList.add('active');
-                    });
-                });
-            }
-
-            searchResults.style.display = 'block';
-        }
-
-        function hideSearchResults() {
-            if (searchResults) {
-                searchResults.style.display = 'none';
-                searchResults.querySelectorAll('.search-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-            }
-        }
-
-        // ===== FIM DA FUNCIONALIDADE DE PESQUISA =====
 
         // Auto-hide alerts com animação melhorada
         setTimeout(function() {
@@ -1105,38 +868,48 @@
             });
         });
 
-        // Feedback tátil para botões
-        document.querySelectorAll('button, .btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Efeito ripple
-                const rect = this.getBoundingClientRect();
-                const ripple = document.createElement('span');
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${x}px;
-                    top: ${y}px;
-                    background: rgba(255, 255, 255, 0.3);
-                    border-radius: 50%;
-                    transform: scale(0);
-                    animation: ripple 0.6s linear;
-                    pointer-events: none;
-                `;
-
-                if (this.style.position !== 'absolute' && this.style.position !== 'relative') {
-                    this.style.position = 'relative';
+        // Funcionalidade de pesquisa melhorada
+        const searchInput = document.querySelector('input[type="search"]');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value;
+                if (query.length > 2) {
+                    // Aqui você implementaria a lógica de pesquisa
+                    console.log('Pesquisando por:', query);
+                    // Exemplo: fazer requisição AJAX para buscar gestantes
                 }
-                this.style.overflow = 'hidden';
-                this.appendChild(ripple);
-
-                setTimeout(() => ripple.remove(), 600);
             });
-        });
+
+            // Efeito visual no focus
+            searchInput.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                this.parentElement.style.transition = 'transform 0.2s ease';
+            });
+
+            searchInput.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        }
+
+        // Notificações em tempo real (simulação)
+        function updateNotifications() {
+            const badge = document.querySelector('.notification-badge');
+            if (badge && Math.random() > 0.9) { // 10% chance
+                const current = parseInt(badge.textContent);
+                badge.textContent = current + 1;
+
+                // Animação de nova notificação
+                badge.style.animation = 'none';
+                badge.offsetHeight; // Trigger reflow
+                badge.style.animation = 'bounce 1s ease-in-out';
+
+                // Toast notification (opcional)
+                showToast('Nova notificação do sistema MISAU', 'info');
+            }
+        }
+
+        // Atualizar notificações a cada 30 segundos
+        setInterval(updateNotifications, 30000);
 
         // Sistema de toast para feedback
         function showToast(message, type = 'info') {
@@ -1181,12 +954,57 @@
             });
         });
 
+        // Feedback tátil para botões
+        document.querySelectorAll('button, .btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Efeito ripple
+                const rect = this.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+
+                if (this.style.position !== 'absolute' && this.style.position !== 'relative') {
+                    this.style.position = 'relative';
+                }
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // CSS para ripple effect
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
         // Detectar conexão e mostrar status
         function checkConnection() {
             const isOnline = navigator.onLine;
+            const status = document.createElement('div');
 
             if (!isOnline) {
-                const status = document.createElement('div');
                 status.className = 'alert alert-warning position-fixed';
                 status.style.cssText = 'top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999;';
                 status.innerHTML = `
@@ -1210,6 +1028,24 @@
         window.addEventListener('load', checkConnection);
         window.addEventListener('offline', checkConnection);
 
+        // Performance: lazy load para imagens (se houver)
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+
         // Keyboard shortcuts para acessibilidade
         document.addEventListener('keydown', function(e) {
             // Alt + M = Toggle menu mobile
@@ -1221,7 +1057,7 @@
             // Alt + S = Focus search
             if (e.altKey && e.key === 's') {
                 e.preventDefault();
-                document.querySelector('#patient-search')?.focus();
+                document.querySelector('input[type="search"]')?.focus();
             }
 
             // Alt + N = Open notifications
