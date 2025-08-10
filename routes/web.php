@@ -63,7 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', [ExamController::class, 'store'])->name('store');
         Route::get('/{exam}', [ExamController::class, 'show'])->name('show');
         Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
-        Route::patch('/{exam}', [ExamController::class, 'update'])->name('update');
+        //Route::patch('/{exam}', [ExamController::class, 'update'])->name('update');
+        Route::put('/{patient}', [PatientController::class, 'update'])->name('update');
         Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');
 
         // Rotas especiais
@@ -121,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [HomeVisitController::class, 'create'])->name('create');
         Route::post('/', [HomeVisitController::class, 'store'])->name('store');
         Route::get('/{homeVisit}/edit', [HomeVisitController::class, 'edit'])->name('edit');
+        Route::get('/{homeVisit}', [HomeVisitController::class, 'show'])->name('show');
         Route::patch('/{homeVisit}', [HomeVisitController::class, 'update'])->name('update');
         Route::delete('/{homeVisit}', [HomeVisitController::class, 'destroy'])->name('destroy');
         

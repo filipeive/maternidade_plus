@@ -9,8 +9,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RoleAndPermissionSeeder::class,
-            PatientSeeder::class,
-        ]);
+        RoleAndPermissionSeeder::class,  // Primeiro cria as roles
+        UserSeeder::class,                // Depois cria usuários que usam essas roles
+        PatientSeeder::class,
+        HomeVisitSeeder::class,
+        ConsultationSeeder::class,
+        ExamSeeder::class,
+        VaccineSeeder::class,
+    ]);
+
     }
 }

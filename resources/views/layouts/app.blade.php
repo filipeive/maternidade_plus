@@ -359,8 +359,8 @@
             border: none !important;
             border-radius: var(--border-radius) !important;
             box-shadow: var(--shadow-soft) !important;
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;

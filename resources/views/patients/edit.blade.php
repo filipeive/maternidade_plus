@@ -13,7 +13,7 @@
                 <div class="card-body">
                     <form action="{{ route('patients.update', $patient->id) }}" method="POST">
                         @csrf
-                        @method('PUT')
+                        @method('PATCH')
 
                         <div class="row">
                             <div class="col-md-8 mb-3">
