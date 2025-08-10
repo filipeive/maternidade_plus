@@ -10,9 +10,8 @@
 @section('content')
 <div class="row justify-content-center">
     {{-- erros --}}
-    
 
-    <div class="col-md-8">
+    <div class="content-wrapper">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Editar Consulta</h5>

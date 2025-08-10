@@ -250,6 +250,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.update-avatar');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
 });
+//rotas de usuarios
+Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
+Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
+Route::get('/users/template', [UserController::class, 'template'])->name('users.template');
+Route::get('/users/export', [UserController::class, 'export'])->name('users.export');
+Route::post('/users/bulk-activate', [UserController::class, 'bulkActivate']);
+Route::post('/users/bulk-deactivate', [UserController::class, 'bulkDeactivate']);
+Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete']);
 
 // Rotas públicas (sem autenticação) - para emergências ou informações públicas
 Route::prefix('public')->name('public.')->group(function () {

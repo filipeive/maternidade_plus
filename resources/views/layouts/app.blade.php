@@ -543,7 +543,7 @@
                 {!! menu_item('reports.index', 'fa-chart-pie', 'Relatórios MISAU') !!}
             </li>
             <li class="nav-item mb-2">
-                {!! menu_item('home_visits.index', 'fa-home-heart', 'Visitas Domiciliárias') !!}
+                {!! menu_item('home_visits.index', 'fa-shape', 'Visitas Domiciliárias') !!}
             </li>
 
             {{-- separador --}}
@@ -1250,3 +1250,4 @@
 </body>
 
 </html>
+

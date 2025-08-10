@@ -14,7 +14,7 @@ if (!function_exists('menu_item')) {
         }
         
         // Se a rota não existe, retorna um span (link mudo)
-        return '<span class="nav-link text-light" style="cursor: default;">
+        return '<span class="nav-link {$isActive} text-light" style="cursor: default;">
             <i class="fas ' . $icon . ' me-2"></i> ' . $text . '
         </span>';
     }
