@@ -34,14 +34,20 @@ class HomeVisit extends Model
         'coordenadas_gps'
     ];
 
-    protected $casts = [
-        'data_visita' => 'datetime',
-        'proxima_visita' => 'date',
-        'sinais_vitais' => 'json',
-        'materiais_entregues' => 'json',
-        'coordenadas_gps' => 'json',
-        'necessita_referencia' => 'boolean',
-        'acompanhante_presente' => 'boolean'
+   protected $casts = [
+    'data_visita' => 'datetime',
+    'proxima_visita' => 'date',
+    'sinais_vitais' => 'array',  // Alterado de 'json' para 'array'
+    'materiais_entregues' => 'array', // Alterado de 'json' para 'array'
+    'coordenadas_gps' => 'array', // Alterado de 'json' para 'array'
+    'acompanhante_presente' => 'boolean',
+    'necessita_referencia' => 'boolean'
+    ];
+    
+    protected $appends = [
+        'tipo_visita_formatada',
+        'status_color',
+        'status_visita_formatada'
     ];
 
     // Relacionamentos

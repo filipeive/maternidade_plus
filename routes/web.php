@@ -100,6 +100,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{vaccine}/administer', [VaccineController::class, 'markAsAdministered'])->name('mark-as-administered');
         Route::patch('/{vaccine}/reschedule', [VaccineController::class, 'reschedule'])->name('reschedule');
         Route::get('/reports/coverage', [VaccineController::class, 'generateReport'])->name('coverage-report');
+        Route::get('/reports/coverage', [VaccineController::class, 'generateReport'])->name('generate-report');
+        //generate generateReport
+
+        Route::get('/iptp/report', [VaccineController::class, 'iptpReport'])->name('iptp-report');
+        //export data
+        Route::post('/export/excel', [VaccineController::class, 'exportExcel'])->name('export-excel');
+        Route::post('/export/pdf', [VaccineController::class, 'exportPDF'])->name('export-pdf');
+        Route::post('/export/csv', [VaccineController::class, 'exportCSV'])->name('export-csv');
     });
 
     // Laboratório - NOVO
@@ -116,33 +124,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/api/statistics', [LaboratoryController::class, 'statisticsAPI'])->name('statistics-api');
     });
 
-    // Visitas Domiciliárias - NOVO
-    Route::prefix('home-visits')->name('home_visits.')->group(function () {
+        //Route::resource('home_visits', HomeVisitController::class);
+        Route::middleware(['auth'])->prefix('home_visits')->name('home_visits.')->group(function () {
         Route::get('/', [HomeVisitController::class, 'index'])->name('index');
-        Route::get('/create', [HomeVisitController::class, 'create'])->name('create');
+        Route::get('create', [HomeVisitController::class, 'create'])->name('create');
         Route::post('/', [HomeVisitController::class, 'store'])->name('store');
-        Route::get('/{homeVisit}/edit', [HomeVisitController::class, 'edit'])->name('edit');
-        Route::get('/{homeVisit}', [HomeVisitController::class, 'show'])->name('show');
-        Route::patch('/{homeVisit}', [HomeVisitController::class, 'update'])->name('update');
-        Route::delete('/{homeVisit}', [HomeVisitController::class, 'destroy'])->name('destroy');
-        
-        // Rotas específicas para visitas
-        Route::get('/schedule/daily', [HomeVisitController::class, 'dailySchedule'])->name('daily-schedule');
-        Route::get('/schedule/weekly', [HomeVisitController::class, 'weeklySchedule'])->name('weekly-schedule');
-        Route::post('/{homeVisit}/complete', [HomeVisitController::class, 'complete'])->name('complete');
-        Route::patch('/{homeVisit}/reschedule', [HomeVisitController::class, 'reschedule'])->name('reschedule');
-        Route::patch('/{homeVisit}/not-found', [HomeVisitController::class, 'markAsNotFound'])->name('mark-as-not-found');
-        Route::get('/patient/{patient}', [HomeVisitController::class, 'byPatient'])->name('by-patient');
-        Route::get('/route-planning', [HomeVisitController::class, 'routePlanning'])->name('route-planning');
-        Route::get('/reports/generate', [HomeVisitController::class, 'generateReport'])->name('generate-report');
-        
-        // Busca ativa
-        Route::get('/active-search', [HomeVisitController::class, 'activeSearch'])->name('active-search');
-        Route::post('/active-search/schedule', [HomeVisitController::class, 'scheduleActiveSearch'])->name('schedule-active-search');
-        
-        // API para mobile
-        Route::get('/mobile/sync', [HomeVisitController::class, 'mobileSync'])->name('mobile-sync');
-    });
+        Route::get('{homeVisit}', [HomeVisitController::class, 'show'])->name('show');
+        Route::get('{homeVisit}/edit', [HomeVisitController::class, 'edit'])->name('edit');
+        Route::put('{homeVisit}', [HomeVisitController::class, 'update'])->name('update');
+        Route::delete('{homeVisit}', [HomeVisitController::class, 'destroy'])->name('destroy');
+        // Rotas específicas (IMPORTANTE: devem vir ANTES do resource)
+        Route::put('home_visits/{homeVisit}/mark-not-found', [HomeVisitController::class, 'markAsNotFound'])
+            ->name('mark-not-found');
+        Route::put('home_visits/{homeVisit}/complete', [HomeVisitController::class, 'complete'])
+            ->name('complete');
+        Route::put('home_visits/{homeVisit}/reschedule', [HomeVisitController::class, 'reschedule'])
+            ->name('reschedule');
+        //by-patient
+        Route::get('by-patient/{patient}', [HomeVisitController::class, 'byPatient'])
+            ->name('by-patient');
+        //dayly schedule
+        Route::get('daily-schedule', [HomeVisitController::class, 'dailySchedule'])
+            ->name('daily-schedule');
+        //active search
+        Route::get('active-search', [HomeVisitController::class, 'activeSearch'])
+            ->name('active-search');
+        // Route planning
+        Route::get('route-planning', [HomeVisitController::class, 'routePlanning'])->name('route-planning');
+        //generate report
+        Route::get('report', [HomeVisitController::class, 'generateReport'])->name('generate-report');
+        //export data
+        });
 
     // Relatórios MISAU - NOVO
     Route::prefix('reports')->name('reports.')->group(function () {

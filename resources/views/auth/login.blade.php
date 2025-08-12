@@ -197,6 +197,50 @@
             font-size: 0.95rem;
         }
 
+        /* Logo móvel - oculto por padrão */
+        .mobile-logo {
+            display: none;
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .mobile-logo .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00b894, #00a085);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 10px 30px rgba(0, 184, 148, 0.3);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .mobile-logo .logo-icon::before {
+            content: '🏥';
+            font-size: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .mobile-logo h1 {
+            color: #2d3436;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .mobile-logo p {
+            color: #636e72;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .form-group {
             margin-bottom: 25px;
             position: relative;
@@ -333,44 +377,184 @@
             border: 1px solid rgba(39, 174, 96, 0.2);
         }
 
-        /* Responsividade */
-        @media (max-width: 768px) {
+        /* RESPONSIVIDADE MELHORADA */
+        
+        /* Tablet Portrait */
+        @media (max-width: 1024px) {
             .login-container {
-                grid-template-columns: 1fr;
-                max-width: 400px;
-                margin: 10px;
+                max-width: 800px;
             }
             
             .visual-section {
-                padding: 40px 30px;
-                min-height: 300px;
+                padding: 50px 30px;
             }
             
             .form-section {
-                padding: 40px 30px;
-            }
-            
-            .system-title {
-                font-size: 1.8rem;
-            }
-            
-            .moz-emblem {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .moz-emblem::before {
-                font-size: 32px;
+                padding: 50px 40px;
             }
         }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
+        /* Tablet Landscape */
+        @media (max-width: 900px) {
+            .login-container {
+                grid-template-columns: 1fr 1fr;
+                max-width: 700px;
             }
             
-            .form-section, .visual-section {
+            .system-title {
+                font-size: 1.9rem;
+            }
+            
+            .moz-emblem {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .moz-emblem::before {
+                font-size: 40px;
+            }
+        }
+
+        /* Ponto de quebra principal - Mobile */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: stretch;
+                min-height: 100vh;
+            }
+            
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: none;
+                width: 100%;
+                min-height: 100vh;
+                max-height: none;
+                border-radius: 0;
+                animation: none;
+                box-shadow: none;
+                background: white;
+            }
+            
+            /* Ocultar completamente a seção visual em mobile */
+            .visual-section {
+                display: none;
+            }
+            
+            /* Mostrar logo móvel */
+            .mobile-logo {
+                display: block;
+            }
+            
+            .form-section {
+                padding: 40px 25px;
+                min-height: 100vh;
+                justify-content: flex-start;
+                padding-top: 60px;
+            }
+            
+            .form-header {
+                margin-bottom: 30px;
+            }
+            
+            .form-header h2 {
+                font-size: 1.6rem;
+            }
+            
+            .form-input {
+                padding: 14px 18px;
+                font-size: 16px; /* Evita zoom no iOS */
+            }
+            
+            .login-button {
+                padding: 18px 20px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Mobile pequeno */
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
+            .form-section {
                 padding: 30px 20px;
+                padding-top: 50px;
+            }
+            
+            .mobile-logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .form-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .form-input {
+                padding: 12px 16px;
+            }
+            
+            .login-button {
+                padding: 16px 20px;
+                font-size: 1rem;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .checkbox-group {
+                margin-bottom: 25px;
+            }
+        }
+
+        /* Mobile extra pequeno */
+        @media (max-width: 360px) {
+            .form-section {
+                padding: 25px 15px;
+                padding-top: 40px;
+            }
+            
+            .mobile-logo {
+                margin-bottom: 25px;
+            }
+            
+            .mobile-logo .logo-icon {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .mobile-logo .logo-icon::before {
+                font-size: 28px;
+            }
+        }
+
+        /* Orientação landscape em mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .form-section {
+                padding-top: 30px;
+                justify-content: center;
+            }
+            
+            .mobile-logo {
+                margin-bottom: 20px;
+            }
+            
+            .mobile-logo .logo-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .mobile-logo h1 {
+                font-size: 1.4rem;
+            }
+            
+            .form-header {
+                margin-bottom: 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 18px;
             }
         }
 
@@ -398,11 +582,63 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Melhorias de acessibilidade */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .form-section {
+                background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+            }
+            
+            .form-header h2 {
+                color: #ffffff;
+            }
+            
+            .form-header p {
+                color: #cccccc;
+            }
+            
+            .form-input {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: #444;
+                color: #fff;
+            }
+            
+            .form-label {
+                color: #ffffff;
+            }
+            
+            .checkbox-label {
+                color: #cccccc;
+            }
+            
+            @media (max-width: 768px) {
+                .login-container {
+                    background: #1a1a1a;
+                }
+                
+                .mobile-logo h1 {
+                    color: #ffffff;
+                }
+                
+                .mobile-logo p {
+                    color: #cccccc;
+                }
+            }
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <!-- Seção Visual com elementos de Moçambique -->
+        <!-- Seção Visual com elementos de Moçambique - Oculta em mobile -->
         <div class="visual-section">
             <div class="moz-emblem"></div>
             <h1 class="system-title">Maternidade<span style="color: #FFD700;">+</span></h1>
@@ -416,6 +652,13 @@
 
         <!-- Seção do Formulário -->
         <div class="form-section">
+            <!-- Logo móvel - aparece apenas em dispositivos móveis -->
+            <div class="mobile-logo">
+                <div class="logo-icon"></div>
+                <h1>Maternidade<span style="color: #00b894;">+</span></h1>
+                <p>Sistema de Acompanhamento Pré-Natal</p>
+            </div>
+
             <div class="form-header">
                 <h2>Acesso ao Sistema</h2>
                 <p>Entre com suas credenciais para continuar</p>
@@ -538,22 +781,31 @@
             });
         });
 
-        // Efeito de typing no título
-        function typeWriter(element, text, speed = 100) {
-            let i = 0;
-            element.innerHTML = '';
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
-                }
+        // Detecção de orientação para melhor UX em mobile
+        function handleOrientationChange() {
+            if (window.innerWidth <= 768) {
+                const formSection = document.querySelector('.form-section');
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 100);
             }
-            type();
         }
+
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
 
         // Inicializar efeitos
         document.addEventListener('DOMContentLoaded', function() {
+            handleOrientationChange();
+            
+            // Focus no primeiro campo em desktop
+            if (window.innerWidth > 768) {
+                document.getElementById('email').focus();
+            }
+            
             // Exemplo de como mostrar mensagens do Laravel
             // @if (session('status'))
             //     showMessage('success', '{{ session('status') }}');

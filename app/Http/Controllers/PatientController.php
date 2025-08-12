@@ -40,10 +40,10 @@ class PatientController extends Controller
         return view('patients.index', compact('patients'));
     }
 
-    public function search(Request $request)
+   public function search(Request $request)
     {
         $searchTerm = $request->get('q');
-        
+
         if (strlen($searchTerm) < 2) {
             return response()->json([]);
         }
@@ -51,25 +51,28 @@ class PatientController extends Controller
         $patients = Patient::where('ativo', true)
             ->where(function($query) use ($searchTerm) {
                 $query->where('nome_completo', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('contacto', 'LIKE', "%{$searchTerm}%");
+                    ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('contacto', 'LIKE', "%{$searchTerm}%");
             })
-            ->select('id', 'nome_completo', 'documento_bi', 'contacto', 'data_nascimento')
             ->limit(10)
             ->get()
-            ->map(function($patient) {
+            ->map(function ($patient) {
                 return [
                     'id' => $patient->id,
-                    'nome' => $patient->nome_completo,
-                    'documento' => $patient->documento_bi,
-                    'contacto' => $patient->contacto,
-                    'idade' => Carbon::parse($patient->data_nascimento)->age,
+                    'nome_completo' => $patient->nome_completo ?? 'Nome não disponível',
+                    'documento_bi' => $patient->documento_bi ?? 'N/A',
+                    'contacto' => $patient->contacto ?? 'N/A',
+                    'data_nascimento' => $patient->data_nascimento ? $patient->data_nascimento->format('Y-m-d') : null,
+                    'semanas_gestacao' => $patient->idade_gestacional ?? 'N/A',
                     'url' => route('patients.show', $patient->id)
                 ];
-            });
+            })
+            ->values();
 
         return response()->json($patients);
     }
+
+
 
     public function create()
     {

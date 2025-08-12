@@ -89,10 +89,23 @@
                                 <select class="form-select @error('tipo_visita') is-invalid @enderror" id="tipo_visita"
                                     name="tipo_visita" required>
                                     <option value="">Selecione o tipo...</option>
-                                    @foreach ($tiposVisita as $key => $tipo)
+                                    @if (!is_array($tiposVisita) && !$tiposVisita instanceof \Illuminate\Support\Collection)
+                                        @php
+                                            $tiposVisita = [
+                                                'rotina' => 'Visita de Rotina',
+                                                'pos_parto' => 'Visita Pós-parto',
+                                                'alto_risco' => 'Visita de Alto Risco',
+                                                'faltosa' => 'Visita a Gestante Faltosa',
+                                                'emergencia' => 'Visita de Emergência',
+                                                'educacao' => 'Visita Educativa',
+                                                'seguimento' => 'Visita de Seguimento',
+                                            ];
+                                        @endphp
+                                    @endif
+                                    @foreach ($tiposVisita as $key => $label)
                                         <option value="{{ $key }}"
                                             {{ old('tipo_visita') == $key ? 'selected' : '' }}>
-                                            {{ is_array($tipo) ? $tipo['nome'] : $tipo }}
+                                            {{ $label }}
                                         </option>
                                     @endforeach
                                 </select>

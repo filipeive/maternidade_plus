@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HomeVisit;
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use App\Helpers\VisitTypes;
 use Carbon\Carbon;
 
 class HomeVisitController extends Controller
@@ -182,11 +183,12 @@ class HomeVisitController extends Controller
         return view('home_visits.daily-schedule', compact('visits', 'stats', 'date'));
     }
 
+   
     public function complete(Request $request, HomeVisit $homeVisit)
     {
         if (!$homeVisit->canBeCompleted()) {
             return redirect()->back()
-                           ->with('error', 'Esta visita não pode ser completada no status atual.');
+                        ->with('error', 'Esta visita não pode ser completada no status atual.');
         }
 
         $validated = $request->validate([
@@ -195,25 +197,48 @@ class HomeVisitController extends Controller
             'apoio_familiar' => 'required|in:adequado,parcial,inadequado',
             'estado_nutricional' => 'nullable|string',
             'sinais_vitais' => 'nullable|array',
+            'sinais_vitais.pressao_arterial' => 'nullable|string',
+            'sinais_vitais.frequencia_cardiaca' => 'nullable|string',
+            'sinais_vitais.temperatura' => 'nullable|string',
+            'sinais_vitais.peso' => 'nullable|string',
             'queixas_principais' => 'nullable|string',
             'orientacoes_dadas' => 'required|string',
             'materiais_entregues' => 'nullable|array',
+            'materiais_entregues.*' => 'nullable|string',
             'proxima_visita' => 'nullable|date|after:today',
             'acompanhante_presente' => 'boolean',
             'necessita_referencia' => 'boolean',
             'coordenadas_gps' => 'nullable|array'
         ]);
 
+        // Processar sinais vitais
+        if (isset($validated['sinais_vitais'])) {
+            $validated['sinais_vitais'] = array_filter($validated['sinais_vitais'], function($value) {
+                return $value !== null && trim($value) !== '';
+            });
+            
+            if (empty($validated['sinais_vitais'])) {
+                $validated['sinais_vitais'] = null;
+            }
+        }
+
+        // Processar materiais entregues
+        if (isset($validated['materiais_entregues'])) {
+            $validated['materiais_entregues'] = array_values(array_unique($validated['materiais_entregues']));
+            
+            if (empty($validated['materiais_entregues'])) {
+                $validated['materiais_entregues'] = null;
+            }
+        }
+
         $validated['status'] = 'realizada';
 
         $homeVisit->update($validated);
 
-        // Se necessita referência, criar notificação
-        if ($validated['necessita_referencia']) {
+        if ($request->boolean('necessita_referencia')) {
             $this->createReferenceNotification($homeVisit);
         }
 
-        // Agendar próxima visita se indicado
         if (!empty($validated['proxima_visita'])) {
             HomeVisit::create([
                 'patient_id' => $homeVisit->patient_id,
@@ -227,26 +252,28 @@ class HomeVisitController extends Controller
         }
 
         return redirect()->route('home_visits.show', $homeVisit)
-                        ->with('success', 'Visita completada com sucesso!');
+                    ->with('success', 'Visita domiciliária completada com sucesso!');
     }
 
     public function reschedule(Request $request, HomeVisit $homeVisit)
-    {
+        {
         $validated = $request->validate([
-            'nova_data' => 'required|date|after:today',
-            'motivo_reagendamento' => 'required|string'
+            'nova_data_visita' => 'required|date|after:today',
+            'nova_hora_visita' => 'required',
+            'motivo_reagendamento' => 'required|string|min:10'
         ]);
 
         $homeVisit->update([
-            'data_visita' => $validated['nova_data'],
+            'data_visita' => $validated['nova_data_visita'] . ' ' . $validated['nova_hora_visita'],
             'status' => 'reagendada',
-            'observacoes_gerais' => $homeVisit->observacoes_gerais . 
-                                   "\n\nReagendada: " . $validated['motivo_reagendamento']
+            'observacoes_gerais' => trim($homeVisit->observacoes_gerais . 
+                "\n\nReagendada: " . $validated['motivo_reagendamento'])
         ]);
 
         return redirect()->back()
-                        ->with('success', 'Visita reagendada com sucesso!');
+            ->with('success', 'Visita reagendada com sucesso!');
     }
+
 
     public function markAsNotFound(HomeVisit $homeVisit)
     {
