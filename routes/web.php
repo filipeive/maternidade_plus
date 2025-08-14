@@ -9,6 +9,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\VaccineController;
 use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\HomeVisitController;
+use App\Http\Controllers\BirthController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{patient}', [PatientController::class, 'update'])->name('update');
         Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
         Route::get('/{patient}/history', [PatientController::class, 'history'])->name('history');
+        Route::get('patients/{patient}/debug', [PatientController::class, 'debug'])->name('patients.debug');
         
         // Nova rota para pesquisa AJAX
         Route::get('/search/ajax', [PatientController::class, 'search'])->name('search');
@@ -85,7 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Vacinas & IPTp - NOVO
-    Route::prefix('vaccines')->name('vaccines.')->group(function () {
+      Route::prefix('vaccines')->name('vaccines.')->group(function () {
         Route::get('/', [VaccineController::class, 'index'])->name('index');
         Route::get('/create', [VaccineController::class, 'create'])->name('create');
         Route::post('/', [VaccineController::class, 'store'])->name('store');
@@ -108,10 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/export/excel', [VaccineController::class, 'exportExcel'])->name('export-excel');
         Route::post('/export/pdf', [VaccineController::class, 'exportPDF'])->name('export-pdf');
         Route::post('/export/csv', [VaccineController::class, 'exportCSV'])->name('export-csv');
-    });
+        });
 
-    // Laboratório - NOVO
-    Route::prefix('laboratory')->name('laboratory.')->group(function () {
+        // Laboratório - NOVO
+        Route::prefix('laboratory')->name('laboratory.')->group(function () {
         Route::get('/', [LaboratoryController::class, 'index'])->name('index');
         Route::get('/pending-queue', [LaboratoryController::class, 'pendingQueue'])->name('pending-queue');
         Route::post('/exams/{exam}/process', [LaboratoryController::class, 'processExam'])->name('process-exam');
@@ -122,8 +124,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export/results', [LaboratoryController::class, 'exportResults'])->name('export-results');
         Route::get('/alerts/critical', [LaboratoryController::class, 'criticalAlerts'])->name('critical-alerts');
         Route::get('/api/statistics', [LaboratoryController::class, 'statisticsAPI'])->name('statistics-api');
-    });
+         });
+        // Rotas de Partos
+        Route::resource('births', BirthController::class)->except(['create', 'store']);
+        Route::get('patients/{patient}/births/create', [BirthController::class, 'create'])->name('births.create');
+        Route::post('patients/{patient}/births', [BirthController::class, 'store'])->name('births.store');
+        Route::post('patients/{patient}/nova-gestacao', [BirthController::class, 'novaGestacao'])->name('births.nova-gestacao');
+        Route::get('births/relatorio', [BirthController::class, 'relatorio'])->name('births.relatorio');
 
+        // Rotas de Pacientes (se ainda não existirem)
+        Route::resource('patients', PatientController::class);
+        Route::get('patients/{patient}/history', [PatientController::class, 'history'])->name('patients.history');
+
+        // Rota de debug (apenas desenvolvimento)
+        if (config('app.debug')) {
+            Route::get('patients/{patient}/debug', [PatientController::class, 'debug'])->name('patients.debug');
+        }
         //Route::resource('home_visits', HomeVisitController::class);
         Route::middleware(['auth'])->prefix('home_visits')->name('home_visits.')->group(function () {
         Route::get('/', [HomeVisitController::class, 'index'])->name('index');

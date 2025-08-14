@@ -9,6 +9,9 @@ use Carbon\Carbon;
 class Patient extends Model
 {
     use HasFactory;
+    const STATUS_NAO_GESTANTE = 'nao_gestante';
+    const STATUS_GESTANTE = 'gestante';
+    const STATUS_POS_PARTO = 'pos_parto';
 
     protected $fillable = [
         'nome_completo',
@@ -23,6 +26,7 @@ class Patient extends Model
         'historico_medico',
         'data_ultima_menstruacao',
         'data_provavel_parto',
+        'status_atual',
         'numero_gestacoes',
         'numero_partos',
         'numero_abortos',
@@ -57,6 +61,16 @@ class Patient extends Model
         return $this->hasManyThrough(Exam::class, Consultation::class);
     }
 
+    public function births()
+    {
+        return $this->hasMany(Birth::class)->orderBy('data_hora_parto', 'desc');
+    }
+
+    public function ultimoParto()
+    {
+        return $this->hasOne(Birth::class)->latestOfMany('data_hora_parto');
+    }
+
     // Scopes
     public function scopeAtivo($query)
     {
@@ -78,6 +92,11 @@ class Patient extends Model
         return $query->whereNotNull('data_ultima_menstruacao')
                     ->where('data_provavel_parto', '>', now());
     }
+    
+    public function scopePosParto($query)
+    {
+        return $query->where('status_atual', 'pos_parto');
+    }
 
     // Acessores
     public function getIdadeAttribute()
@@ -85,48 +104,108 @@ class Patient extends Model
         return Carbon::parse($this->data_nascimento)->age;
     }
 
+    // Melhorar o cálculo da idade gestacional
     public function getIdadeGestacionalAttribute()
+    {
+        // Se já deu à luz, retorna null
+        if ($this->status_atual === 'pos_parto') {
+            return null;
+        }
+
+        if (!$this->data_ultima_menstruacao) {
+            return null;
+        }
+
+        try {
+            $dum = Carbon::parse($this->data_ultima_menstruacao);
+            $hoje = Carbon::now();
+            
+            if ($dum->gt($hoje)) {
+                return null;
+            }
+            
+            $semanas = $dum->diffInWeeks($hoje);
+            
+            if ($semanas > 42) {
+                return null;
+            }
+            
+            return $semanas;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    public function getSemanasGestacaoAttribute()
+    {
+        return $this->idade_gestacional;
+    }
+
+    public function getDiasGestacionaisAttribute()
     {
         if (!$this->data_ultima_menstruacao) {
             return null;
         }
 
-        $dum = Carbon::parse($this->data_ultima_menstruacao);
-        $semanas = $dum->diffInWeeks(now());
-        
-        return $semanas > 42 ? null : $semanas; // Limitar a 42 semanas
+        try {
+            $dum = Carbon::parse($this->data_ultima_menstruacao);
+            $hoje = Carbon::now();
+            
+            if ($dum->gt($hoje)) {
+                return null;
+            }
+            
+            $dias = $dum->diffInDays($hoje);
+            
+            // Limitar a 294 dias (42 semanas)
+            if ($dias > 294) {
+                return null;
+            }
+            
+            return $dias;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
+    // MELHORADO: Trimestre com verificação adicional
     public function getTrimestreAttribute()
     {
         $semanas = $this->idade_gestacional;
         
-        if (!$semanas) return null;
+        if (!$semanas || $semanas <= 0) return null;
         
-        if ($semanas <= 12) return '1º trimestre';
-        if ($semanas <= 28) return '2º trimestre';
-        return '3º trimestre';
+        if ($semanas <= 13) return '1º trimestre';
+        if ($semanas <= 27) return '2º trimestre';
+        if ($semanas <= 42) return '3º trimestre';
+        
+        return null; // Caso exceda 42 semanas
     }
 
     public function getStatusGravidezAttribute()
     {
-        if (!$this->data_provavel_parto) {
-            return 'Não gestante';
-        }
+        // Usar o status_atual como base
+        switch ($this->status_atual) {
+            case 'pos_parto':
+                return 'Pós-parto';
+            case 'nao_gestante':
+                return 'Não gestante';
+            case 'gestante':
+                if (!$this->data_provavel_parto) {
+                    return 'Gestante';
+                }
 
-        $dpp = Carbon::parse($this->data_provavel_parto);
-        
-        if ($dpp->isPast()) {
-            return 'Pós-parto';
+                $dpp = Carbon::parse($this->data_provavel_parto);
+                $diasRestantes = now()->diffInDays($dpp, false);
+                
+                if ($diasRestantes <= 14 && $diasRestantes >= 0) {
+                    return 'A termo';
+                }
+                
+                return 'Gestante';
+            default:
+                return 'Não definido';
         }
-
-        $diasRestantes = now()->diffInDays($dpp);
-        
-        if ($diasRestantes <= 14) {
-            return 'A termo';
-        }
-
-        return 'Gestante';
     }
 
     public function getRiscoGestacionalAttribute()
@@ -165,7 +244,59 @@ class Patient extends Model
         return 'Baixo';
     }
 
-    // Métodos auxiliares
+    public function debugIdadeGestacional()
+    {
+        return [
+            'data_ultima_menstruacao' => $this->data_ultima_menstruacao,
+            'data_ultima_menstruacao_formatted' => $this->data_ultima_menstruacao ? $this->data_ultima_menstruacao->format('Y-m-d') : 'null',
+            'dias_desde_dum' => $this->dias_gestacionais,
+            'semanas_gestacao' => $this->idade_gestacional,
+            'hoje' => Carbon::now()->format('Y-m-d'),
+            'diferenca_em_dias' => $this->data_ultima_menstruacao ? Carbon::parse($this->data_ultima_menstruacao)->diffInDays(Carbon::now()) : 'N/A'
+        ];
+    }
+    
+    // NOVO: Verificar se pode dar à luz
+    public function podeRegistrarParto()
+    {
+        return $this->status_atual === 'gestante' && 
+               $this->data_ultima_menstruacao && 
+               $this->idade_gestacional >= 22; // Viabilidade fetal
+    }
+
+    // NOVO: Registrar parto
+    public function registrarParto($dadosParto)
+    {
+        $birth = $this->births()->create($dadosParto);
+        
+        // Atualizar status da paciente
+        $this->update([
+            'status_atual' => 'pos_parto',
+            'numero_partos' => $this->numero_partos + 1
+        ]);
+
+        return $birth;
+    }
+
+    // NOVO: Dados do último parto
+    public function getDadosUltimoPartoAttribute()
+    {
+        $ultimoParto = $this->ultimoParto;
+        
+        if (!$ultimoParto) {
+            return null;
+        }
+
+        return [
+            'data' => $ultimoParto->data_hora_parto,
+            'tipo' => $ultimoParto->tipo_parto_formatado,
+            'local' => $ultimoParto->local_parto,
+            'peso_bebe' => $ultimoParto->peso_formatado,
+            'apgar' => $ultimoParto->apgar_formatado,
+            'status_bebe' => $ultimoParto->status_bebe_formatado
+        ];
+    }
+
     public function getProximaConsulta()
     {
         return $this->consultations()
@@ -183,6 +314,17 @@ class Patient extends Model
                    ->first();
     }
 
+    // NOVO: Método para nova gestação
+    public function iniciarNovaGestacao($dataUltimaMenstruacao)
+    {
+        $this->update([
+            'data_ultima_menstruacao' => $dataUltimaMenstruacao,
+            'data_provavel_parto' => Carbon::parse($dataUltimaMenstruacao)->addDays(280),
+            'numero_gestacoes' => $this->numero_gestacoes + 1,
+            'status_atual' => 'gestante'
+        ]);
+    }
+    
     public function getVacinasEmAtraso()
     {
         return $this->vaccines()

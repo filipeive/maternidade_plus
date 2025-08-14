@@ -40,7 +40,8 @@ class PatientController extends Controller
         return view('patients.index', compact('patients'));
     }
 
-   public function search(Request $request)
+    // CORRIGIDO: Melhorar o método de search
+    public function search(Request $request)
     {
         $searchTerm = $request->get('q');
 
@@ -63,7 +64,8 @@ class PatientController extends Controller
                     'documento_bi' => $patient->documento_bi ?? 'N/A',
                     'contacto' => $patient->contacto ?? 'N/A',
                     'data_nascimento' => $patient->data_nascimento ? $patient->data_nascimento->format('Y-m-d') : null,
-                    'semanas_gestacao' => $patient->idade_gestacional ?? 'N/A',
+                    // CORRIGIDO: usar o accessor correto
+                    'semanas_gestacao' => $patient->idade_gestacional ?? null,
                     'url' => route('patients.show', $patient->id)
                 ];
             })
@@ -71,8 +73,6 @@ class PatientController extends Controller
 
         return response()->json($patients);
     }
-
-
 
     public function create()
     {
@@ -92,7 +92,7 @@ class PatientController extends Controller
             'tipo_sanguineo' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
             'alergias' => 'nullable|string',
             'historico_medico' => 'nullable|string',
-            'data_ultima_menstruacao' => 'nullable|date',
+            'data_ultima_menstruacao' => 'nullable|date|before_or_equal:today',
             'numero_gestacoes' => 'required|integer|min:1',
             'numero_partos' => 'required|integer|min:0',
             'numero_abortos' => 'required|integer|min:0'
@@ -136,7 +136,7 @@ class PatientController extends Controller
             'tipo_sanguineo' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
             'alergias' => 'nullable|string',
             'historico_medico' => 'nullable|string',
-            'data_ultima_menstruacao' => 'nullable|date',
+            'data_ultima_menstruacao' => 'nullable|date|before_or_equal:today',
             'numero_gestacoes' => 'required|integer|min:1',
             'numero_partos' => 'required|integer|min:0',
             'numero_abortos' => 'required|integer|min:0'
@@ -173,5 +173,11 @@ class PatientController extends Controller
             ->paginate(10);
             
         return view('patients.history', compact('patient', 'consultations'));
+    }
+
+    // NOVO: Método para debug - verificar dados da gestante
+    public function debug(Patient $patient)
+    {
+        return response()->json($patient->debugIdadeGestacional());
     }
 }

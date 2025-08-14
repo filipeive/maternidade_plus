@@ -750,6 +750,13 @@
                         <span>Visitas Domiciliárias</span>
                     </a>
                 </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link {{ request()->routeIs('births.*') ? 'active' : '' }}"
+                        href="{{ route('births.index') }}" data-permission="view_patients">
+                        <i class="fas fa-baby"></i>
+                        <span>Partos</span>
+                    </a>
+                </li>
 
                 <li class="my-3">
                     <hr class="dropdown-divider border-light opacity-25">
