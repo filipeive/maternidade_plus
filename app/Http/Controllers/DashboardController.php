@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Alerta;
 use App\Models\Patient;
 use App\Models\Consultation;
 use App\Models\Exam;
@@ -29,7 +30,15 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
         
-        // Alertas de acompanhamento
+        // Módulo de Alerta Precoce: Top 15 alertas ativos ordenados por severidade (Alto -> Médio -> Baixo)
+        $alertasPrecoces = Alerta::with('patient')
+            ->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])
+            ->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")
+            ->orderByDesc('created_at')
+            ->limit(15)
+            ->get();
+
+        // Alertas de acompanhamento legado
         $alertas = collect();
         
         // Gestantes sem consulta há mais de 30 dias
@@ -71,7 +80,8 @@ class DashboardController extends Controller
             'consultasPendentes',
             'examesPendentes',
             'proximasConsultas',
-            'alertas'
+            'alertas',
+            'alertasPrecoces'
         ));
     }
 }

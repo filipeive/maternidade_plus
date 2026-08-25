@@ -4,6 +4,60 @@
 @section('page-title', $patient->nome_completo)
 
 @section('content')
+    @php
+        $alertasAtivosPaciente = $patient->alertasAtivos()->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")->get();
+        $temAlertaAlto = $alertasAtivosPaciente->where('nivel', 'alto')->count() > 0;
+    @endphp
+
+    @if($temAlertaAlto)
+        <div class="alert alert-danger shadow-sm border-0 d-flex align-items-center mb-4 p-3" role="alert">
+            <div class="rounded-circle bg-danger text-white p-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                <i class="fas fa-exclamation-triangle fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading fw-bold mb-1">
+                    <span class="badge bg-danger text-white me-2">Alto Risco</span>Alerta Clínico Crítico Detectado
+                </h5>
+                <p class="mb-0 small">Esta gestante possui sinais de alerta de nível <strong>Alto</strong> ativos que exigem conduta médica imediata.</p>
+            </div>
+            <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn btn-danger btn-sm text-nowrap ms-3">
+                <i class="fas fa-stethoscope me-1"></i>Ver e Tratar Alertas
+            </a>
+        </div>
+    @endif
+
+    @if($alertasAtivosPaciente->count() > 0)
+        <div class="card shadow-sm border-0 mb-4 border-start border-{{ $temAlertaAlto ? 'danger' : 'warning' }} border-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-dark">
+                    <i class="fas fa-bell me-2 text-{{ $temAlertaAlto ? 'danger' : 'warning' }}"></i>Alertas Clínicos Ativos ({{ $alertasAtivosPaciente->count() }})
+                </h6>
+                <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn btn-outline-primary btn-sm">
+                    Histórico Completo
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach($alertasAtivosPaciente as $alerta)
+                        <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge bg-{{ $alerta->nivel_cor }}">{{ $alerta->nivel_label }}</span>
+                                    <strong class="text-dark">{{ $alerta->tipo_label }}</strong>
+                                    <small class="text-muted">({{ $alerta->created_at->format('d/m/Y H:i') }})</small>
+                                </div>
+                                <div class="text-muted small">{{ $alerta->mensagem }}</div>
+                            </div>
+                            <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn btn-sm btn-outline-primary">
+                                Tratar
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="row">
         <!-- Informações Principais -->
         <div class="col-md-8">

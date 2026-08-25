@@ -8,6 +8,10 @@
 
     <title>{{ config('app.name', 'Maternidade+') }} - @yield('title', 'Sistema de Gestão Pré-Natal')</title>
 
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#009639">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -540,14 +544,66 @@
             border-left-color: var(--moz-blue);
         }
 
-        /* Notifications */
+        /* Navbar Action Controls & Badges */
+        .navbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #495057;
+            transition: all 0.2s ease;
+            padding: 0;
+            text-decoration: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-icon-btn:hover, .nav-icon-btn:focus, .nav-icon-btn.show {
+            background: #f0f7f3;
+            color: var(--moz-green);
+            border-color: rgba(0, 150, 57, 0.3);
+            box-shadow: 0 2px 6px rgba(0, 150, 57, 0.15);
+        }
+
+        .nav-icon-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 18px;
+            text-align: center;
+            color: #ffffff;
+            background-color: var(--moz-red);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-notification 2s ease-in-out infinite;
+        }
+
         .notification-badge {
             background: var(--moz-red);
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
             font-size: 0.7rem;
-            animation: pulse-notification 2s ease-in-out infinite;
         }
 
         .notifications-dropdown {
@@ -662,6 +718,11 @@
 </head>
 
 <body>
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="alert alert-warning text-center m-0 py-2 d-none" role="alert" style="position: sticky; top: 0; z-index: 1060; border-radius: 0;">
+        <i class="fas fa-wifi-slash me-2"></i>Sem conexão — as alterações serão sincronizadas quando a rede voltar
+    </div>
+
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
@@ -692,6 +753,28 @@
                         href="{{ route('dashboard') }}" data-permission="view_dashboard">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Módulo de Alerta Precoce -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link {{ request()->routeIs('alertas.index') ? 'active' : '' }} d-flex align-items-center justify-content-between"
+                        href="{{ route('alertas.index') }}">
+                        <div>
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <span>Alertas Precoces</span>
+                        </div>
+                        @if(($alertasAltosCount ?? 0) > 0)
+                            <span class="badge bg-danger rounded-pill">{{ $alertasAltosCount }}</span>
+                        @endif
+                    </a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a class="nav-link {{ request()->routeIs('alertas.metricas*') ? 'active' : '' }}"
+                        href="{{ route('alertas.metricas') }}">
+                        <i class="fas fa-chart-line text-info"></i>
+                        <span>Métricas de Alertas</span>
                     </a>
                 </li>
 
@@ -808,8 +891,8 @@
                     </span>
                 </div>
                 <div>
-                    <div class="fw-semibold">{{ auth()->user()->name }}</div>
-                    <small class="opacity-75">{{ auth()->user()->getRoleNames()->first() ?? 'Usuário' }}</small>
+                    <div class="fw-semibold">{{ auth()->user()->name ?? 'Usuário' }}</div>
+                    <small class="opacity-75">{{ auth()->check() && method_exists(auth()->user(), 'getRoleNames') ? (auth()->user()->getRoleNames()->first() ?? 'Profissional de Saúde') : 'Usuário' }}</small>
                 </div>
             </div>
 
@@ -837,9 +920,9 @@
                     @yield('page-title', 'Dashboard')
                 </div>
 
-                <div class="ms-auto d-flex align-items-center">
+                <div class="ms-auto navbar-controls">
                     <!-- Search Desktop -->
-                    <div class="desktop-search me-3">
+                    <div class="desktop-search me-2">
                         <div class="search-container">
                             <input class="form-control form-control-sm" type="search" id="patient-search"
                                 placeholder="Pesquisar gestantes..." aria-label="Search" autocomplete="off">
@@ -848,38 +931,45 @@
                     </div>
 
                     <!-- Data e Localização -->
-                    <div class="me-4 text-end d-none d-md-block">
+                    <div class="me-3 text-end d-none d-xl-block">
                         <div class="text-muted small" id="current-date"></div>
                         <div class="text-primary small fw-semibold">
                             <i class="fas fa-map-marker-alt me-1"></i> Quelimane, Moçambique 🇲🇿
                         </div>
                     </div>
 
-                    <!-- Notificações -->
-                    <div class="dropdown me-3">
-                        <button class="btn btn-light position-relative rounded-circle p-2" type="button"
-                            data-bs-toggle="dropdown" id="notifications-toggle">
-                            <i class="fas fa-bell text-muted"></i>
-                            <span class="notification-badge position-absolute top-0 start-100 translate-middle"
-                                id="notification-count" style="display: none;">0</span>
+                    <!-- Alertas Precoces Bell/Warning Icon Button -->
+                    <a href="{{ route('alertas.index') }}" class="nav-icon-btn" title="Alertas Precoces Clínicos" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <i class="fas fa-exclamation-triangle {{ ($alertasAltosCount ?? 0) > 0 ? 'text-danger' : 'text-muted' }} fs-6"></i>
+                        @if(($alertasAltosCount ?? 0) > 0)
+                            <span class="nav-icon-badge" id="alertas-badge">
+                                {{ $alertasAltosCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <!-- Notificações Dropdown -->
+                    <div class="dropdown">
+                        <button class="nav-icon-btn" type="button" data-bs-toggle="dropdown" id="notifications-toggle" title="Notificações" data-bs-placement="bottom">
+                            <i class="fas fa-bell text-muted fs-6"></i>
+                            <span class="nav-icon-badge" id="notification-count" style="display: none;">0</span>
                         </button>
 
-                        <div class="dropdown-menu dropdown-menu-end notifications-dropdown">
-                            <div
-                                class="dropdown-header fw-bold text-primary d-flex justify-content-between align-items-center">
+                        <div class="dropdown-menu dropdown-menu-end notifications-dropdown shadow-lg border-0 mt-2">
+                            <div class="dropdown-header fw-bold text-primary d-flex justify-content-between align-items-center py-2 px-3">
                                 <span><i class="fas fa-bell me-2"></i>Notificações</span>
-                                <button class="btn btn-sm btn-link text-muted p-0" id="mark-all-read">
+                                <button class="btn btn-sm btn-link text-muted p-0" id="mark-all-read" title="Marcar todas como lidas">
                                     <i class="fas fa-check-double"></i>
                                 </button>
                             </div>
-                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-divider my-0"></div>
                             <div id="notifications-list">
                                 <div class="notification-item text-center py-3 text-muted">
                                     <i class="fas fa-spinner fa-spin me-2"></i>
                                     Carregando notificações...
                                 </div>
                             </div>
-                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-divider my-0"></div>
                             <div class="text-center p-2">
                                 <a href="#" class="btn btn-sm btn-primary w-100" id="view-all-notifications">
                                     <i class="fas fa-eye me-1"></i>Ver Todas
@@ -888,17 +978,17 @@
                         </div>
                     </div>
 
-                    <!-- User Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-light rounded-circle p-0" type="button" data-bs-toggle="dropdown">
-                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                                style="width: 36px; height: 36px;">
-                                {{ substr(auth()->user()->name, 0, 1) }}
+                    <!-- User Profile Dropdown -->
+                    <div class="dropdown ms-1">
+                        <button class="btn btn-light rounded-circle p-0 border shadow-sm" type="button" data-bs-toggle="dropdown" style="width: 38px; height: 38px;">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                style="width: 100%; height: 100%; font-size: 0.9rem;">
+                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                             </div>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
                             <li class="dropdown-header text-primary fw-bold">
-                                <i class="fas fa-user-md me-2"></i>{{ explode(' ', auth()->user()->name)[0] }}
+                                <i class="fas fa-user-md me-2"></i>{{ explode(' ', auth()->user()->name ?? 'Usuário')[0] }}
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
@@ -925,8 +1015,8 @@
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2 text-muted"></i>Sair do Sistema
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Sair do Sistema
                                     </button>
                                 </form>
                             </li>
@@ -956,7 +1046,7 @@
                         </a>
                     </li>
                     @yield('breadcrumbs')
-                    @if (!View::hasSection('breadcrumbs'))
+                    @sectionMissing('breadcrumbs')
                         <li class="breadcrumb-item active">Dashboard</li>
                     @endif
                 </ol>
@@ -1014,13 +1104,13 @@
         // ===== CONFIGURAÇÃO GLOBAL =====
         const APP_CONFIG = {
             routes: {
-                patientsSearch: "{{ route('patients.search') ?? '/patients/search' }}",
-                notificationsIndex: "{{ route('notifications.index') ?? '/notifications' }}",
-                notificationsUnreadCount: "{{ route('notifications.unread-count') ?? '/notifications/unread-count' }}",
-                notificationsMarkAllRead: "{{ route('notifications.mark-all-read') ?? '/notifications/mark-all-read' }}"
+                patientsSearch: "{{ \Illuminate\Support\Facades\Route::has('patients.search') ? route('patients.search') : '/patients/search' }}",
+                notificationsIndex: "{{ \Illuminate\Support\Facades\Route::has('notifications.index') ? route('notifications.index') : '/notifications' }}",
+                notificationsUnreadCount: "{{ \Illuminate\Support\Facades\Route::has('notifications.unread-count') ? route('notifications.unread-count') : '/notifications/unread-count' }}",
+                notificationsMarkAllRead: "{{ \Illuminate\Support\Facades\Route::has('notifications.mark-all-read') ? route('notifications.mark-all-read') : '/notifications/mark-all-read' }}"
             },
             user: {
-                permissions: @json(auth()->user()->getAllPermissions()->pluck('name') ?? [])
+                permissions: @json(auth()->check() && method_exists(auth()->user(), 'getAllPermissions') ? (auth()->user()->getAllPermissions()->pluck('name') ?? []) : [])
             }
         };
 
@@ -1599,7 +1689,7 @@
                 if (this.badge) {
                     if (this.unreadCount > 0) {
                         this.badge.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount;
-                        this.badge.style.display = 'block';
+                        this.badge.style.display = 'inline-flex';
                     } else {
                         this.badge.style.display = 'none';
                     }
@@ -1708,42 +1798,52 @@
                 this.statusElement = document.getElementById('connection-status');
                 this.textElement = document.getElementById('connection-text');
                 this.isOnline = navigator.onLine;
+                this.wasOffline = false;
 
                 this.init();
             }
 
             init() {
-                this.updateStatus();
+                if (!this.isOnline) {
+                    this.wasOffline = true;
+                    this.showOffline();
+                }
 
                 window.addEventListener('online', () => {
                     this.isOnline = true;
-                    this.updateStatus();
+                    if (this.wasOffline) {
+                        this.showOnlineFlash();
+                        this.wasOffline = false;
+                    }
                 });
 
                 window.addEventListener('offline', () => {
                     this.isOnline = false;
-                    this.updateStatus();
+                    this.wasOffline = true;
+                    this.showOffline();
                 });
             }
 
-            updateStatus() {
+            showOnlineFlash() {
                 if (!this.statusElement || !this.textElement) return;
 
-                if (this.isOnline) {
-                    this.statusElement.className = 'connection-status online';
-                    this.textElement.textContent = 'Online - Sincronizado';
-                    this.statusElement.innerHTML = '<i class="fas fa-wifi me-1"></i>' + this.textElement.outerHTML;
+                this.statusElement.className = 'connection-status online';
+                this.textElement.textContent = 'Online - Sincronizado';
+                this.statusElement.innerHTML = '<i class="fas fa-wifi me-1"></i>' + this.textElement.outerHTML;
+                this.statusElement.classList.remove('d-none');
 
-                    setTimeout(() => {
-                        this.statusElement.classList.add('d-none');
-                    }, 3000);
-                } else {
-                    this.statusElement.className = 'connection-status offline';
-                    this.textElement.textContent = 'Offline - Modo local ativado';
-                    this.statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>' + this.textElement
-                        .outerHTML;
-                    this.statusElement.classList.remove('d-none');
-                }
+                setTimeout(() => {
+                    this.statusElement.classList.add('d-none');
+                }, 3000);
+            }
+
+            showOffline() {
+                if (!this.statusElement || !this.textElement) return;
+
+                this.statusElement.className = 'connection-status offline';
+                this.textElement.textContent = 'Offline - Modo local ativado';
+                this.statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>' + this.textElement.outerHTML;
+                this.statusElement.classList.remove('d-none');
             }
         }
 
@@ -1968,8 +2068,8 @@
             });
         }
 
-        // ===== SERVICE WORKER (OPCIONAL) =====
-        if ('serviceWorker' in navigator && 'production' === 'production') {
+        // ===== SERVICE WORKER & OFFLINE PWA =====
+        if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
                     .then(function(registration) {
@@ -1981,6 +2081,9 @@
             });
         }
     </script>
+
+    <!-- Offline Alerts Helper -->
+    <script src="/js/offline-alerts.js"></script>
 
     @stack('scripts')
 </body>

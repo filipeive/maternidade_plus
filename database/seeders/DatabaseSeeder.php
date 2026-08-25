@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         ConsultationSeeder::class,
         ExamSeeder::class,
         VaccineSeeder::class,
+        AlertaSeeder::class,
     ]);
 
     }

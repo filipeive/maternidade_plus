@@ -56,9 +56,10 @@ class RoleAndPermissionSeeder extends Seeder
             'manage_notifications',
             'create_exams',
             'edit_exams',
-            'delete_exams',
             'view_dashboard',
-            'manage_users'
+            'manage_users',
+            'manage_alerts',
+            'view_alerts'
         ];
 
         foreach ($permissions as $permission) {
@@ -66,24 +67,24 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // Criar roles
-        $admin = Role::create(['name' => 'Administrador']);
-        $medico = Role::create(['name' => 'Médico']);
-        $enfermeiro = Role::create(['name' => 'Enfermeiro']);
+        $admin = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        $medico = Role::firstOrCreate(['name' => 'Médico', 'guard_name' => 'web']);
+        $enfermeiro = Role::firstOrCreate(['name' => 'Enfermeiro', 'guard_name' => 'web']);
 
         // Atribuir permissões aos roles
-        $admin->givePermissionTo(Permission::all());
+        $admin->syncPermissions(Permission::all());
         
-        $medico->givePermissionTo([
+        $medico->syncPermissions([
             'view_patients', 'create_patients', 'edit_patients',
             'view_consultations', 'create_consultations', 'edit_consultations',
             'view_exams', 'create_exams', 'edit_exams',
-            'view_dashboard'
+            'view_dashboard', 'manage_alerts', 'view_alerts'
         ]);
 
-        $enfermeiro->givePermissionTo([
+        $enfermeiro->syncPermissions([
             'view_patients', 'create_patients', 'edit_patients',
             'view_consultations', 'create_consultations',
-            'view_exams', 'view_dashboard'
+            'view_exams', 'view_dashboard', 'view_alerts'
         ]);
 
         // Criar usuário admin padrão

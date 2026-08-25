@@ -146,6 +146,98 @@
     </div>
 </div>
 
+<!-- Alertas Precoces - Módulo de Alerta Precoce (Early Warning) -->
+@if(isset($alertasPrecoces) && $alertasPrecoces->count() > 0)
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-2 me-2 text-danger">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold text-dark">Módulo de Alerta Precoce — Alertas Ativos</h5>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('alertas.metricas') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-line me-1"></i>Métricas
+                    </a>
+                    <a href="{{ route('alertas.index') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-list me-1"></i>Ver Todos os Alertas
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Severidade</th>
+                                <th>Gestante</th>
+                                <th>Tipo</th>
+                                <th>Mensagem Clínica</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th class="text-end">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($alertasPrecoces as $alerta)
+                            <tr>
+                                <td>
+                                    @if($alerta->nivel === 'alto')
+                                        <span class="badge bg-danger text-white">
+                                            <i class="fas fa-bolt me-1"></i>Alto
+                                        </span>
+                                    @elseif($alerta->nivel === 'medio')
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-exclamation me-1"></i>Médio
+                                        </span>
+                                    @else
+                                        <span class="badge bg-info text-dark">
+                                            <i class="fas fa-info-circle me-1"></i>Baixo
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($alerta->patient)
+                                        <a href="{{ route('patients.show', $alerta->patient) }}" class="fw-bold text-primary text-decoration-none">
+                                            {{ $alerta->patient->nome_completo }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">N/D</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="small fw-semibold">{{ $alerta->tipo_label }}</span>
+                                </td>
+                                <td>
+                                    <span class="small text-dark">{{ $alerta->mensagem }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ $alerta->created_at->format('d/m/Y H:i') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ $alerta->status === 'ativo' ? 'danger' : ($alerta->status === 'em_seguimento' ? 'warning' : 'success') }}">
+                                        {{ $alerta->status_label }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('alertas.index', ['search' => $alerta->patient?->nome_completo]) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-stethoscope me-1"></i>Tratar
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Alertas de Acompanhamento -->
 @if($alertas->count() > 0)
 <div class="row mt-4">

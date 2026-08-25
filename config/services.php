@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'httpsms' => [
+        'key' => env('HTTPSMS_API_KEY'),
+        'from' => env('HTTPSMS_FROM', '+258840000000'),
+        'endpoint' => env('HTTPSMS_ENDPOINT', 'https://api.httpsms.com/v1/messages/send'),
+    ],
+
 ];

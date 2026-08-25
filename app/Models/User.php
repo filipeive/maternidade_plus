@@ -67,4 +67,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(HomeVisit::class);
     }
+
+    public function alertasResolvidos()
+    {
+        return $this->hasMany(Alerta::class, 'resolvido_por');
+    }
+
+    public function alertaAcoes()
+    {
+        return $this->hasMany(AlertaAcao::class, 'user_id');
+    }
 }

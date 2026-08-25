@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('births', function (Blueprint $table) {
             // Alterar para smallInteger unsigned (suporta até 65535)
             $table->smallInteger('peso_nascimento')
@@ -20,6 +24,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('births', function (Blueprint $table) {
             // Voltar para o formato anterior (se precisar reverter)
             $table->decimal('peso_nascimento', 4, 1)

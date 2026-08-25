@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maternidade+ | Sistema de Acompanhamento Pré-Natal - Moçambique</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
@@ -128,12 +129,6 @@
             50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
         }
 
-        .moz-emblem::before {
-            content: '🇲🇿';
-            font-size: 48px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
         .system-title {
             font-size: 2.2rem;
             font-weight: 700;
@@ -216,12 +211,6 @@
             margin: 0 auto 15px;
             box-shadow: 0 10px 30px rgba(0, 184, 148, 0.3);
             animation: pulse 3s ease-in-out infinite;
-        }
-
-        .mobile-logo .logo-icon::before {
-            content: '🏥';
-            font-size: 32px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .mobile-logo h1 {
@@ -640,12 +629,14 @@
     <div class="login-container">
         <!-- Seção Visual com elementos de Moçambique - Oculta em mobile -->
         <div class="visual-section">
-            <div class="moz-emblem"></div>
+            <div class="moz-emblem">
+                <i class="fas fa-baby-carriage text-white" style="font-size: 52px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));"></i>
+            </div>
             <h1 class="system-title">Maternidade<span style="color: #FFD700;">+</span></h1>
             <p class="system-subtitle">Sistema Integrado de Acompanhamento Pré-Natal para Moçambique</p>
             
             <div class="moz-info">
-                <h4>🏥 Cuidado Integral</h4>
+                <h4><i class="fas fa-hospital-user me-2 text-warning"></i>Cuidado Integral</h4>
                 <p>Apoiando o MISAU na meta de 8 contactos pré-natais, com foco na redução da mortalidade materna e perinatal em Moçambique.</p>
             </div>
         </div>
@@ -654,7 +645,9 @@
         <div class="form-section">
             <!-- Logo móvel - aparece apenas em dispositivos móveis -->
             <div class="mobile-logo">
-                <div class="logo-icon"></div>
+                <div class="logo-icon">
+                    <i class="fas fa-baby-carriage text-white" style="font-size: 32px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));"></i>
+                </div>
                 <h1>Maternidade<span style="color: #00b894;">+</span></h1>
                 <p>Sistema de Acompanhamento Pré-Natal</p>
             </div>
@@ -666,7 +659,21 @@
 
             <!-- Mensagens de Status -->
             <div id="status-messages">
-                <!-- As mensagens serão inseridas aqui via JavaScript -->
+                @if (session('status'))
+                    <div class="success-message">
+                        <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <div>
+                            @foreach ($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <form id="login-form" method="POST" action="{{ route('login') }}">
@@ -674,7 +681,7 @@
                 
                 <!-- Email -->
                 <div class="form-group">
-                    <label for="email" class="form-label">📧 Endereço de Email</label>
+                    <label for="email" class="form-label"><i class="fas fa-envelope text-success me-2"></i>Endereço de Email</label>
                     <input 
                         id="email" 
                         class="form-input" 
@@ -690,7 +697,7 @@
 
                 <!-- Senha -->
                 <div class="form-group">
-                    <label for="password" class="form-label">🔒 Palavra-passe</label>
+                    <label for="password" class="form-label"><i class="fas fa-lock text-success me-2"></i>Palavra-passe</label>
                     <input 
                         id="password" 
                         class="form-input"
@@ -710,7 +717,7 @@
 
                 <!-- Botão de Login -->
                 <button type="submit" class="login-button" id="login-btn">
-                    <span>🚀 Entrar no Sistema</span>
+                    <span><i class="fas fa-sign-in-alt me-2"></i>Entrar no Sistema</span>
                 </button>
             </form>
 
@@ -722,18 +729,17 @@
     </div>
 
     <script>
-        // Simulação de mensagens (substitua pela lógica do Laravel)
         function showMessage(type, message) {
             const container = document.getElementById('status-messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
             messageDiv.innerHTML = `
-                <span>${type === 'success' ? '✅' : '❌'}</span>
+                <i class="fas ${iconClass}"></i>
                 <span>${message}</span>
             `;
             container.appendChild(messageDiv);
             
-            // Auto-remove after 5 seconds
             setTimeout(() => {
                 messageDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                 messageDiv.style.opacity = '0';
@@ -742,27 +748,11 @@
             }, 5000);
         }
 
-        // Animação de carregamento no botão
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        // Animação de carregamento no envio real do formulário
+        document.getElementById('login-form').addEventListener('submit', function() {
             const button = document.getElementById('login-btn');
-            const originalContent = button.innerHTML;
-            
-            button.innerHTML = '⏳ A processar...';
+            button.innerHTML = '<span><i class="fas fa-spinner fa-spin me-2"></i>A processar...</span>';
             button.classList.add('loading');
-            button.disabled = true;
-            
-            // Simular delay (remover em produção)
-            setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('loading');
-                button.disabled = false;
-                // Exemplo de mensagem de erro
-                // showMessage('error', 'Credenciais inválidas. Tente novamente.');
-            }, 2000);
-            
-            // Descomente a linha abaixo em produção
-            // return true;
-            e.preventDefault(); // Remover esta linha em produção
         });
 
         // Função para esqueci a senha

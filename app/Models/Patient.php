@@ -71,6 +71,21 @@ class Patient extends Model
         return $this->hasOne(Birth::class)->latestOfMany('data_hora_parto');
     }
 
+    public function alertas()
+    {
+        return $this->hasMany(Alerta::class);
+    }
+
+    public function alertasAtivos()
+    {
+        return $this->hasMany(Alerta::class)->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO]);
+    }
+
+    public function smsLogs()
+    {
+        return $this->hasMany(SmsLog::class);
+    }
+
     // Scopes
     public function scopeAtivo($query)
     {

@@ -46,6 +46,11 @@ class Consultation extends Model
         return $this->hasMany(Exam::class);
     }
 
+    public function alertas(): HasMany
+    {
+        return $this->hasMany(Alerta::class);
+    }
+
     public function getTipoConsultaLabelAttribute(): string
     {
         return match($this->tipo_consulta) {

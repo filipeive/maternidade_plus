@@ -35,7 +35,7 @@
         ]
     },
     "autoload-dev": {
-        "psr-clear4": {
+        "psr-4": {
             "Tests\\": "tests/"
         }
     },
