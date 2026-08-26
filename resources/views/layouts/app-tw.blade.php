@@ -342,12 +342,12 @@
                 </div>
 
                 {{-- Action Icons --}}
-                <div class="flex items-center gap-1.5" x-data="{ openQrModal: false, manualQr: '' }">
+                <div class="flex items-center gap-1.5">
 
                     {{-- QR Code Scanner --}}
-                    <button @click="openQrModal = true" class="btn-icon-tw relative text-brand-600 hover:bg-brand-50" title="Escanear QR Code da Gestante">
+                    <a href="{{ route('scanner') }}" class="btn-icon-tw relative text-brand-600 hover:bg-brand-50" title="Leitor de QR Code / Cartão da Gestante">
                         <i class="fas fa-qrcode text-base"></i>
-                    </button>
+                    </a>
 
                     {{-- Alertas Precoces --}}
                     <a href="{{ route('alertas.index') }}"
