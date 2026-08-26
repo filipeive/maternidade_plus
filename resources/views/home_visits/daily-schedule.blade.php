@@ -1,640 +1,425 @@
 @extends('layouts.app-tw')
 
-@section('title', 'Agenda Diária de Visitas')
-@section('page-title', 'Agenda Diária - ' . \Carbon\Carbon::parse($date)->format('d/m/Y'))
+@section('title', 'Agenda Diária de Visitas Domiciliárias')
+@section('page-title', 'Agenda Diária — ' . \Carbon\Carbon::parse($date)->format('d/m/Y'))
 @section('title-icon', 'fa-calendar-day')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item"><a href="{{ route('home_visits.index') }}">Visitas Domiciliárias</a></li>
-<li class="breadcrumb-item active">Agenda Diária</li>
+    <a href="{{ route('home_visits.index') }}">Visitas Domiciliárias</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Agenda Diária</span>
 @endsection
 
 @section('content')
-<!-- Header com Controles de Data -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <form method="GET" action="{{ route('home_visits.daily-schedule') }}" class="row g-3 align-items-center">
-                    <div class="col-md-4">
-                        <label for="date" class="form-label">Data:</label>
-                        <input type="date" class="form-control" id="date" name="date" 
-                               value="{{ $date }}" onchange="this.form.submit()">
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="btn-group" role="group">
-                            <a href="{{ route('home_visits.daily-schedule', ['date' => now()->subDay()->format('Y-m-d')]) }}" 
-                               class="btn btn-outline-secondary">
-                                <i class="fas fa-chevron-left"></i> Ontem
-                            </a>
-                            <a href="{{ route('home_visits.daily-schedule', ['date' => now()->format('Y-m-d')]) }}" 
-                               class="btn btn-outline-primary">
-                                <i class="fas fa-calendar-day"></i> Hoje
-                            </a>
-                            <a href="{{ route('home_visits.daily-schedule', ['date' => now()->addDay()->format('Y-m-d')]) }}" 
-                               class="btn btn-outline-secondary">
-                                Amanhã <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2">
-                        <a href="{{ route('home_visits.route-planning', ['date' => $date]) }}" 
-                           class="btn btn-info">
-                            <i class="fas fa-route"></i> Rota
-                        </a>
-                    </div>
-                </form>
+<div class="max-w-full mx-auto space-y-6" x-data="{ 
+    viewMode: 'timeline',
+    completeModalOpen: false,
+    currentVisitId: null,
+    currentPatientName: ''
+}">
+
+    {{-- HEADER DE CONTROLO DE DATA & AÇÕES --}}
+    <div class="card-tw p-5">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            {{-- Seletor de Data & Atalhos --}}
+            <form method="GET" action="{{ route('home_visits.daily-schedule') }}" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="relative min-w-[170px]">
+                    <i class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-surface-400 text-xs"></i>
+                    <input type="date" name="date" value="{{ $date }}" onchange="this.form.submit()" class="input-tw pl-9 text-xs font-semibold">
+                </div>
+
+                <div class="flex items-center bg-surface-100 p-1 rounded-xl border border-surface-200 text-xs">
+                    <a href="{{ route('home_visits.daily-schedule', ['date' => now()->subDay()->format('Y-m-d')]) }}"
+                       class="px-3 py-1.5 rounded-lg font-medium text-surface-700 hover:text-surface-900 hover:bg-white transition-all flex items-center gap-1">
+                        <i class="fas fa-chevron-left text-2xs"></i> Ontem
+                    </a>
+                    <a href="{{ route('home_visits.daily-schedule', ['date' => now()->format('Y-m-d')]) }}"
+                       class="px-3 py-1.5 rounded-lg font-bold shadow-xs transition-all flex items-center gap-1 {{ $date == now()->format('Y-m-d') ? 'bg-brand-600 text-white' : 'text-surface-700 hover:bg-white' }}">
+                        <i class="fas fa-calendar-day text-2xs"></i> Hoje
+                    </a>
+                    <a href="{{ route('home_visits.daily-schedule', ['date' => now()->addDay()->format('Y-m-d')]) }}"
+                       class="px-3 py-1.5 rounded-lg font-medium text-surface-700 hover:text-surface-900 hover:bg-white transition-all flex items-center gap-1">
+                        Amanhã <i class="fas fa-chevron-right text-2xs"></i>
+                    </a>
+                </div>
+            </form>
+
+            {{-- Botões de Ação --}}
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                <a href="{{ route('home_visits.route-planning', ['date' => $date]) }}" class="btn-secondary-tw btn-sm-tw">
+                    <i class="fas fa-route text-ocean-600"></i>
+                    <span>Planeamento de Rota</span>
+                </a>
+                <a href="{{ route('home_visits.create') }}" class="btn-primary-tw btn-sm-tw">
+                    <i class="fas fa-plus text-xs"></i>
+                    <span>Nova Visita</span>
+                </a>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <!-- Resumo do Dia -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-primary mb-3">
-                    <i class="fas fa-chart-pie me-2"></i>
-                    Resumo do Dia
-                </h6>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h4 class="text-warning mb-0">{{ $stats['total_agendadas'] }}</h4>
-                            <small class="text-muted">Agendadas</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success mb-0">{{ $stats['realizadas'] }}</h4>
-                        <small class="text-muted">Realizadas</small>
-                    </div>
-                </div>
-                <hr>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h5 class="text-info mb-0">{{ $stats['pendentes'] }}</h5>
-                            <small class="text-muted">Pendentes</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="text-primary mb-0">{{ floor($stats['tempo_estimado'] / 60) }}h{{ $stats['tempo_estimado'] % 60 }}m</h5>
-                        <small class="text-muted">Tempo Est.</small>
-                    </div>
-                </div>
+
+    {{-- STAT CARDS — RESUMO DO DIA --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <p class="stat-card-value">{{ $stats['total_agendadas'] ?? $visits->count() }}</p>
+                <p class="stat-card-label">Visitas Agendadas</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600">
+                <i class="fas fa-house-medical-circle-check"></i>
+            </div>
+            <div>
+                <p class="stat-card-value">{{ $stats['realizadas'] ?? $visits->where('status', 'realizada')->count() }}</p>
+                <p class="stat-card-label">Visitas Realizadas</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <p class="stat-card-value">{{ $stats['pendentes'] ?? $visits->where('status', 'agendada')->count() }}</p>
+                <p class="stat-card-label">Visitas Pendentes</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-crimson-500 to-crimson-600">
+                <i class="fas fa-stopwatch"></i>
+            </div>
+            <div>
+                <p class="stat-card-value text-base font-bold">
+                    {{ floor(($stats['tempo_estimado'] ?? 120) / 60) }}h {{ ($stats['tempo_estimado'] ?? 120) % 60 }}m
+                </p>
+                <p class="stat-card-label">Tempo Est. de Percurso</p>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Timeline das Visitas -->
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-clock me-2"></i>
-            Cronograma de Visitas - {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}
-        </h5>
-        
-        <div class="btn-group btn-group-sm" role="group">
-            <input type="radio" class="btn-check" name="view" id="timeline" autocomplete="off" checked>
-            <label class="btn btn-outline-primary" for="timeline">
-                <i class="fas fa-clock"></i> Timeline
-            </label>
+    {{-- LISTA / TIMELINE DE VISITAS --}}
+    <div class="card-tw overflow-hidden">
+        {{-- Card Header --}}
+        <div class="p-4 border-b border-surface-200 flex items-center justify-between bg-surface-50/50">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-surface-900 text-sm">Cronograma de Visitas</h3>
+                    <p class="text-2xs text-surface-500">Programação detalhada para {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</p>
+                </div>
+            </div>
 
-            <input type="radio" class="btn-check" name="view" id="list" autocomplete="off">
-            <label class="btn btn-outline-primary" for="list">
-                <i class="fas fa-list"></i> Lista
-            </label>
+            {{-- Alternador de Modos de Vista --}}
+            <div class="flex items-center bg-surface-200/70 p-1 rounded-xl text-xs font-semibold">
+                <button @click="viewMode = 'timeline'"
+                        class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                        :class="viewMode === 'timeline' ? 'bg-white text-brand-700 shadow-xs' : 'text-surface-600 hover:text-surface-900'">
+                    <i class="fas fa-stream text-2xs"></i>
+                    <span>Cronograma</span>
+                </button>
+                <button @click="viewMode = 'table'"
+                        class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                        :class="viewMode === 'table' ? 'bg-white text-brand-700 shadow-xs' : 'text-surface-600 hover:text-surface-900'">
+                    <i class="fas fa-list-check text-2xs"></i>
+                    <span>Tabela</span>
+                </button>
+            </div>
         </div>
-    </div>
-    
-    <div class="card-body">
+
         @if($visits->count() > 0)
-            <!-- Vista Timeline -->
-            <div id="timeline-view">
-                <div class="timeline">
+            {{-- VISTA 1: CRONOGRAMA / TIMELINE --}}
+            <div x-show="viewMode === 'timeline'" class="p-6">
+                <div class="relative border-l-2 border-surface-200 space-y-6 ml-4 pl-6">
                     @foreach($visits->sortBy('data_visita') as $visit)
-                    <div class="timeline-item {{ $visit->status == 'realizada' ? 'completed' : ($visit->data_visita->isPast() ? 'overdue' : 'pending') }}">
-                        <div class="timeline-marker">
-                            @if($visit->status == 'realizada')
-                                <i class="fas fa-check text-success"></i>
-                            @elseif($visit->data_visita->isPast() && $visit->status == 'agendada')
-                                <i class="fas fa-exclamation-triangle text-danger"></i>
-                            @else
-                                <i class="fas fa-clock text-warning"></i>
-                            @endif
-                        </div>
-                        
-                        <div class="timeline-content">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2">
-                                            <div class="text-center">
-                                                <h5 class="mb-0 text-primary">{{ $visit->data_visita->format('H:i') }}</h5>
-                                                <small class="text-muted">
-                                                    @if($visit->data_visita->isPast() && $visit->status == 'agendada')
-                                                        Atrasada
-                                                    @else
-                                                        {{ $visit->data_visita->diffForHumans() }}
-                                                    @endif
-                                                </small>
-                                            </div>
+                        @php
+                            $isOverdue = $visit->data_visita->isPast() && $visit->status == 'agendada';
+                            $isCompleted = $visit->status == 'realizada';
+                        @endphp
+                        <div class="relative group">
+                            {{-- Timeline Node Icon --}}
+                            <div class="absolute -left-[35px] top-1.5 w-6 h-6 rounded-full border-2 border-white shadow-xs flex items-center justify-center text-3xs font-bold transition-all
+                                {{ $isCompleted ? 'bg-brand-600 text-white' : ($isOverdue ? 'bg-crimson-600 text-white' : 'bg-gold-500 text-white') }}">
+                                @if($isCompleted)
+                                    <i class="fas fa-check"></i>
+                                @elseif($isOverdue)
+                                    <i class="fas fa-exclamation"></i>
+                                @else
+                                    <i class="fas fa-clock"></i>
+                                @endif
+                            </div>
+
+                            {{-- Card da Visita --}}
+                            <div class="bg-white rounded-xl border border-surface-200 p-4 shadow-2xs hover:shadow-md transition-all space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-100 pb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                            <i class="fas fa-person-pregnant"></i>
                                         </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <div class="avatar bg-pink text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                                                     style="width: 40px; height: 40px; background-color: #e91e63;">
-                                                    <i class="fas fa-female"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0">{{ $visit->patient->nome_completo }}</h6>
-                                                    <small class="text-muted">{{ $visit->patient->documento_bi }}</small>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-2">
-                                                @php
-                                                    $tipoClass = match($visit->tipo_visita) {
-                                                        'rotina' => 'bg-primary',
-                                                        'pos_parto' => 'bg-success',
-                                                        'alto_risco' => 'bg-danger',
-                                                        'faltosa' => 'bg-warning',
-                                                        'emergencia' => 'bg-danger',
-                                                        'educacao' => 'bg-info',
-                                                        'seguimento' => 'bg-secondary',
-                                                        default => 'bg-secondary'
-                                                    };
-                                                @endphp
-                                                <span class="badge {{ $tipoClass }} me-2">
-                                                    {{ ucfirst(str_replace('_', ' ', $visit->tipo_visita)) }}
-                                                </span>
-                                                
-                                                @php
-                                                    $statusClass = match($visit->status) {
-                                                        'agendada' => 'bg-warning',
-                                                        'realizada' => 'bg-success',
-                                                        'reagendada' => 'bg-info',
-                                                        'nao_encontrada' => 'bg-secondary',
-                                                        default => 'bg-secondary'
-                                                    };
-                                                @endphp
-                                                <span class="badge {{ $statusClass }}">
-                                                    {{ ucfirst(str_replace('_', ' ', $visit->status)) }}
-                                                </span>
-                                            </div>
-                                            
-                                            <p class="mb-0 text-muted small">
-                                                <i class="fas fa-map-marker-alt me-1"></i>
-                                                {{ Str::limit($visit->endereco_visita, 60) }}
+                                        <div>
+                                            <a href="{{ route('patients.show', $visit->patient_id) }}" class="font-bold text-surface-900 hover:text-brand-600 text-sm hover:underline block">
+                                                {{ $visit->patient->nome_completo ?? 'Paciente Sem Nome' }}
+                                            </a>
+                                            <span class="text-2xs text-surface-500 font-mono">BI: {{ $visit->patient->documento_bi ?? 'N/A' }} · Contacto: {{ $visit->patient->contacto ?? $visit->patient->contacto_emergencia ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        {{-- Badge de Horário --}}
+                                        <span class="px-2.5 py-1 rounded-lg text-2xs font-mono font-bold bg-surface-100 text-surface-800 flex items-center gap-1">
+                                            <i class="fas fa-clock text-3xs text-surface-400"></i>
+                                            {{ $visit->data_visita?->format('H:i') }}
+                                        </span>
+
+                                        {{-- Badge Tipo de Visita --}}
+                                        @php
+                                            $tipoBadge = match($visit->tipo_visita) {
+                                                'puerperio_48h' => 'badge-success',
+                                                'pos_parto' => 'badge-info',
+                                                'alto_risco' => 'badge-danger',
+                                                'faltosa' => 'badge-warning',
+                                                'emergencia' => 'badge-danger',
+                                                default => 'badge-neutral'
+                                            };
+                                        @endphp
+                                        <span class="{{ $tipoBadge }} text-3xs capitalize">
+                                            {{ str_replace('_', ' ', $visit->tipo_visita) }}
+                                        </span>
+
+                                        {{-- Badge Status --}}
+                                        @php
+                                            $statusBadge = match($visit->status) {
+                                                'realizada' => 'badge-success',
+                                                'agendada' => $isOverdue ? 'badge-danger' : 'badge-warning',
+                                                'reagendada' => 'badge-info',
+                                                'nao_encontrada' => 'badge-neutral',
+                                                default => 'badge-neutral'
+                                            };
+                                        @endphp
+                                        <span class="{{ $statusBadge }} text-3xs capitalize">
+                                            {{ str_replace('_', ' ', $visit->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- Endereço e Detalhes --}}
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-surface-700">
+                                    <div class="md:col-span-2 space-y-1">
+                                        <p class="flex items-start gap-1.5 text-surface-600">
+                                            <i class="fas fa-location-dot text-brand-500 mt-0.5 shrink-0"></i>
+                                            <span><strong>Endereço:</strong> {{ $visit->endereco_visita ?? $visit->patient->endereco ?? 'N/A' }}</span>
+                                        </p>
+                                        @if($visit->motivo_visita)
+                                            <p class="flex items-start gap-1.5 text-surface-600">
+                                                <i class="fas fa-clipboard-list text-ocean-500 mt-0.5 shrink-0"></i>
+                                                <span><strong>Motivo:</strong> {{ $visit->motivo_visita }}</span>
                                             </p>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <div class="text-center">
-                                                <small class="text-muted">Contato:</small><br>
-                                                <span class="badge bg-light text-dark">
-                                                    {{ $visit->patient->contacto ?? 'N/A' }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-2">
-                                            <div class="d-grid gap-1">
-                                                <a href="{{ route('home_visits.show', $visit) }}" 
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                
-                                                @if($visit->status == 'agendada')
-                                                    <button class="btn btn-sm btn-success complete-visit" 
-                                                            data-visit-id="{{ $visit->id }}"
-                                                            data-patient-name="{{ $visit->patient->nome_completo }}">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                @endif
-                                                
-                                                <a href="https://maps.google.com/?q={{ urlencode($visit->endereco_visita) }}" 
-                                                   target="_blank" class="btn btn-sm btn-outline-info">
-                                                    <i class="fas fa-directions"></i>
-                                                </a>
-                                            </div>
-                                        </div>
+                                        @endif
                                     </div>
-                                    
-                                    @if($visit->motivo_visita)
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <small class="text-muted">
-                                                <strong>Motivo:</strong> {{ $visit->motivo_visita }}
-                                            </small>
-                                        </div>
+
+                                    {{-- Botões Rápidos da Visita --}}
+                                    <div class="flex items-center justify-start md:justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-surface-100">
+                                        <a href="{{ route('home_visits.show', $visit) }}" class="btn-secondary-tw btn-sm-tw py-1 px-2.5 text-3xs" title="Ver Ficha Completa">
+                                            <i class="fas fa-eye text-3xs"></i>
+                                            <span>Detalhes</span>
+                                        </a>
+
+                                        @if($visit->status === 'agendada')
+                                            <button @click="
+                                                currentVisitId = {{ $visit->id }};
+                                                currentPatientName = '{{ addslashes($visit->patient->nome_completo ?? '') }}';
+                                                completeModalOpen = true;
+                                            " class="btn-tw bg-brand-600 hover:bg-brand-700 text-white text-3xs font-bold py-1 px-2.5 rounded-lg shadow-xs flex items-center gap-1">
+                                                <i class="fas fa-check text-3xs"></i>
+                                                <span>Concluir</span>
+                                            </button>
+                                        @endif
+
+                                        @if(!empty($visit->endereco_visita))
+                                            <a href="https://maps.google.com/?q={{ urlencode($visit->endereco_visita) }}" target="_blank" class="btn-icon-tw w-7 h-7 text-xs" title="Abrir GPS / Google Maps">
+                                                <i class="fas fa-directions text-ocean-600"></i>
+                                            </a>
+                                        @endif
                                     </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
-                    </div>
                     @endforeach
                 </div>
             </div>
-            
-            <!-- Vista Lista -->
-            <div id="list-view" style="display: none;">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
+
+            {{-- VISTA 2: TABELA DE VISITAS --}}
+            <div x-show="viewMode === 'table'">
+                <div class="table-container-tw">
+                    <table class="table-tw">
+                        <thead>
                             <tr>
-                                <th>Hora</th>
-                                <th>Gestante</th>
-                                <th>Tipo</th>
-                                <th>Endereço</th>
-                                <th>Contato</th>
+                                <th>Horário</th>
+                                <th>Paciente / Gestante</th>
+                                <th>Tipo de Visita</th>
+                                <th>Endereço / Bairro</th>
+                                <th>Contacto</th>
                                 <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($visits->sortBy('data_visita') as $visit)
-                            <tr class="{{ $visit->data_visita->isPast() && $visit->status == 'agendada' ? 'table-danger' : '' }}">
-                                <td>
-                                    <strong>{{ $visit->data_visita->format('H:i') }}</strong>
-                                    @if($visit->data_visita->isPast() && $visit->status == 'agendada')
-                                        <br><small class="text-danger">Atrasada</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    <strong>{{ $visit->patient->nome_completo }}</strong><br>
-                                    <small class="text-muted">{{ $visit->patient->documento_bi }}</small>
-                                </td>
-                                <td>
-                                    @php
-                                        $tipoClass = match($visit->tipo_visita) {
-                                            'rotina' => 'bg-primary',
-                                            'pos_parto' => 'bg-success',
-                                            'alto_risco' => 'bg-danger',
-                                            'faltosa' => 'bg-warning',
-                                            'emergencia' => 'bg-danger',
-                                            'educacao' => 'bg-info',
-                                            'seguimento' => 'bg-secondary',
-                                            default => 'bg-secondary'
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $tipoClass }}">
-                                        {{ ucfirst(str_replace('_', ' ', $visit->tipo_visita)) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <small>{{ Str::limit($visit->endereco_visita, 40) }}</small>
-                                    <br>
-                                    <a href="https://maps.google.com/?q={{ urlencode($visit->endereco_visita) }}" 
-                                       target="_blank" class="btn btn-xs btn-outline-info">
-                                        <i class="fas fa-directions"></i> Direções
-                                    </a>
-                                </td>
-                                <td>
-                                    <span class="badge bg-light text-dark">
-                                        {{ $visit->patient->contacto ?? 'N/A' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @php
-                                        $statusClass = match($visit->status) {
-                                            'agendada' => 'bg-warning',
-                                            'realizada' => 'bg-success',
-                                            'reagendada' => 'bg-info',
-                                            'nao_encontrada' => 'bg-secondary',
-                                            default => 'bg-secondary'
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $statusClass }}">
-                                        {{ ucfirst(str_replace('_', ' ', $visit->status)) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('home_visits.show', $visit) }}" 
-                                           class="btn btn-outline-primary" title="Ver">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        
-                                        @if($visit->status == 'agendada')
-                                            <button class="btn btn-success complete-visit" 
-                                                    data-visit-id="{{ $visit->id }}"
-                                                    data-patient-name="{{ $visit->patient->nome_completo }}"
-                                                    title="Completar">
-                                                <i class="fas fa-check"></i>
-                                            </button>
+                                @php
+                                    $isOverdue = $visit->data_visita->isPast() && $visit->status == 'agendada';
+                                @endphp
+                                <tr>
+                                    <td class="font-mono text-xs font-bold text-surface-900">
+                                        {{ $visit->data_visita?->format('H:i') }}
+                                        @if($isOverdue)
+                                            <span class="block text-3xs text-crimson-600 font-normal">Atrasada</span>
                                         @endif
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('patients.show', $visit->patient_id) }}" class="font-bold text-surface-900 hover:text-brand-600 hover:underline block text-xs">
+                                            {{ $visit->patient->nome_completo ?? 'Paciente' }}
+                                        </a>
+                                        <span class="text-3xs text-surface-400">BI: {{ $visit->patient->documento_bi ?? 'N/A' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-neutral text-3xs capitalize">
+                                            {{ str_replace('_', ' ', $visit->tipo_visita) }}
+                                        </span>
+                                    </td>
+                                    <td class="max-w-xs text-xs text-surface-700">
+                                        <p class="truncate" title="{{ $visit->endereco_visita }}">{{ $visit->endereco_visita ?? 'N/A' }}</p>
+                                    </td>
+                                    <td class="font-mono text-xs text-surface-800">
+                                        {{ $visit->patient->contacto ?? 'Sem Telefone' }}
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusBadge = match($visit->status) {
+                                                'realizada' => 'badge-success',
+                                                'agendada' => $isOverdue ? 'badge-danger' : 'badge-warning',
+                                                'reagendada' => 'badge-info',
+                                                'nao_encontrada' => 'badge-neutral',
+                                                default => 'badge-neutral'
+                                            };
+                                        @endphp
+                                        <span class="{{ $statusBadge }} text-3xs capitalize">
+                                            {{ str_replace('_', ' ', $visit->status) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-1.5">
+                                            <a href="{{ route('home_visits.show', $visit) }}" class="btn-secondary-tw btn-xs-tw" title="Ver Detalhes">
+                                                <i class="fas fa-eye text-3xs"></i>
+                                            </a>
+                                            @if($visit->status === 'agendada')
+                                                <button @click="
+                                                    currentVisitId = {{ $visit->id }};
+                                                    currentPatientName = '{{ addslashes($visit->patient->nome_completo ?? '') }}';
+                                                    completeModalOpen = true;
+                                                " class="btn-tw bg-brand-600 hover:bg-brand-700 text-white text-3xs font-bold py-1 px-2 rounded-lg" title="Concluir Visita">
+                                                    <i class="fas fa-check text-3xs"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         @else
-            <div class="text-center py-5">
-                <i class="fas fa-calendar-day fa-4x text-muted mb-3"></i>
-                <h5 class="text-muted">Nenhuma visita agendada para este dia</h5>
-                <p class="text-muted mb-4">
-                    Não há visitas domiciliárias programadas para {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}.
+            <div class="py-12 text-center text-surface-400 space-y-3">
+                <div class="w-16 h-16 rounded-full bg-surface-100 text-surface-400 mx-auto flex items-center justify-center text-2xl">
+                    <i class="fas fa-calendar-xmark"></i>
+                </div>
+                <h4 class="font-bold text-surface-800 text-sm">Sem visitas agendadas para esta data</h4>
+                <p class="text-xs text-surface-500 max-w-sm mx-auto">
+                    Não existem registos de visitas domiciliárias programadas para {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}.
                 </p>
-                <a href="{{ route('home_visits.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i> Agendar Nova Visita
+                <a href="{{ route('home_visits.create') }}" class="btn-primary-tw btn-sm-tw inline-flex">
+                    <i class="fas fa-plus text-xs"></i>
+                    <span>Agendar Nova Visita Domiciliária</span>
                 </a>
             </div>
         @endif
     </div>
-    
-    @if($visits->count() > 0)
-    <div class="card-footer bg-light">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <small class="text-muted">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Total de {{ $visits->count() }} visita(s) programada(s) para este dia
-                </small>
-            </div>
-            <div class="col-md-6 text-end">
-                <div class="btn-group btn-group-sm" role="group">
-                    <a href="{{ route('home_visits.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Nova Visita
-                    </a>
-                    <a href="{{ route('home_visits.weekly-schedule') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-calendar-week me-1"></i> Visão Semanal
-                    </a>
-                    <button class="btn btn-outline-info" onclick="window.print()">
-                        <i class="fas fa-print me-1"></i> Imprimir
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-</div>
 
-<!-- Modal de Completar Visita Rápida -->
-<div class="modal fade" id="quickCompleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-check-circle text-success me-2"></i>
-                    Completar Visita
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    {{-- MODAL ALPINE.JS: CONCLUIR VISITA RÁPIDA --}}
+    <div x-show="completeModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/60 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl shadow-2xl border border-surface-200 w-full max-w-lg p-6 space-y-4 text-left" @click.outside="completeModalOpen = false">
+            <div class="flex items-center justify-between border-b border-surface-100 pb-3">
+                <h3 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-check-circle text-brand-600"></i> Concluir Visita Domiciliária
+                </h3>
+                <button @click="completeModalOpen = false" class="text-surface-400 hover:text-surface-600">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <form id="quickCompleteForm" method="POST">
+
+            <form :action="'{{ url('/home_visits') }}/' + currentVisitId + '/complete'" method="POST" class="space-y-4">
                 @csrf
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Completando visita para: <strong id="patientName"></strong>
+                @method('PUT')
+
+                <div class="p-3 bg-brand-50 border border-brand-200 rounded-xl text-xs text-brand-900">
+                    Concluindo visita domiciliária para a paciente: <strong x-text="currentPatientName"></strong>
+                </div>
+
+                <div>
+                    <label class="label-tw">Observações do Ambiente & Domicílio <span class="text-crimson-500">*</span></label>
+                    <textarea name="observacoes_ambiente" rows="2" required placeholder="Descreva as condições habitacionais e higiênicas da residência..." class="input-tw text-xs"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="label-tw">Condições de Higiene <span class="text-crimson-500">*</span></label>
+                        <select name="condicoes_higiene" required class="input-tw text-xs">
+                            <option value="bom">Bom / Adequado</option>
+                            <option value="regular">Regular</option>
+                            <option value="ruim">Precário / Deficiente</option>
+                        </select>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="quick_observacoes_ambiente" class="form-label required">Observações do Ambiente</label>
-                        <textarea class="form-control" id="quick_observacoes_ambiente" name="observacoes_ambiente" 
-                                  rows="2" required placeholder="Breve descrição do ambiente..."></textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="quick_condicoes_higiene" class="form-label required">Condições de Higiene</label>
-                            <select class="form-select" id="quick_condicoes_higiene" name="condicoes_higiene" required>
-                                <option value="">Selecione...</option>
-                                <option value="bom">Bom</option>
-                                <option value="regular">Regular</option>
-                                <option value="ruim">Ruim</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="quick_apoio_familiar" class="form-label required">Apoio Familiar</label>
-                            <select class="form-select" id="quick_apoio_familiar" name="apoio_familiar" required>
-                                <option value="">Selecione...</option>
-                                <option value="adequado">Adequado</option>
-                                <option value="parcial">Parcial</option>
-                                <option value="inadequado">Inadequado</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="quick_orientacoes_dadas" class="form-label required">Orientações Dadas</label>
-                        <textarea class="form-control" id="quick_orientacoes_dadas" name="orientacoes_dadas" 
-                                  rows="2" required placeholder="Principais orientações..."></textarea>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="quick_necessita_referencia" name="necessita_referencia">
-                        <label class="form-check-label" for="quick_necessita_referencia">
-                            Necessita Referência Médica
-                        </label>
-                    </div>
-                    
-                    <div class="form-text">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Para mais detalhes, acesse a visita completa após salvar.
+
+                    <div>
+                        <label class="label-tw">Apoio Familiar <span class="text-crimson-500">*</span></label>
+                        <select name="apoio_familiar" required class="input-tw text-xs">
+                            <option value="adequado">Adequado / Presente</option>
+                            <option value="parcial">Parcial</option>
+                            <option value="inadequado">Inexistente / Vulnerável</option>
+                        </select>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i> Completar
+
+                <div>
+                    <label class="label-tw">Orientações e Recomendações Dadas <span class="text-crimson-500">*</span></label>
+                    <textarea name="orientacoes_dadas" rows="2" required placeholder="Insira as principais orientações prestadas à paciente..." class="input-tw text-xs"></textarea>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="necessita_referencia" name="necessita_referencia" value="1" class="rounded border-surface-300 text-brand-600 focus:ring-brand-500">
+                    <label for="necessita_referencia" class="text-xs font-semibold text-surface-800">
+                        Necessita de Referência ao Centro de Saúde / Hospital
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-surface-100">
+                    <button type="button" @click="completeModalOpen = false" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
+                    <button type="submit" class="btn-primary-tw btn-sm-tw">
+                        <i class="fas fa-check text-xs"></i>
+                        <span>Salvar e Registrar Conclusão</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
 </div>
-
 @endsection
-
-@push('styles')
-<style>
-.timeline {
-    position: relative;
-    padding: 0;
-    list-style: none;
-}
-
-.timeline:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 40px;
-    width: 4px;
-    background: #e9ecef;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 30px;
-    padding-left: 100px;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: 25px;
-    top: 0;
-    width: 30px;
-    height: 30px;
-    background: #fff;
-    border: 4px solid #e9ecef;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-
-.timeline-item.completed .timeline-marker {
-    border-color: #28a745;
-    background: #28a745;
-}
-
-.timeline-item.overdue .timeline-marker {
-    border-color: #dc3545;
-    background: #dc3545;
-}
-
-.timeline-item.pending .timeline-marker {
-    border-color: #ffc107;
-    background: #ffc107;
-}
-
-.timeline-content {
-    position: relative;
-}
-
-.timeline-content:before {
-    content: '';
-    position: absolute;
-    left: -15px;
-    top: 15px;
-    border: 8px solid transparent;
-    border-right-color: #dee2e6;
-}
-
-@media print {
-    .card-header, .card-footer, .btn, .btn-group {
-        display: none !important;
-    }
-    
-    .timeline-item {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-}
-
-@media (max-width: 768px) {
-    .timeline:before {
-        left: 15px;
-    }
-    
-    .timeline-item {
-        padding-left: 50px;
-    }
-    
-    .timeline-marker {
-        left: 0;
-    }
-}
-</style>
-@endpush
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle between timeline and list view
-    const timelineRadio = document.getElementById('timeline');
-    const listRadio = document.getElementById('list');
-    const timelineView = document.getElementById('timeline-view');
-    const listView = document.getElementById('list-view');
-    
-    timelineRadio.addEventListener('change', function() {
-        if (this.checked) {
-            timelineView.style.display = 'block';
-            listView.style.display = 'none';
-        }
-    });
-    
-    listRadio.addEventListener('change', function() {
-        if (this.checked) {
-            timelineView.style.display = 'none';
-            listView.style.display = 'block';
-        }
-    });
-    
-    // Quick complete visit functionality
-    document.querySelectorAll('.complete-visit').forEach(button => {
-        button.addEventListener('click', function() {
-            const visitId = this.dataset.visitId;
-            const patientName = this.dataset.patientName;
-            
-            document.getElementById('patientName').textContent = patientName;
-            document.getElementById('quickCompleteForm').action = `/home-visits/${visitId}/complete`;
-            
-            const modal = new bootstrap.Modal(document.getElementById('quickCompleteModal'));
-            modal.show();
-        });
-    });
-    
-    // Auto-refresh every 5 minutes
-    setInterval(function() {
-        if (document.visibilityState === 'visible') {
-            location.reload();
-        }
-    }, 300000); // 5 minutes
-    
-    // Notification for overdue visits
-    const overdueVisits = document.querySelectorAll('.timeline-item.overdue');
-    if (overdueVisits.length > 0 && 'Notification' in window) {
-        if (Notification.permission === 'granted') {
-            new Notification(`Você tem ${overdueVisits.length} visita(s) atrasada(s)`, {
-                body: 'Verifique sua agenda e atualize o status das visitas.',
-                icon: '/images/logo.png'
-            });
-        } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then(function(permission) {
-                if (permission === 'granted') {
-                    new Notification(`Você tem ${overdueVisits.length} visita(s) atrasada(s)`, {
-                        body: 'Verifique sua agenda e atualize o status das visitas.',
-                        icon: '/images/logo.png'
-                    });
-                }
-            });
-        }
-    }
-    
-    // Add current time indicator
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTimeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-    
-    // Find the closest time slot and add indicator
-    const timeSlots = document.querySelectorAll('.timeline-item');
-    timeSlots.forEach(item => {
-        const timeElement = item.querySelector('h5');
-        if (timeElement) {
-            const visitTime = timeElement.textContent.trim();
-            if (visitTime === currentTimeString) {
-                item.classList.add('current-time');
-                const indicator = document.createElement('div');
-                indicator.className = 'badge bg-danger position-absolute';
-                indicator.style.cssText = 'top: -5px; right: -5px; z-index: 3;';
-                indicator.innerHTML = '<i class="fas fa-clock"></i> AGORA';
-                item.querySelector('.timeline-marker').appendChild(indicator);
-            }
-        }
-    });
-});
-</script>
-@endpush
