@@ -93,7 +93,7 @@
 
             <a href="{{ route('dashboard') }}"
                class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <span class="sidebar-link-icon"><i class="fas fa-home"></i></span>
+                <span class="sidebar-link-icon"><i class="fas fa-tachometer"></i></span>
                 <span class="sidebar-text">Início</span>
             </a>
 

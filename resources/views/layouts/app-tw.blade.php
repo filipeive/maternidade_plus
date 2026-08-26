@@ -70,15 +70,15 @@
                 <h1 class="text-base font-bold text-white leading-none">
                     Maternidade<span class="text-gold-400">+</span>
                 </h1>
-                <p class="text-2xs text-white/50 mt-0.5">MISAU · Cuidado Pré-Natal</p>
+                <p class="text-2xs text-white/50 mt-0.5">Cuidado Pré-Natal</p>
             </div>
         </div>
 
         {{-- Collapse Toggle (Desktop only) --}}
         <button @click="toggleSidebar()"
                 class="hidden lg:flex absolute top-5 -right-3 w-6 h-6 items-center justify-center
-                       bg-white rounded-full shadow-md border border-surface-200
-                       text-surface-500 hover:text-brand-600
+                       bg-surface-100 hover:bg-surface-200 rounded-full shadow-md border border-surface-200
+                       text-surface-900 hover:text-brand-600
                        transition-transform duration-200 z-50"
                 :class="{'rotate-180': sidebarCollapsed}"
                 title="Recolher menu">
@@ -93,8 +93,8 @@
 
             <a href="{{ route('dashboard') }}"
                class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <span class="sidebar-link-icon"><i class="fas fa-grid-2"></i></span>
-                <span class="sidebar-text">Dashboard</span>
+                <span class="sidebar-link-icon"><i class="fas fa-home"></i></span>
+                <span class="sidebar-text">Início</span>
             </a>
 
             <a href="{{ route('alertas.index') }}"

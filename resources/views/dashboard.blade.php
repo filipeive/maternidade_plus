@@ -17,7 +17,7 @@
             <i class="fas fa-person-pregnant"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $totalGestantes }}</p>
+            <p class="stat-card-value">{{ $totalGestantes ?? 0 }}</p>
             <p class="stat-card-label">Total de Gestantes</p>
         </div>
     </div>
@@ -28,7 +28,7 @@
             <i class="fas fa-calendar-week"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $consultasEstaSemana }}</p>
+            <p class="stat-card-value">{{ $consultasEstaSemana ?? 0 }}</p>
             <p class="stat-card-label">Consultas Esta Semana</p>
         </div>
     </div>
@@ -39,7 +39,7 @@
             <i class="fas fa-clock"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $consultasPendentes }}</p>
+            <p class="stat-card-value">{{ $consultasPendentes ?? 0 }}</p>
             <p class="stat-card-label">Consultas Pendentes</p>
         </div>
     </div>
@@ -50,7 +50,7 @@
             <i class="fas fa-flask-vial"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $examesPendentes }}</p>
+            <p class="stat-card-value">{{ $examesPendentes ?? 0 }}</p>
             <p class="stat-card-label">Exames Pendentes</p>
         </div>
     </div>
@@ -115,7 +115,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            @if($proximasConsultas->count() > 0)
+            @if(isset($proximasConsultas) && $proximasConsultas->count() > 0)
                 <table class="table-tw">
                     <thead>
                         <tr>
@@ -287,7 +287,7 @@
 {{-- ============================================================
      FOLLOW-UP ALERTS
      ============================================================ --}}
-@if($alertas->count() > 0)
+@if(isset($alertas) && $alertas->count() > 0)
 <div class="mt-6">
     <div class="card-tw">
         <div class="card-header-tw">

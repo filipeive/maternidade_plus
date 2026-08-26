@@ -228,11 +228,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Sistema de Ajuda - NOVO
     Route::prefix('help')->name('help.')->group(function () {
-        Route::get('/', fn () => view('dashboard'))->name('index');
-        Route::get('/manual', fn () => view('dashboard'))->name('manual');
-        Route::get('/faq', fn () => view('dashboard'))->name('faq');
-        Route::get('/videos', fn () => view('dashboard'))->name('videos');
-        Route::get('/contact', fn () => view('dashboard'))->name('contact');
+        Route::get('/', [DashboardController::class, 'index'])->name('index');
+        Route::get('/manual', [DashboardController::class, 'index'])->name('manual');
+        Route::get('/faq', [DashboardController::class, 'index'])->name('faq');
+        Route::get('/videos', [DashboardController::class, 'index'])->name('videos');
+        Route::get('/contact', [DashboardController::class, 'index'])->name('contact');
         Route::post('/feedback', fn () => back())->name('submit-feedback');
     });
 
