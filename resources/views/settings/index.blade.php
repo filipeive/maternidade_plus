@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6" x-data="{ activeTab: 'general', logSearch: '' }">
+<div class="w-full mx-auto space-y-6" x-data="{ activeTab: 'general', logSearch: '' }">
 
     {{-- Header Banner --}}
     <div class="card-tw p-5 bg-gradient-to-r from-brand-700 via-brand-600 to-ocean-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

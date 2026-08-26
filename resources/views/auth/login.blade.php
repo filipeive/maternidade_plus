@@ -52,18 +52,16 @@
                 </div>
             </div>
 
-            {{-- Ilustração SVG de Saúde Materna --}}
+            {{-- Fotografia Real da Gestante --}}
             <div class="relative z-10 my-6 flex justify-center">
-                <svg class="w-full max-w-[280px] h-auto drop-shadow-xl" viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="150" cy="120" r="100" fill="white" fill-opacity="0.08"/>
-                    <circle cx="150" cy="120" r="75" fill="white" fill-opacity="0.12"/>
-                    
-                    {{-- Ícone Mãe & Bebê --}}
-                    <path d="M150 65C138.954 65 130 73.9543 130 85C130 96.0457 138.954 105 150 105C161.046 105 170 96.0457 170 85C170 73.9543 161.046 65 150 65Z" fill="#FDE68A"/>
-                    <path d="M150 115C118 115 95 140 95 180C95 185 99 190 105 190H195C201 190 205 185 205 180C205 140 182 115 150 115Z" fill="#FFFFFF"/>
-                    <path d="M150 135C135 135 120 150 120 175C120 180 124 185 130 185H170C176 185 180 180 180 175C180 150 165 135 150 135Z" fill="#F59E0B"/>
-                    <path d="M150 78L153 84L160 85L155 90L156 97L150 93L144 97L145 90L140 85L147 84L150 78Z" fill="#0F766E"/>
-                </svg>
+                <div class="relative w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20 group">
+                    <img src="{{ asset('img/gestante-real.jpg') }}" alt="Gestante em Acompanhamento Pré-Natal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 right-3 text-left">
+                        <span class="px-2 py-0.5 rounded-md bg-gold-400 text-surface-900 font-bold text-3xs uppercase tracking-wider">Cuidado Pré-Natal</span>
+                        <p class="text-xs font-semibold text-white mt-1 drop-shadow-md">Acompanhamento Clínico & Saúde Materna</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Rodapé Informativo --}}
