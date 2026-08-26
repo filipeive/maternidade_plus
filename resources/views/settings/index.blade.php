@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-full mx-auto space-y-6">
 
     {{-- Unidade Sanitária & Sistema --}}
     <div class="card-tw">

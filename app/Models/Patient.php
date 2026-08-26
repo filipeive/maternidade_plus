@@ -119,82 +119,108 @@ class Patient extends Model
         return Carbon::parse($this->data_nascimento)->age;
     }
 
-    // Melhorar o cálculo da idade gestacional
-    public function getIdadeGestacionalAttribute()
+    /**
+     * DUM Efetiva: obtém a DUM direta ou calcula a partir da DPP (DPP - 280 dias)
+     */
+    public function getEffectiveDum(): ?Carbon
     {
-        // Se já deu à luz, retorna null
-        if ($this->status_atual === 'pos_parto') {
-            return null;
+        if ($this->data_ultima_menstruacao) {
+            return Carbon::parse($this->data_ultima_menstruacao);
         }
 
-        if (!$this->data_ultima_menstruacao) {
-            return null;
+        if ($this->data_provavel_parto) {
+            return Carbon::parse($this->data_provavel_parto)->subDays(280);
         }
 
-        try {
-            $dum = Carbon::parse($this->data_ultima_menstruacao);
-            $hoje = Carbon::now();
-            
-            if ($dum->gt($hoje)) {
-                return null;
-            }
-            
-            $semanas = $dum->diffInWeeks($hoje);
-            
-            if ($semanas > 42) {
-                return null;
-            }
-            
-            return $semanas;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return null;
     }
 
-    public function getSemanasGestacaoAttribute()
+    /**
+     * Calcula o total de dias gestacionais na data especificada (padrão: hoje)
+     */
+    public function getDiasGestacionaisNaData(?Carbon $targetDate = null): ?int
+    {
+        if ($this->status_atual === 'pos_parto' || $this->status_atual === 'nao_gestante') {
+            return null;
+        }
+
+        $dum = $this->getEffectiveDum();
+        if (!$dum) {
+            return null;
+        }
+
+        $ref = $targetDate ? $targetDate->copy() : Carbon::now();
+        if ($dum->gt($ref)) {
+            return null;
+        }
+
+        return (int) $dum->diffInDays($ref);
+    }
+
+    /**
+     * Calcula as semanas gestacionais completas na data especificada (padrão: hoje)
+     */
+    public function getSemanasGestacionaisNaData(?Carbon $targetDate = null): ?int
+    {
+        $dias = $this->getDiasGestacionaisNaData($targetDate);
+        if ($dias === null) {
+            return null;
+        }
+
+        return intdiv($dias, 7);
+    }
+
+    /**
+     * Idade Gestacional em semanas completas (compatível com $patient->idade_gestacional)
+     */
+    public function getIdadeGestacionalAttribute(): ?int
+    {
+        return $this->getSemanasGestacionaisNaData();
+    }
+
+    public function getSemanasGestacaoAttribute(): ?int
     {
         return $this->idade_gestacional;
     }
 
-    public function getDiasGestacionaisAttribute()
+    public function getDiasGestacionaisAttribute(): ?int
     {
-        if (!$this->data_ultima_menstruacao) {
-            return null;
-        }
-
-        try {
-            $dum = Carbon::parse($this->data_ultima_menstruacao);
-            $hoje = Carbon::now();
-            
-            if ($dum->gt($hoje)) {
-                return null;
-            }
-            
-            $dias = $dum->diffInDays($hoje);
-            
-            // Limitar a 294 dias (42 semanas)
-            if ($dias > 294) {
-                return null;
-            }
-            
-            return $dias;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return $this->getDiasGestacionaisNaData();
     }
 
-    // MELHORADO: Trimestre com verificação adicional
-    public function getTrimestreAttribute()
+    /**
+     * Idade gestacional formatada detalhada (ex: "24 sem + 3d" ou "24ª semana")
+     */
+    public function getIdadeGestacionalDetalhadaAttribute(): ?string
+    {
+        $dias = $this->getDiasGestacionaisNaData();
+        if ($dias === null) {
+            return null;
+        }
+
+        $semanas = intdiv($dias, 7);
+        $diasRestantes = $dias % 7;
+
+        if ($diasRestantes === 0) {
+            return "{$semanas}ª semana";
+        }
+
+        return "{$semanas} sem + {$diasRestantes}d";
+    }
+
+    /**
+     * Trimestre gestacional harmonizado (1º: 1-13 sem, 2º: 14-27 sem, 3º: 28+ sem)
+     */
+    public function getTrimestreAttribute(): ?string
     {
         $semanas = $this->idade_gestacional;
-        
-        if (!$semanas || $semanas <= 0) return null;
-        
+        if ($semanas === null || $semanas < 0) {
+            return null;
+        }
+
         if ($semanas <= 13) return '1º trimestre';
         if ($semanas <= 27) return '2º trimestre';
-        if ($semanas <= 42) return '3º trimestre';
-        
-        return null; // Caso exceda 42 semanas
+        return '3º trimestre';
     }
 
     public function getStatusGravidezAttribute()

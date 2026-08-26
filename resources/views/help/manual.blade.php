@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-full mx-auto space-y-6">
     <div class="card-tw p-6">
         <div class="flex items-center justify-between border-b border-surface-100 pb-4 mb-6">
             <div>

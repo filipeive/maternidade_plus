@@ -31,7 +31,7 @@ class ConsultationController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'data_consulta' => 'required|date|after_or_equal:today',
             'tipo_consulta' => 'required|in:1_trimestre,2_trimestre,3_trimestre,pos_parto,emergencia',
-            'semanas_gestacao' => 'nullable|integer|min:1|max:42',
+            'semanas_gestacao' => 'nullable|integer|min:1|max:45',
             'peso' => 'nullable|numeric|min:30|max:200',
             'pressao_arterial' => 'nullable|string|max:20',
             'batimentos_fetais' => 'nullable|integer|min:110|max:180',
@@ -43,6 +43,13 @@ class ConsultationController extends Controller
         ]);
 
         $validated['user_id'] = auth()->id();
+
+        if (empty($validated['semanas_gestacao'])) {
+            $patient = Patient::find($validated['patient_id']);
+            if ($patient) {
+                $validated['semanas_gestacao'] = $patient->getSemanasGestacionaisNaData(\Carbon\Carbon::parse($validated['data_consulta']));
+            }
+        }
 
         $consultation = Consultation::create($validated);
 
@@ -70,7 +77,7 @@ class ConsultationController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'data_consulta' => 'required|date',
             'tipo_consulta' => 'required|in:1_trimestre,2_trimestre,3_trimestre,pos_parto,emergencia',
-            'semanas_gestacao' => 'nullable|integer|min:1|max:42',
+            'semanas_gestacao' => 'nullable|integer|min:1|max:45',
             'peso' => 'nullable|numeric|min:30|max:200',
             'pressao_arterial' => 'nullable|string|max:20',
             'batimentos_fetais' => 'nullable|integer|min:110|max:180',
@@ -80,6 +87,13 @@ class ConsultationController extends Controller
             'proxima_consulta' => 'nullable|date|after:data_consulta',
             'status' => 'required|in:agendada,confirmada,realizada,cancelada'
         ]);
+
+        if (empty($validated['semanas_gestacao'])) {
+            $patient = Patient::find($validated['patient_id']);
+            if ($patient) {
+                $validated['semanas_gestacao'] = $patient->getSemanasGestacionaisNaData(\Carbon\Carbon::parse($validated['data_consulta']));
+            }
+        }
 
         $consultation->update($validated);
 

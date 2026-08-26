@@ -180,7 +180,7 @@
                             @if ($patient->semanas_gestacao)
                                 <p class="flex justify-between border-b border-surface-100 pb-1.5">
                                     <span class="text-surface-500 font-medium">Semanas de Gestação:</span>
-                                    <span class="badge-info">{{ $patient->semanas_gestacao }}ª semana</span>
+                                    <span class="badge-info">{{ $patient->idade_gestacional_detalhada ?? $patient->semanas_gestacao . 'ª semana' }}</span>
                                 </p>
                             @endif
                         </div>
@@ -410,11 +410,14 @@
                         @if ($patient->semanas_gestacao)
                             <div class="text-center mb-4">
                                 <div class="text-4xl font-extrabold text-brand-600">{{ $patient->semanas_gestacao }}</div>
-                                <span class="text-2xs uppercase tracking-wider text-surface-500 font-semibold">semanas de gestação</span>
+                                <span class="text-2xs uppercase tracking-wider text-surface-500 font-semibold block">semanas de gestação</span>
+                                @if($patient->idade_gestacional_detalhada)
+                                    <span class="text-xs text-brand-700 font-medium bg-brand-50 px-2 py-0.5 rounded-full inline-block mt-1 border border-brand-200">{{ $patient->idade_gestacional_detalhada }}</span>
+                                @endif
                             </div>
 
                             @php
-                                $trimestre = $patient->semanas_gestacao <= 12 ? 1 : ($patient->semanas_gestacao <= 28 ? 2 : 3);
+                                $trimestre = $patient->semanas_gestacao <= 13 ? 1 : ($patient->semanas_gestacao <= 27 ? 2 : 3);
                                 $progresso = min(100, ($patient->semanas_gestacao / 40) * 100);
                             @endphp
 
