@@ -98,7 +98,7 @@ class BirthController extends Controller
                     'status' => Alerta::STATUS_RESOLVIDO,
                     'nota_resolucao' => 'Parto registado com sucesso. Paciente transferida para acompanhamento pós-parto (puerpério).',
                     'resolvido_por' => auth()->id(),
-                    'data_resolucao' => now(),
+                    'resolvido_em' => now(),
                 ]);
 
             // 4. Gerar Consultas de Puerpério MISAU Moçambique

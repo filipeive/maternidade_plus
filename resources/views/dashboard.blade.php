@@ -7,6 +7,52 @@
 @section('content')
 
 {{-- ============================================================
+     ATENDIMENTO RÁPIDO & SCANNER DE QR CODE
+     ============================================================ --}}
+<div class="card-tw p-5 mb-6 bg-gradient-to-r from-brand-800 via-brand-700 to-ocean-800 text-white flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-lg" x-data="{ quickSearch: '' }">
+    <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-gold-300 text-xl font-bold border border-white/20 shrink-0">
+            <i class="fas fa-qrcode"></i>
+        </div>
+        <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span>Atendimento Rápido da Paciente</span>
+                <span class="px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-300 text-3xs font-semibold uppercase tracking-wider">MISAU CS</span>
+            </h2>
+            <p class="text-xs text-white/70">Pesquise por nome/BI ou escaneie o Cartão QR Code para acesso à Ficha Clínica</p>
+        </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+        {{-- Campo de Pesquisa Rápida --}}
+        <form @submit.prevent="
+            if (!quickSearch.trim()) return;
+            let val = quickSearch.trim();
+            if (val.includes('/patients/')) {
+                window.location.href = val;
+            } else {
+                window.location.href = '{{ url('/patients') }}?search=' + encodeURIComponent(val);
+            }
+        " class="relative flex-1 sm:w-64">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"></i>
+            <input type="text" x-model="quickSearch" placeholder="Nome, BI ou NID da gestante..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:bg-white focus:text-surface-900 focus:placeholder:text-surface-400 transition-all">
+        </form>
+
+        {{-- Botão Leitor QR Code --}}
+        <a href="{{ route('scanner') }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-900 font-bold text-xs py-2 px-3.5 shrink-0 shadow-sm">
+            <i class="fas fa-qrcode text-xs"></i>
+            <span>Scanner QR Code</span>
+        </a>
+
+        {{-- Novo Registar --}}
+        <a href="{{ route('patients.create') }}" class="btn-tw bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs py-2 px-3.5 shrink-0">
+            <i class="fas fa-user-plus text-xs"></i>
+            <span>Nova Gestante</span>
+        </a>
+    </div>
+</div>
+
+{{-- ============================================================
      STAT CARDS
      ============================================================ --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">

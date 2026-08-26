@@ -8,9 +8,13 @@
 
     <title>{{ config('app.name', 'Maternidade+') }} — @yield('title', 'Sistema de Gestão Pré-Natal')</title>
 
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#009639">
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Maternidade+">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -878,6 +882,13 @@
     </div>
 
     @stack('scripts')
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {});
+            });
+        }
+    </script>
 </body>
 
 </html>
