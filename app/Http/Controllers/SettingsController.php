@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class SettingsController extends Controller
 {
@@ -21,7 +22,17 @@ class SettingsController extends Controller
             'ai_provider' => env('OPENROUTER_API_KEY') ? 'OpenRouter / Gemini Flash' : 'Simulação Local',
         ];
 
-        return view('settings.index', compact('systemInfo'));
+        // Leitura dos últimos logs do laravel.log
+        $logPath = storage_path('logs/laravel.log');
+        $systemLogs = [];
+
+        if (File::exists($logPath)) {
+            $lines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $lastLines = array_slice($lines, -80);
+            $systemLogs = array_reverse($lastLines);
+        }
+
+        return view('settings.index', compact('systemInfo', 'systemLogs'));
     }
 
     public function updateGeneral(Request $request)
@@ -64,6 +75,19 @@ class SettingsController extends Controller
             return back()->with('success', 'Caches e otimizações do sistema limpos e re-gerados com sucesso!');
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao limpar caches: ' . $e->getMessage());
+        }
+    }
+
+    public function clearLogs()
+    {
+        try {
+            $logPath = storage_path('logs/laravel.log');
+            if (File::exists($logPath)) {
+                File::put($logPath, '');
+            }
+            return back()->with('success', 'Ficheiro de logs do sistema limpo com sucesso!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao limpar logs: ' . $e->getMessage());
         }
     }
 }

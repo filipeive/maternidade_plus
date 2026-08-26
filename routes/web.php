@@ -234,6 +234,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/backup', [SettingsController::class, 'backupSettings'])->name('backup');
         Route::get('/system-info', [SettingsController::class, 'systemInfo'])->name('system-info');
         Route::post('/clear-cache', [SettingsController::class, 'clearCache'])->name('clear-cache');
+        Route::post('/clear-logs', [SettingsController::class, 'clearLogs'])->name('clear-logs');
     });
 
     // Sistema de Ajuda & Assistente IA

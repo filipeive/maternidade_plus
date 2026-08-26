@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6" x-data="{ activeTab: 'general' }">
+<div class="max-w-7xl mx-auto space-y-6" x-data="{ activeTab: 'general', logSearch: '' }">
 
     {{-- Header Banner --}}
     <div class="card-tw p-5 bg-gradient-to-r from-brand-700 via-brand-600 to-ocean-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -21,7 +21,7 @@
             </div>
             <div>
                 <h2 class="text-base font-bold text-white">Painel de Configurações & Parâmetros</h2>
-                <p class="text-xs text-white/70">Gestão da Unidade Sanitária, Gateway SMS, Integração de IA e Manutenção de Caches</p>
+                <p class="text-xs text-white/70">Gestão da Unidade Sanitária, Gateway SMS, Integração de IA, Logs do Sistema e Manutenção</p>
             </div>
         </div>
 
@@ -35,30 +35,38 @@
     </div>
 
     {{-- Tabs Bar --}}
-    <div class="flex items-center gap-4 border-b border-surface-200">
+    <div class="flex flex-wrap items-center gap-2 border-b border-surface-200">
         <button @click="activeTab = 'general'"
-                class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
+                class="py-3 px-3 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
                 :class="activeTab === 'general' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
             <i class="fas fa-hospital-user"></i>
             <span>Unidade Sanitária</span>
         </button>
 
         <button @click="activeTab = 'sms'"
-                class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
+                class="py-3 px-3 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
                 :class="activeTab === 'sms' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
             <i class="fas fa-comment-sms"></i>
             <span>Serviço de SMS</span>
         </button>
 
         <button @click="activeTab = 'ai'"
-                class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
+                class="py-3 px-3 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
                 :class="activeTab === 'ai' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
             <i class="fas fa-robot"></i>
             <span>Assistente IA</span>
         </button>
 
+        <button @click="activeTab = 'logs'"
+                class="py-3 px-3 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2 relative"
+                :class="activeTab === 'logs' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
+            <i class="fas fa-terminal"></i>
+            <span>Logs do Sistema</span>
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+        </button>
+
         <button @click="activeTab = 'system'"
-                class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
+                class="py-3 px-3 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
                 :class="activeTab === 'system' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
             <i class="fas fa-server"></i>
             <span>Sistema & Servidor</span>
@@ -111,7 +119,7 @@
         </form>
     </div>
 
-    {{-- TAB 2: SERVIÇO DE SMS --}}
+    {{-- TAB 2: SERVIÇO DE SMS (Sem input type=password para evitar prompt do navegador) --}}
     <div x-show="activeTab === 'sms'" class="card-tw">
         <div class="card-header-tw">
             <div class="flex items-center gap-2">
@@ -126,10 +134,7 @@
             </a>
         </div>
 
-        <form method="POST" action="{{ route('settings.update-notifications') }}" class="p-6 space-y-4">
-            @csrf
-            @method('PATCH')
-
+        <div class="p-6 space-y-4">
             <div class="p-4 bg-ocean-50 border border-ocean-200 rounded-xl text-xs text-ocean-900 flex items-start gap-3">
                 <i class="fas fa-mobile-screen-button text-ocean-600 text-lg shrink-0 mt-0.5"></i>
                 <div>
@@ -140,21 +145,27 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="label-tw">Chave API (HTTPSMS_KEY)</label>
-                    <input type="password" class="input-tw font-mono" value="{{ $systemInfo['httpsms_key'] }}" disabled>
+                    <label class="label-tw">Chave API httpSMS</label>
+                    <div class="flex items-center gap-2 p-2.5 bg-surface-100 rounded-xl border border-surface-200 text-xs font-mono text-surface-700">
+                        <i class="fas fa-key text-ocean-600"></i>
+                        <span>{{ $systemInfo['httpsms_key'] }}</span>
+                    </div>
                 </div>
 
                 <div>
                     <label class="label-tw">Número Remetente E.164 (HTTPSMS_FROM)</label>
-                    <input type="text" class="input-tw font-mono" value="{{ $systemInfo['httpsms_from'] }}" disabled>
+                    <div class="flex items-center gap-2 p-2.5 bg-surface-100 rounded-xl border border-surface-200 text-xs font-mono text-surface-700">
+                        <i class="fas fa-phone text-ocean-600"></i>
+                        <span>{{ $systemInfo['httpsms_from'] }}</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 pt-2">
-                <input type="checkbox" id="sms_auto" checked disabled class="rounded border-surface-300 text-brand-600">
-                <label for="sms_auto" class="text-xs font-semibold text-surface-800">Enviar SMS automático no registo de parto (Consultas de Puerpério)</label>
+            <div class="flex items-center gap-3 pt-2 text-xs">
+                <i class="fas fa-check-circle text-brand-600 text-sm"></i>
+                <span class="font-semibold text-surface-800">Envio de SMS automático ativo para Notificação de Faltosas e Puerpério.</span>
             </div>
-        </form>
+        </div>
     </div>
 
     {{-- TAB 3: ASSISTENTE IA --}}
@@ -195,7 +206,65 @@
         </div>
     </div>
 
-    {{-- TAB 4: SISTEMA & SERVIDOR --}}
+    {{-- TAB 4: LOGS DO SISTEMA --}}
+    <div x-show="activeTab === 'logs'" class="card-tw space-y-4">
+        <div class="card-header-tw">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-surface-900">Logs de Atividade & Erros do Sistema</h3>
+                    <p class="text-2xs text-surface-500">Últimos eventos registados no ficheiro storage/logs/laravel.log</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('settings.clear-logs') }}" onsubmit="return confirm('Tem a certeza que deseja limpar todos os logs do sistema?');">
+                @csrf
+                <button type="submit" class="btn-danger-tw btn-sm-tw">
+                    <i class="fas fa-trash-can text-xs"></i>
+                    <span>Limpar Ficheiro de Logs</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="p-6 space-y-3">
+            {{-- Filtro de Log --}}
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-surface-400 text-xs"></i>
+                <input type="text" x-model="logSearch" placeholder="Pesquisar nos logs (ex: SMS, erro, HTTP)..." class="input-tw pl-9 text-xs font-mono">
+            </div>
+
+            {{-- Caixa de Código de Logs --}}
+            <div class="bg-surface-900 text-surface-100 rounded-2xl p-4 font-mono text-2xs max-h-[420px] overflow-y-auto space-y-1.5 border border-surface-800 shadow-inner">
+                @forelse($systemLogs as $index => $logLine)
+                    <div x-show="!logSearch || '{{ strtolower(addslashes($logLine)) }}'.includes(logSearch.toLowerCase())"
+                         class="py-1 px-2 rounded hover:bg-surface-800/80 transition-colors flex items-start gap-2 border-b border-surface-800/40">
+                        <span class="text-surface-500 shrink-0 select-none">#{{ count($systemLogs) - $index }}</span>
+                        
+                        @if(str_contains($logLine, 'ERROR'))
+                            <span class="badge-danger text-3xs px-1.5 py-0.5 uppercase shrink-0">ERROR</span>
+                        @elseif(str_contains($logLine, 'WARNING'))
+                            <span class="badge-warning text-3xs px-1.5 py-0.5 uppercase shrink-0">WARNING</span>
+                        @elseif(str_contains($logLine, 'INFO'))
+                            <span class="badge-info text-3xs px-1.5 py-0.5 uppercase shrink-0">INFO</span>
+                        @else
+                            <span class="badge-neutral text-3xs px-1.5 py-0.5 uppercase shrink-0">LOG</span>
+                        @endif
+
+                        <span class="break-all text-surface-200 leading-relaxed">{{ $logLine }}</span>
+                    </div>
+                @empty
+                    <div class="py-12 text-center text-surface-500">
+                        <i class="fas fa-file-code text-3xl mb-2"></i>
+                        <p class="text-xs">Nenhum registo no ficheiro de log no momento.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    {{-- TAB 5: SISTEMA & SERVIDOR --}}
     <div x-show="activeTab === 'system'" class="card-tw">
         <div class="card-header-tw">
             <div class="flex items-center gap-2">
