@@ -28,6 +28,13 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
                 ->name('password.email');
 
+    // Rotas de OTP via SMS (httpSMS)
+    Route::get('verify-otp', [PasswordResetLinkController::class, 'showOtpForm'])
+                ->name('password.verify-otp');
+
+    Route::post('verify-otp', [PasswordResetLinkController::class, 'verifyOtpStore'])
+                ->name('password.verify-otp.store');
+
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
                 ->name('password.reset');
 
