@@ -57,7 +57,8 @@ ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" "
     export COMPOSER_ALLOW_SUPERUSER=1 &&
     sudo -u ubuntu composer install --no-interaction --prefer-dist --optimize-autoloader &&
     echo 'Compilando assets Vite/Tailwind em produção...' &&
-    (sudo -u ubuntu npm run build || true) &&
+    sudo chmod -R 777 node_modules public/build &&
+    (sudo -u ubuntu ./node_modules/vite/bin/vite.js build || true) &&
     echo 'Executando migrações da base de dados...' &&
     sudo -u ubuntu php artisan migrate --force &&
     echo 'Limpando e otimizando caches Laravel...' &&
