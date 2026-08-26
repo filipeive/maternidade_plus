@@ -92,6 +92,22 @@
                         @enderror
                     </div>
 
+                    {{-- Estado da Conta (Ativo / Inativo) --}}
+                    <div>
+                        <label for="active" class="label-tw">Estado da Conta <span class="text-crimson-500">*</span></label>
+                        <div class="relative">
+                            <i class="fas fa-toggle-on absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs"></i>
+                            <select id="active" name="active" class="input-tw pl-10 text-xs">
+                                <option value="1" {{ old('active', $user->email_verified_at ? '1' : '0') == '1' ? 'selected' : '' }}>
+                                    Ativo (Acesso Permitido)
+                                </option>
+                                <option value="0" {{ old('active', $user->email_verified_at ? '1' : '0') == '0' ? 'selected' : '' }}>
+                                    Inativo (Acesso Suspenso)
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
                     {{-- Telefone / Contacto --}}
                     <div>
                         <label for="telefone" class="label-tw">Número de Telemóvel</label>

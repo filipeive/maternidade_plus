@@ -196,17 +196,26 @@ class UserController extends Controller
     public function toggleStatus(User $user)
     {
         if ($user->id === auth()->id()) {
-            return response()->json(['error' => 'Você não pode desativar seu próprio usuário.'], 400);
+            if (request()->wantsJson()) {
+                return response()->json(['error' => 'Você não pode desativar seu próprio usuário.'], 400);
+            }
+            return redirect()->back()->with('error', 'Não pode alterar o estado da sua própria conta.');
         }
 
         $user->update([
             'email_verified_at' => $user->email_verified_at ? null : now()
         ]);
 
-        return response()->json([
-            'success' => true,
-            'status' => $user->email_verified_at ? 'ativo' : 'inativo'
-        ]);
+        $statusText = $user->email_verified_at ? 'ativado' : 'inativado';
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'status' => $user->email_verified_at ? 'ativo' : 'inativo'
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Utilizador {$user->name} foi {$statusText} com sucesso!");
     }
 
     public function resetPassword(User $user)

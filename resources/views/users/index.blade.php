@@ -130,6 +130,7 @@
                         <th>Email</th>
                         <th>Perfil / Função</th>
                         <th>Data de Registo</th>
+                        <th>Status</th>
                         <th class="text-right">Ações</th>
                     </tr>
                 </thead>
@@ -165,14 +166,36 @@
                         <td>
                             <span class="text-xs text-surface-500">{{ $user->created_at ? $user->created_at->format('d/m/Y') : '-' }}</span>
                         </td>
+                        <td>
+                            @if ($user->email_verified_at)
+                                <span class="badge-success">Ativo</span>
+                            @else
+                                <span class="badge-danger">Inativo</span>
+                            @endif
+                        </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1">
+                                <a href="{{ route('users.show', $user) }}"
+                                   class="btn-icon-tw"
+                                   title="Ver">
+                                    <i class="fas fa-eye text-xs"></i>
+                                </a>
                                 <a href="{{ route('users.edit', $user) }}"
                                    class="btn-icon-tw"
                                    title="Editar">
                                     <i class="fas fa-pen text-xs"></i>
                                 </a>
+
                                 @if(auth()->id() !== $user->id)
+                                    <form method="POST" action="{{ route('users.toggle-status', $user) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="btn-icon-tw {{ $user->email_verified_at ? 'text-gold-600 hover:bg-gold-50' : 'text-emerald-600 hover:bg-emerald-50' }}" 
+                                                title="{{ $user->email_verified_at ? 'Inativar Utilizador' : 'Ativar Utilizador' }}">
+                                            <i class="fas {{ $user->email_verified_at ? 'fa-user-xmark' : 'fa-user-check' }} text-xs"></i>
+                                        </button>
+                                    </form>
+
                                     <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Tem certeza que deseja remover este utilizador?');" class="inline">
                                         @csrf
                                         @method('DELETE')

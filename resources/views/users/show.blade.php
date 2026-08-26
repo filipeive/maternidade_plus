@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="w-full mx-auto space-y-6">
 
     {{-- HEADER & PERFIL BANNER --}}
     <div class="card-tw p-6 bg-gradient-to-r from-brand-800 via-brand-700 to-ocean-800 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
@@ -52,7 +52,17 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3 shrink-0">
-            <a href="{{ route('users.edit', $user) }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-900 font-bold text-xs py-2 px-3.5 shadow-sm">
+            @if(auth()->id() !== $user->id)
+                <form method="POST" action="{{ route('users.toggle-status', $user) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="btn-tw {{ $user->email_verified_at ? 'bg-gold-400 hover:bg-gold-300 text-surface-900' : 'bg-emerald-500 hover:bg-emerald-400 text-white' }} font-bold text-xs py-2 px-3.5 shadow-sm">
+                        <i class="fas {{ $user->email_verified_at ? 'fa-user-xmark' : 'fa-user-check' }} text-xs"></i>
+                        <span>{{ $user->email_verified_at ? 'Inativar Utilizador' : 'Ativar Utilizador' }}</span>
+                    </button>
+                </form>
+            @endif
+
+            <a href="{{ route('users.edit', $user) }}" class="btn-tw bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold py-2 px-3.5 shadow-sm">
                 <i class="fas fa-user-pen text-xs"></i>
                 <span>Editar Utilizador</span>
             </a>
