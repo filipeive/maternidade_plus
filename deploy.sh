@@ -25,32 +25,48 @@ echo -e "${BLUE}║${NC}  ${BOLD}🚀 Maternidade+ — Deploy Pipeline Produçã
 echo -e "${BLUE}╚═══════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# 1. Compilação de Assets Vite locais se necessário
+# 1. Compilar assets com Vite
 echo -e "${YELLOW}[1/5]${NC} Compilando assets frontend (Vite)..."
 npm run build
 echo -e "${GREEN}  ✓ Assets compilados com sucesso${NC}"
 
-# 2. Verificar alterações locais pendentes
-echo -e "${YELLOW}[2/5]${NC} Verificando alterações locais no Git..."
+# 2. Verificar alterações pendentes
+echo -e "${YELLOW}[2/5]${NC} Verificando alterações no Git..."
 if [[ -n $(git status --porcelain) ]]; then
-    echo -e "${YELLOW}  ⚠ Alterações não comitadas encontradas:${NC}"
-    git status --short
+    echo -e "${YELLOW}  ⚠ Alterações não comitadas encontradas. Realizando commit...${NC}"
     git add -A
-    git commit -m "feat(deploy): atualização automática de deploy Maternidade+"
-    echo -e "${GREEN}  ✓ Alterações comitadas automaticamente${NC}"
+    git commit -m "feat(deploy): atualização de produção Maternidade+"
+    echo -e "${GREEN}  ✓ Alterações comitadas com sucesso${NC}"
 else
-    echo -e "${GREEN}  ✓ Nenhuma alteração pendente localmente${NC}"
+    echo -e "${GREEN}  ✓ Sem alterações pendentes${NC}"
 fi
 
-# 3. Enviar alterações para o repositório remoto (GitHub)
-echo -e "${YELLOW}[3/5]${NC} Enviando atualizações para o GitHub (${BRANCH})..."
+# 3. Enviar para GitHub
+echo -e "${YELLOW}[3/5]${NC} Enviando para o GitHub (${BRANCH})..."
 git push origin "$BRANCH"
 echo -e "${GREEN}  ✓ GitHub atualizado${NC}"
 
-# 4. Executar script de deploy no servidor remoto via SSH
-echo -e "${YELLOW}[4/5]${NC} Executando script de deploy no servidor remoto (${REMOTE_HOST})..."
-ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" \
-    "bash ${REMOTE_PATH}/deploy.sh"
+# 4. Executar comandos de deploy no servidor de produção
+echo -e "${YELLOW}[4/5]${NC} Atualizando código, dependências e caches no servidor remoto (${REMOTE_HOST})..."
+ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" "
+    cd ${REMOTE_PATH} &&
+    sudo git config --global --add safe.directory ${REMOTE_PATH} &&
+    echo 'Puxando atualizações do GitHub...' &&
+    sudo -u ubuntu git pull origin ${BRANCH} &&
+    echo 'Instalando dependências via Composer...' &&
+    export COMPOSER_ALLOW_SUPERUSER=1 &&
+    sudo -u ubuntu composer install --no-interaction --prefer-dist --optimize-autoloader &&
+    echo 'Executando migrações da base de dados...' &&
+    sudo -u ubuntu php artisan migrate --force &&
+    echo 'Limpando e otimizando caches Laravel...' &&
+    sudo -u ubuntu php artisan config:clear &&
+    sudo -u ubuntu php artisan route:clear &&
+    sudo -u ubuntu php artisan view:clear &&
+    sudo -u ubuntu php artisan cache:clear &&
+    sudo -u ubuntu php artisan config:cache &&
+    sudo -u ubuntu php artisan route:cache
+"
+echo -e "${GREEN}  ✓ Servidor de produção atualizado com sucesso${NC}"
 
 # 5. Conclusão
 echo ""
