@@ -486,43 +486,7 @@
                 @endif
             </nav>
 
-            {{-- Flash Messages --}}
-            @if (session('success'))
-                <div class="alert-success-tw mb-5 animate-fade-in-up" x-data="{show: true}" x-show="show" x-transition>
-                    <i class="fas fa-check-circle text-brand-500 mt-0.5 shrink-0"></i>
-                    <p class="flex-1">{{ session('success') }}</p>
-                    <button @click="show = false" class="text-brand-400 hover:text-brand-600 shrink-0">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            @endif
 
-            @if (session('error'))
-                <div class="alert-danger-tw mb-5 animate-fade-in-up" x-data="{show: true}" x-show="show" x-transition>
-                    <i class="fas fa-exclamation-circle text-crimson-500 mt-0.5 shrink-0"></i>
-                    <p class="flex-1">{{ session('error') }}</p>
-                    <button @click="show = false" class="text-crimson-400 hover:text-crimson-600 shrink-0">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert-danger-tw mb-5 animate-fade-in-up" x-data="{show: true}" x-show="show" x-transition>
-                    <i class="fas fa-exclamation-triangle text-crimson-500 mt-0.5 shrink-0"></i>
-                    <div class="flex-1">
-                        <p class="font-medium">Foram encontrados erros:</p>
-                        <ul class="mt-1 list-disc list-inside text-xs">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <button @click="show = false" class="text-crimson-400 hover:text-crimson-600 shrink-0">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            @endif
 
             {{-- Page Content --}}
             @yield('content')
@@ -929,6 +893,16 @@
                 SwalToast.fire({
                     icon: 'info',
                     title: @json(session('info'))
+                });
+            @endif
+
+            @if($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atenção aos Dados',
+                    html: '<ul style="text-align: left; font-size: 13px; color: #334155; padding-left: 10px;">@foreach($errors->all() as $err)<li style="margin-bottom: 4px;">• {{ addslashes($err) }}</li>@endforeach</ul>',
+                    confirmButtonColor: '#0f766e',
+                    confirmButtonText: 'Corrigir Formulário'
                 });
             @endif
         });
