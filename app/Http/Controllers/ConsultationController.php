@@ -28,9 +28,9 @@ class ConsultationController extends Controller
         $etapaPuerperio = null;
 
         if ($patient) {
-            $latestBirth = \App\Models\Birth::where('patient_id', $patient->id)->latest('data_parto')->first();
-            if ($latestBirth && $latestBirth->data_parto) {
-                $diasPosParto = Carbon::parse($latestBirth->data_parto)->diffInDays(now());
+            $latestBirth = \App\Models\Birth::where('patient_id', $patient->id)->latest('data_hora_parto')->first();
+            if ($latestBirth && $latestBirth->data_hora_parto) {
+                $diasPosParto = Carbon::parse($latestBirth->data_hora_parto)->diffInDays(now());
                 $sugeridoTipoConsulta = 'pos_parto';
                 
                 if ($diasPosParto <= 3) {
@@ -52,7 +52,7 @@ class ConsultationController extends Controller
     {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'data_consulta' => 'required|date|after_or_equal:today',
+            'data_consulta' => 'required|date',
             'tipo_consulta' => 'required|in:1_trimestre,2_trimestre,3_trimestre,pos_parto,emergencia',
             'semanas_gestacao' => 'nullable|integer|min:1|max:45',
             'peso' => 'nullable|numeric|min:30|max:200',
@@ -62,10 +62,11 @@ class ConsultationController extends Controller
             'observacoes' => 'nullable|string',
             'orientacoes' => 'nullable|string',
             'proxima_consulta' => 'nullable|date|after:data_consulta',
-            'status' => 'required|in:agendada,confirmada,realizada,cancelada'
+            'status' => 'nullable|in:agendada,confirmada,realizada,cancelada'
         ]);
 
         $validated['user_id'] = auth()->id();
+        $validated['status'] = $request->input('status', 'realizada');
 
         if (empty($validated['semanas_gestacao'])) {
             $patient = Patient::find($validated['patient_id']);

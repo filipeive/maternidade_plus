@@ -53,6 +53,11 @@ class Birth extends Model
         return $this->belongsTo(Patient::class);
     }
 
+    public function getDataPartoAttribute()
+    {
+        return $this->data_hora_parto;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
