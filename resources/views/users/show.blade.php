@@ -1,354 +1,245 @@
 @extends('layouts.app-tw')
 
-@section('title', 'Usuário')
-@section('page-title', 'Detalhes do Usuário')
-@section('title-icon', 'fa-user')
+@section('title', 'Perfil de Utilizador')
+@section('page-title', 'Perfil de Utilizador Profissional')
+@section('title-icon', 'fa-user-tie')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item">
-    <a href="{{ route('users.index') }}">Usuários</a>
-</li>
-<li class="breadcrumb-item active">{{ $user->name }}</li>
+    <a href="{{ route('dashboard') }}">Início</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="{{ route('users.index') }}">Utilizadores</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">{{ $user->name }}</span>
 @endsection
 
 @section('content')
-<div class="row">
-    <!-- Informações do Usuário -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="position-relative d-inline-block mb-3">
-                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
-                        style="width: 100px; height: 100px; font-size: 2.5rem;">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
-                    @if($user->email_verified_at)
-                        <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-light rounded-circle" 
-                              title="Usuário Ativo">
-                            <span class="visually-hidden">Ativo</span>
-                        </span>
-                    @else
-                        <span class="position-absolute bottom-0 end-0 p-2 bg-danger border border-light rounded-circle" 
-                              title="Usuário Inativo">
-                            <span class="visually-hidden">Inativo</span>
-                        </span>
-                    @endif
+<div class="max-w-7xl mx-auto space-y-6">
+
+    {{-- HEADER & PERFIL BANNER --}}
+    <div class="card-tw p-6 bg-gradient-to-r from-brand-800 via-brand-700 to-ocean-800 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+        <div class="flex items-center gap-5">
+            <div class="relative shrink-0">
+                <div class="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white font-black text-3xl border border-white/20 shadow-2xl">
+                    {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
-
-                <h4 class="mb-1">{{ $user->name }}</h4>
-                <p class="text-muted mb-2">{{ $user->email }}</p>
-
-                @if($user->roles->isNotEmpty())
-                    <div class="mb-3">
-                        @foreach($user->roles as $role)
-                            <span class="badge bg-primary me-1">{{ $role->name }}</span>
-                        @endforeach
-                    </div>
+                @if($user->email_verified_at)
+                    <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-400 border-2 border-brand-800 flex items-center justify-center text-3xs text-brand-950 font-bold" title="Conta Ativa">
+                        <i class="fas fa-check"></i>
+                    </span>
                 @endif
+            </div>
 
-                <div class="row text-center mb-3">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h5 class="text-primary mb-0">{{ $stats['total_consultations'] }}</h5>
-                            <small class="text-muted">Total Consultas</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="text-success mb-0">{{ $stats['this_month'] }}</h5>
-                        <small class="text-muted">Este Mês</small>
-                    </div>
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-gold-400 text-surface-900 font-extrabold text-3xs uppercase tracking-wider">
+                        {{ $user->roles->first()?->name ?? 'Utilizador' }}
+                    </span>
+                    <span class="text-2xs text-white/70 font-mono">ID #{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</span>
                 </div>
 
-                <hr class="my-3">
+                <h2 class="text-xl sm:text-2xl font-black text-white">
+                    {{ $user->name }}
+                </h2>
 
-                @if($user->especialidade)
-                    <div class="mb-2">
-                        <i class="fas fa-stethoscope text-primary me-2"></i>
-                        <strong>Especialidade:</strong> {{ $user->especialidade }}
+                <p class="text-xs text-white/80 flex flex-wrap items-center gap-3">
+                    <span><i class="fas fa-envelope text-gold-400 mr-1"></i> {{ $user->email }}</span>
+                    @if($user->especialidade)
+                        <span>·</span>
+                        <span><i class="fas fa-stethoscope text-emerald-400 mr-1"></i> {{ $user->especialidade }}</span>
+                    @endif
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <a href="{{ route('users.edit', $user) }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-900 font-bold text-xs py-2 px-3.5 shadow-sm">
+                <i class="fas fa-user-pen text-xs"></i>
+                <span>Editar Utilizador</span>
+            </a>
+
+            <a href="{{ route('users.index') }}" class="btn-secondary-tw text-xs py-2 px-3.5">
+                <i class="fas fa-arrow-left text-xs"></i>
+                <span>Lista de Utilizadores</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- STAT CARDS DO PROFISSIONAL --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600">
+                <i class="fas fa-stethoscope"></i>
+            </div>
+            <div>
+                <p class="stat-card-value">{{ $stats['total_consultations'] ?? 0 }}</p>
+                <p class="stat-card-label">Total de Consultas Realizadas</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <p class="stat-card-value">{{ $stats['this_month'] ?? 0 }}</p>
+                <p class="stat-card-label">Atendimentos Este Mês</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600">
+                <i class="fas fa-id-badge"></i>
+            </div>
+            <div>
+                <p class="stat-card-value text-xs font-mono font-bold">{{ $user->crm ?? 'N/A' }}</p>
+                <p class="stat-card-label">NID / Ordem Médica</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon bg-gradient-to-br from-emerald-500 to-emerald-600">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div>
+                <p class="stat-card-value text-xs font-bold">{{ $user->email_verified_at ? 'Conta Verificada' : 'Pendente' }}</p>
+                <p class="stat-card-label">Status da Conta</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- CONTEÚDO PRINCIPAL EM GRID --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {{-- COLUNA 1: DADOS COMPONENTES --}}
+        <div class="card-tw p-6 space-y-4">
+            <div class="border-b border-surface-100 pb-3 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-surface-900 flex items-center gap-2">
+                    <i class="fas fa-circle-info text-brand-600"></i> Informações do Perfil
+                </h3>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">Nome Completo</span>
+                    <span class="font-bold text-surface-900">{{ $user->name }}</span>
+                </div>
+
+                <div>
+                    <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">Email Profissional</span>
+                    <span class="font-bold font-mono text-brand-700">{{ $user->email }}</span>
+                </div>
+
+                <div>
+                    <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">Função / Perfil</span>
+                    <span class="badge-success text-3xs uppercase font-bold">{{ $user->roles->first()?->name ?? 'Utilizador' }}</span>
+                </div>
+
+                @if($user->telefone)
+                    <div>
+                        <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">Contacto Telefónico</span>
+                        <span class="font-bold font-mono text-surface-800">{{ $user->telefone }}</span>
                     </div>
                 @endif
 
                 @if($user->crm)
-                    <div class="mb-2">
-                        <i class="fas fa-id-card text-primary me-2"></i>
-                        <strong>CRM:</strong> {{ $user->crm }}
+                    <div>
+                        <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">NID Profissional / CRM</span>
+                        <span class="font-bold font-mono text-surface-800">{{ $user->crm }}</span>
                     </div>
                 @endif
 
-                @if($user->telefone)
-                    <div class="mb-2">
-                        <i class="fas fa-phone text-primary me-2"></i>
-                        <strong>Telefone:</strong> {{ $user->telefone }}
+                @if($user->especialidade)
+                    <div>
+                        <span class="text-2xs text-surface-400 font-bold uppercase tracking-wider block">Especialidade Clínica</span>
+                        <span class="font-bold text-surface-800">{{ $user->especialidade }}</span>
                     </div>
                 @endif
 
-                <div class="mb-2">
-                    <i class="fas fa-calendar text-primary me-2"></i>
-                    <strong>Cadastro:</strong> {{ $user->created_at->format('d/m/Y') }}
-                </div>
-
-                <div class="mb-3">
-                    <i class="fas fa-clock text-primary me-2"></i>
-                    <strong>Último acesso:</strong> {{ $user->updated_at->format('d/m/Y H:i') }}
-                </div>
-
-                <div class="d-grid gap-2">
-                    <a href="{{ route('users.edit', $user) }}" class="btn btn-primary">
-                        <i class="fas fa-edit me-1"></i> Editar Usuário
-                    </a>
-                    
-                    @if($user->id !== auth()->id())
-                        <button class="btn btn-outline-warning toggle-status" 
-                                data-user-id="{{ $user->id }}">
-                            <i class="fas {{ $user->email_verified_at ? 'fa-ban' : 'fa-check' }} me-1"></i>
-                            {{ $user->email_verified_at ? 'Desativar' : 'Ativar' }}
-                        </button>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Estatísticas Adicionais -->
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-header bg-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-chart-bar text-primary me-2"></i>
-                    Estatísticas
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <h4 class="text-warning mb-0">{{ $stats['pending_consultations'] }}</h4>
-                        <small class="text-muted">Consultas Agendadas</small>
+                <div class="pt-3 border-t border-surface-100 space-y-2">
+                    <div>
+                        <span class="text-3xs text-surface-400 block">Data de Registo no Sistema:</span>
+                        <span class="font-mono text-2xs text-surface-600">{{ $user->created_at->format('d/m/Y \à\s H:i') }}</span>
                     </div>
-                    <div class="col-6 mb-3">
-                        <h4 class="text-info mb-0">{{ $stats['exams_requested'] }}</h4>
-                        <small class="text-muted">Exames Solicitados</small>
-                    </div>
-                </div>
-
-                @if($user->hasRole('Laboratorista'))
-                    <hr class="my-3">
-                    <div class="text-center">
-                        <h4 class="text-success mb-0">{{ $stats['exams_processed'] }}</h4>
-                        <small class="text-muted">Exames Processados</small>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    <!-- Atividades e Histórico -->
-    <div class="col-lg-8">
-        <!-- Consultas Recentes -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
-                    <i class="fas fa-calendar-check text-primary me-2"></i>
-                    Consultas Recentes
-                </h6>
-                <span class="badge bg-primary">{{ $recentConsultations->count() }}</span>
-            </div>
-            <div class="card-body">
-                @if($recentConsultations->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Paciente</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentConsultations as $consultation)
-                                <tr>
-                                    <td>
-                                        <small class="text-muted">
-                                            {{ \Carbon\Carbon::parse($consultation->data_consulta)->format('d/m/Y H:i') }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $consultation->patient->nome_completo }}</strong>
-                                    </td>
-                                    <td>
-                                        @switch($consultation->status)
-                                            @case('realizada')
-                                                <span class="badge bg-success">Realizada</span>
-                                                @break
-                                            @case('agendada')
-                                                <span class="badge bg-warning">Agendada</span>
-                                                @break
-                                            @case('cancelada')
-                                                <span class="badge bg-danger">Cancelada</span>
-                                                @break
-                                            @default
-                                                <span class="badge bg-secondary">{{ $consultation->status }}</span>
-                                        @endswitch
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('consultations.show', $consultation) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="text-center py-4">
-                        <i class="fas fa-calendar fa-2x text-muted mb-2"></i>
-                        <p class="text-muted">Nenhuma consulta registrada</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- Exames (se for laboratorista) -->
-        @if($user->hasRole('Laboratorista') && $recentExams->count() > 0)
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
-                    <i class="fas fa-flask text-success me-2"></i>
-                    Exames Processados Recentemente
-                </h6>
-                <span class="badge bg-success">{{ $recentExams->count() }}</span>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Paciente</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentExams as $exam)
-                            <tr>
-                                <td>
-                                    <small class="text-muted">
-                                        {{ \Carbon\Carbon::parse($exam->data_realizacao)->format('d/m/Y') }}
-                                    </small>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info">{{ $exam->tipo_exame_label }}</span>
-                                </td>
-                                <td>
-                                    <strong>{{ $exam->consultation->patient->nome_completo }}</strong>
-                                </td>
-                                <td>
-                                    @switch($exam->status)
-                                        @case('concluido')
-                                            <span class="badge bg-success">Concluído</span>
-                                            @break
-                                        @case('em_andamento')
-                                            <span class="badge bg-warning">Em Andamento</span>
-                                            @break
-                                        @case('solicitado')
-                                            <span class="badge bg-secondary">Solicitado</span>
-                                            @break
-                                        @default
-                                            <span class="badge bg-secondary">{{ $exam->status }}</span>
-                                    @endswitch
-                                </td>
-                                <td>
-                                    <a href="{{ route('exams.show', $exam) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <!-- Ações Administrativas -->
-        @if(auth()->user()->hasRole('Administrador'))
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-cogs text-danger me-2"></i>
-                    Ações Administrativas
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <form method="POST" action="{{ route('users.reset-password', $user) }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-warning w-100" 
-                                    onclick="return confirm('Resetar senha do usuário?')">
-                                <i class="fas fa-key me-1"></i> Resetar Senha
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <a href="{{ route('users.activity', $user) }}" class="btn btn-outline-info w-100">
-                            <i class="fas fa-chart-line me-1"></i> Ver Atividades
-                        </a>
+                    <div>
+                        <span class="text-3xs text-surface-400 block">Última Atualização:</span>
+                        <span class="font-mono text-2xs text-surface-600">{{ $user->updated_at->format('d/m/Y \à\s H:i') }}</span>
                     </div>
                 </div>
 
                 @if($user->id !== auth()->id())
-                    <hr class="my-3">
-                    <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100" 
-                                onclick="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')">
-                            <i class="fas fa-trash me-1"></i> Excluir Usuário
-                        </button>
-                    </form>
+                    <div class="pt-3 border-t border-surface-100">
+                        <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Tem a certeza que deseja remover este utilizador?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-danger-tw btn-sm-tw w-full justify-center">
+                                <i class="fas fa-trash-can text-xs"></i>
+                                <span>Remover Utilizador</span>
+                            </button>
+                        </form>
+                    </div>
                 @endif
             </div>
         </div>
-        @endif
+
+        {{-- COLUNA 2 & 3: HISTÓRICO DE ATENDIMENTOS CLÍNICOS --}}
+        <div class="lg:col-span-2 card-tw overflow-hidden space-y-4">
+            <div class="p-6 pb-0 flex items-center justify-between border-b border-surface-100 pb-3">
+                <h3 class="text-sm font-bold text-surface-900 flex items-center gap-2">
+                    <i class="fas fa-history text-brand-600"></i> Consultas & Atendimentos Recentes
+                </h3>
+                <span class="text-xs text-surface-400 font-semibold">{{ $stats['total_consultations'] ?? 0 }} Consultas</span>
+            </div>
+
+            <div class="table-container-tw">
+                <table class="table-tw">
+                    <thead>
+                        <tr>
+                            <th>Data & Hora</th>
+                            <th>Paciente / Gestante</th>
+                            <th>Tipo de Consulta</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($user->consultations()->with('patient')->latest()->take(10)->get() as $consultation)
+                            <tr>
+                                <td class="text-xs font-mono text-surface-800">
+                                    {{ $consultation->data_consulta?->format('d/m/Y H:i') }}
+                                </td>
+                                <td>
+                                    @if($consultation->patient)
+                                        <a href="{{ route('patients.show', $consultation->patient) }}" class="font-bold text-brand-700 hover:underline block">
+                                            {{ $consultation->patient->nome_completo }}
+                                        </a>
+                                        <span class="text-3xs text-surface-400">BI: {{ $consultation->patient->documento_bi ?? 'N/A' }}</span>
+                                    @else
+                                        <span class="text-surface-400 italic">Paciente Desconhecida</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="text-xs font-medium text-surface-800 capitalize">
+                                        {{ str_replace('_', ' ', $consultation->tipo_consulta) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge-success text-3xs capitalize">
+                                        {{ $consultation->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-surface-400">
+                                    <i class="fas fa-calendar-xmark text-3xl mb-2"></i>
+                                    <p class="text-xs font-semibold">Nenhuma consulta registada por este profissional.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle status functionality
-    document.querySelectorAll('.toggle-status').forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            const button = this;
-            
-            fetch(`/users/${userId}/toggle-status`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.error || 'Erro ao alterar status');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Erro ao alterar status');
-            });
-        });
-    });
-});
-</script>
-@endpush
