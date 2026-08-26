@@ -14,6 +14,7 @@ use App\Http\Controllers\HomeVisitController;
 use App\Http\Controllers\BirthController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\HelpController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -226,14 +227,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/clear-cache', [SettingsController::class, 'clearCache'])->name('clear-cache');
     });
 
-    // Sistema de Ajuda - NOVO
+    // Sistema de Ajuda & Assistente IA
     Route::prefix('help')->name('help.')->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('index');
-        Route::get('/manual', [DashboardController::class, 'index'])->name('manual');
-        Route::get('/faq', [DashboardController::class, 'index'])->name('faq');
-        Route::get('/videos', [DashboardController::class, 'index'])->name('videos');
-        Route::get('/contact', [DashboardController::class, 'index'])->name('contact');
-        Route::post('/feedback', fn () => back())->name('submit-feedback');
+        Route::get('/', [HelpController::class, 'index'])->name('index');
+        Route::get('/manual', [HelpController::class, 'manual'])->name('manual');
+        Route::get('/faq', [HelpController::class, 'faq'])->name('faq');
+        Route::post('/ai/ask', [HelpController::class, 'askAi'])->name('ai.ask');
     });
 
     // APIs internas para dashboards e gráficos

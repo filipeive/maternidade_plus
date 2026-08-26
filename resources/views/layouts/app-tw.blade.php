@@ -727,6 +727,87 @@
         }
     </script>
 
+    {{-- ============================================================
+         FLOATING AI ASSISTANT WIDGET
+         ============================================================ --}}
+    <div x-data="{ openAiWidget: false, aiInput: '', aiLoading: false, aiMessages: [{role: 'assistant', content: 'Olá! Sou o Assistente IA Maternidade+. Como posso ajudar?'}] }"
+         class="fixed bottom-5 right-5 z-50">
+        
+        {{-- Floating Trigger Button --}}
+        <button @click="openAiWidget = !openAiWidget"
+                class="w-14 h-14 rounded-full bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-xl hover:shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 group relative"
+                title="Assistente IA Maternidade+">
+            <i class="fas fa-robot text-xl text-gold-300 group-hover:rotate-12 transition-transform"></i>
+            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gold-400 border-2 border-white animate-pulse"></span>
+        </button>
+
+        {{-- Floating Drawer/Popup Window --}}
+        <div x-show="openAiWidget"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+             @click.outside="openAiWidget = false"
+             class="absolute bottom-16 right-0 w-80 sm:w-96 h-[480px] bg-white rounded-2xl shadow-2xl border border-surface-200 flex flex-col overflow-hidden text-xs z-50">
+            
+            <div class="p-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-robot text-gold-300 text-base"></i>
+                    <div>
+                        <h4 class="font-bold text-white leading-tight">Guia IA Maternidade+</h4>
+                        <span class="text-2xs text-white/70">MISAU Moçambique</span>
+                    </div>
+                </div>
+                <button @click="openAiWidget = false" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 p-3 overflow-y-auto space-y-3 bg-surface-50/50" id="floating-chat-box">
+                <template x-for="(m, i) in aiMessages" :key="i">
+                    <div class="flex gap-2" :class="m.role === 'user' ? 'justify-end' : 'justify-start'">
+                        <div class="max-w-[85%] rounded-xl p-2.5 leading-relaxed shadow-2xs"
+                             :class="m.role === 'user' ? 'bg-brand-600 text-white rounded-tr-none' : 'bg-white border border-surface-200 text-surface-900 rounded-tl-none'">
+                            <p x-html="m.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')" class="whitespace-pre-line"></p>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="aiLoading" class="text-surface-400 italic text-2xs flex items-center gap-1.5 p-2">
+                    <i class="fas fa-spinner fa-spin"></i> Assistente IA a pensar...
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-white border-t border-surface-200">
+                <form @submit.prevent="
+                    if (!aiInput.trim() || aiLoading) return;
+                    const txt = aiInput.trim();
+                    aiMessages.push({role: 'user', content: txt});
+                    aiInput = '';
+                    aiLoading = true;
+                    fetch('{{ route('help.ai.ask') }}', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                        body: JSON.stringify({prompt: txt, history: aiMessages.slice(-4)})
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.success) aiMessages.push({role: 'assistant', content: d.response});
+                        else aiMessages.push({role: 'assistant', content: '❌ ' + (d.message || 'Erro')});
+                    })
+                    .catch(() => aiMessages.push({role: 'assistant', content: '❌ Erro de ligação'}))
+                    .finally(() => { aiLoading = false; $nextTick(() => { const cb = document.getElementById('floating-chat-box'); if (cb) cb.scrollTop = cb.scrollHeight; }); });
+                " class="flex items-center gap-1.5">
+                    <input type="text" x-model="aiInput" placeholder="Pergunte ao assistente..." class="input-tw py-1.5 px-3 text-xs flex-1">
+                    <button type="submit" class="btn-primary-tw btn-sm-tw px-3 py-1.5" :disabled="aiLoading">
+                        <i class="fas fa-paper-plane text-2xs"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @stack('scripts')
 </body>
 

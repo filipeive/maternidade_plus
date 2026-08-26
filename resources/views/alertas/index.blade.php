@@ -268,7 +268,7 @@
                     </div>
 
                     <div class="p-5 space-y-4">
-                        <div class="p-3 bg-surface-50 rounded-lg border border-surface-200/60">
+                        <div class="p-3 bg-surface-50 rounded-lg border border-surface-200/60 space-y-2">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="font-semibold text-surface-900 text-sm">{{ $alerta->patient->nome_completo ?? 'Paciente' }}</span>
                                 @if($alerta->nivel === 'alto')
@@ -280,6 +280,16 @@
                                 @endif
                             </div>
                             <p class="text-xs text-surface-600">{{ $alerta->mensagem }}</p>
+
+                            @if($alerta->patient && $alerta->patient->podeRegistrarParto())
+                                <div class="pt-2 border-t border-surface-200/60">
+                                    <a href="{{ route('births.create', $alerta->patient) }}"
+                                       class="w-full btn-secondary-tw py-2 text-xs flex items-center justify-center gap-2 bg-brand-50 hover:bg-brand-100 text-brand-700 border-brand-300 font-semibold shadow-2xs transition-all">
+                                        <i class="fas fa-baby text-brand-600"></i>
+                                        <span>A paciente já deu à luz? Registar Parto Agora →</span>
+                                    </a>
+                                </div>
+                            @endif
                         </div>
 
                         <div>

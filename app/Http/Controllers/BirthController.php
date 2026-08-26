@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Birth;
 use App\Models\Patient;
+use App\Models\Alerta;
+use App\Models\Consultation;
+use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class BirthController extends Controller
@@ -72,25 +76,73 @@ class BirthController extends Controller
 
         // Adicionar usuário que registrou
         $validated['user_id'] = auth()->id();
+        $dataPartoObj = Carbon::parse($validated['data_hora_parto']);
 
         // Iniciar transação para garantir consistência dos dados
-        DB::transaction(function () use ($patient, $validated) {
-            // Registrar o parto
+        DB::transaction(function () use ($patient, $validated, $dataPartoObj) {
+            // 1. Registrar o parto
             $birth = $patient->births()->create($validated);
             
-            // Atualizar status da paciente
+            // 2. Atualizar status da paciente para pós-parto
             $patient->update([
                 'status_atual' => 'pos_parto',
                 'numero_partos' => $patient->numero_partos + 1,
                 'data_provavel_parto' => null, // Limpa a DPP
                 'data_ultima_menstruacao' => null // Limpa a DUM
             ]);
-            
+
+            // 3. Resolver automaticamente alertas ativos da gestação encerrada
+            Alerta::where('patient_id', $patient->id)
+                ->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])
+                ->update([
+                    'status' => Alerta::STATUS_RESOLVIDO,
+                    'nota_resolucao' => 'Parto registado com sucesso. Paciente transferida para acompanhamento pós-parto (puerpério).',
+                    'resolvido_por' => auth()->id(),
+                    'data_resolucao' => now(),
+                ]);
+
+            // 4. Gerar Consultas de Puerpério MISAU Moçambique
+            // Consulta 1: Puerpério 48 horas (2 dias)
+            Consultation::create([
+                'patient_id' => $patient->id,
+                'user_id' => auth()->id(),
+                'data_consulta' => $dataPartoObj->copy()->addDays(2),
+                'tipo_consulta' => 'pos_parto',
+                'status' => 'agendada',
+                'observacoes' => '1ª Consulta de Puerpério MISAU (48 horas pós-parto / antes da alta). Avaliação de involução uterina, lochia e aleitamento materno.',
+            ]);
+
+            // Consulta 2: Puerpério 7 dias
+            Consultation::create([
+                'patient_id' => $patient->id,
+                'user_id' => auth()->id(),
+                'data_consulta' => $dataPartoObj->copy()->addDays(7),
+                'tipo_consulta' => 'pos_parto',
+                'status' => 'agendada',
+                'observacoes' => '2ª Consulta de Puerpério MISAU (7 dias pós-parto). Exame físico da puérpera, cicatrização e triagem do recém-nascido.',
+            ]);
+
+            // Consulta 3: Puerpério 28 dias / 6 semanas
+            Consultation::create([
+                'patient_id' => $patient->id,
+                'user_id' => auth()->id(),
+                'data_consulta' => $dataPartoObj->copy()->addDays(28),
+                'tipo_consulta' => 'pos_parto',
+                'status' => 'agendada',
+                'observacoes' => '3ª Consulta de Puerpério MISAU (28 dias / 6 semanas). Planeamento Familiar pós-parto, vacinação do RN e alta puerperal.',
+            ]);
+
             return $birth;
         });
 
+        // 5. Enviar notificação SMS para a paciente (se possuir telemóvel registado)
+        if (!empty($patient->telefone)) {
+            $msgSms = "Maternidade+: Parabens Sra. {$patient->nome_completo}! O parto foi registado. Lembramos da sua 1a Consulta de Puerperio em 48h na Unidade Sanitaria.";
+            SmsService::sendSms($patient->telefone, $msgSms);
+        }
+
         return redirect()->route('patients.show', $patient)
-            ->with('success', 'Parto registrado com sucesso! A paciente foi movida para status pós-parto.');
+            ->with('success', 'Parto registrado com sucesso! Paciente movida para Pós-Parto e agenda de Puerpério MISAU (48h, 7d, 28d) gerada.');
     }
 
     public function show(Birth $birth)
