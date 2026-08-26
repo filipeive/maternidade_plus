@@ -177,6 +177,12 @@
             </div>
 
             @if($faltosas->hasPages())
+                <div class="p-4 border-t border-surface-100">
+                    {{ $faltosas->appends(request()->except('faltosas_page'))->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
     {{-- TAB 3: ENVIAR SMS INDIVIDUAL / SERVIÇOS / RESULTADOS --}}
     <div x-show="activeTab === 'nova_mensagem'" class="card-tw p-6 space-y-6" x-data="{
         selectedPatientId: '',
