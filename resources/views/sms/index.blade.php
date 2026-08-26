@@ -189,6 +189,7 @@
                         <th>Número de Telefone</th>
                         <th>Mensagem Enviada</th>
                         <th>Status da Entrega</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -220,15 +221,37 @@
                                         <i class="fas fa-check text-2xs mr-1"></i> Enviado com sucesso
                                     </span>
                                 @else
-                                    <span class="badge-danger" title="{{ $log->erro }}">
-                                        <i class="fas fa-circle-exclamation text-2xs mr-1"></i> {{ $log->erro ?? 'Falha' }}
+                                    <span class="badge-danger">
+                                        <i class="fas fa-circle-exclamation text-2xs mr-1"></i> Falha no Envio
                                     </span>
+                                    @hasrole('Administrador')
+                                        @if($log->erro)
+                                            <span class="text-3xs font-mono text-crimson-800 block mt-1 bg-crimson-50 p-1 rounded border border-crimson-200 truncate max-w-xs" title="{{ $log->erro }}">
+                                                <i class="fas fa-terminal text-3xs"></i> Debug: {{ $log->erro }}
+                                            </span>
+                                        @endif
+                                    @endhasrole
+                                @endif
+                            </td>
+                            <td>
+                                @if($log->patient_id)
+                                    <form method="POST" action="{{ route('sms.send-single') }}" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="patient_id" value="{{ $log->patient_id }}">
+                                        <input type="hidden" name="mensagem" value="{{ $log->mensagem }}">
+                                        <button type="submit" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-900 text-3xs font-bold py-1 px-2.5 rounded-lg shadow-xs flex items-center gap-1" title="Reenviar SMS para esta paciente">
+                                            <i class="fas fa-rotate-right text-3xs"></i>
+                                            <span>Reenviar</span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-3xs text-surface-400">-</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-surface-400">
+                            <td colspan="6" class="py-8 text-center text-surface-400">
                                 <i class="fas fa-comment-slash text-3xl mb-2"></i>
                                 <p class="text-sm font-semibold">Nenhum registo de envio de SMS encontrado.</p>
                             </td>

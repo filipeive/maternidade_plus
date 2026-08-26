@@ -94,10 +94,14 @@ class SmsNotificationController extends Controller
         [$success, $statusMessage] = SmsService::sendSmsAndLog($patient->id, $phone, $mensagemSubstituida);
 
         if ($success) {
-            return back()->with('success', "SMS enviado com sucesso para {$patient->nome_completo} ({$phone}).");
+            return back()->with('success', "SMS enviado com sucesso para a paciente {$patient->nome_completo} ({$phone})!");
         }
 
-        return back()->with('error', "Falha ao enviar SMS para {$patient->nome_completo}: {$statusMessage}");
+        $errorMsg = auth()->user()->hasRole('Administrador') 
+            ? "Falha ao enviar SMS para {$patient->nome_completo}: {$statusMessage}"
+            : "Falha no envio do SMS para {$patient->nome_completo}. Utilize o botão 'Reenviar' no histórico de logs.";
+
+        return back()->with('error', $errorMsg);
     }
 
     public function sendBulk(Request $request)
