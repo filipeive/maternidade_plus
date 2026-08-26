@@ -43,7 +43,8 @@
                                 {{ (old('patient_id') == $p->id || ($patient && $patient->id == $p->id)) ? 'selected' : '' }}
                                 data-semanas="{{ $p->semanas_gestacao }}"
                                 data-tipo-sanguineo="{{ $p->tipo_sanguineo }}"
-                                data-alergias="{{ $p->alergias }}">
+                                data-alergias="{{ $p->alergias }}"
+                                data-tem-parto="{{ \App\Models\Birth::where('patient_id', $p->id)->exists() ? '1' : '0' }}">
                             {{ $p->nome_completo }} — BI: {{ $p->documento_bi }}
                             @if($p->semanas_gestacao)
                                 ({{ $p->semanas_gestacao }}ª semana)
@@ -104,10 +105,10 @@
                             name="tipo_consulta"
                             required>
                         <option value="">Selecione o tipo</option>
-                        <option value="1_trimestre" {{ (old('tipo_consulta') === '1_trimestre') ? 'selected' : '' }}>1º Trimestre (Até 12 semanas)</option>
-                        <option value="2_trimestre" {{ (old('tipo_consulta') === '2_trimestre') ? 'selected' : '' }}>2º Trimestre (13 a 27 semanas)</option>
-                        <option value="3_trimestre" {{ (old('tipo_consulta') === '3_trimestre') ? 'selected' : '' }}>3º Trimestre (28+ semanas)</option>
-                        <option value="pos_parto" {{ (old('tipo_consulta') === 'pos_parto' || (isset($sugeridoTipoConsulta) && $sugeridoTipoConsulta === 'pos_parto')) ? 'selected' : '' }}>👶 Pós-parto / Puerpério</option>
+                        <option value="1_trimestre" {{ (old('tipo_consulta', $sugeridoTipoConsulta ?? '') === '1_trimestre') ? 'selected' : '' }}>1º Trimestre (Até 12 semanas)</option>
+                        <option value="2_trimestre" {{ (old('tipo_consulta', $sugeridoTipoConsulta ?? '') === '2_trimestre') ? 'selected' : '' }}>2º Trimestre (13 a 27 semanas)</option>
+                        <option value="3_trimestre" {{ (old('tipo_consulta', $sugeridoTipoConsulta ?? '') === '3_trimestre') ? 'selected' : '' }}>3º Trimestre (28+ semanas)</option>
+                        <option value="pos_parto" {{ (old('tipo_consulta', $sugeridoTipoConsulta ?? '') === 'pos_parto') ? 'selected' : '' }}>👶 Pós-parto / Puerpério</option>
                         <option value="emergencia" {{ (old('tipo_consulta') === 'emergencia') ? 'selected' : '' }}>Emergência / Não agendada</option>
                     </select>
                     @error('tipo_consulta')
@@ -205,9 +206,14 @@
             const semanas = option.getAttribute('data-semanas');
             const tipoSanguineo = option.getAttribute('data-tipo-sanguineo');
             const alergias = option.getAttribute('data-alergias');
+            const temParto = option.getAttribute('data-tem-parto') === '1';
 
             let html = `<p class="font-semibold mb-1">${option.text}</p>`;
-            if (semanas) html += `<p>Idade Gestacional: <strong>${semanas}ª semana</strong></p>`;
+            if (temParto) {
+                html += `<p class="text-brand-700 font-bold"><i class="fas fa-baby mr-1"></i>Paciente com Registo de Parto (Pós-Parto / Puerpério)</p>`;
+            } else if (semanas) {
+                html += `<p>Idade Gestacional: <strong>${semanas}ª semana</strong></p>`;
+            }
             if (tipoSanguineo) html += `<p>Tipo Sanguíneo: <strong>${tipoSanguineo}</strong></p>`;
             if (alergias) html += `<p class="text-crimson-600 font-semibold mt-1"><i class="fas fa-triangle-exclamation mr-1"></i>Alergias: ${alergias}</p>`;
 
@@ -217,13 +223,30 @@
             if (semanas && !document.getElementById('semanas_gestacao').value) {
                 document.getElementById('semanas_gestacao').value = semanas;
             }
+
+            // Seleção automática do tipo de consulta (Trimesters ou Pós-Parto)
+            const tipoSelect = document.getElementById('tipo_consulta');
+            if (tipoSelect) {
+                if (temParto) {
+                    tipoSelect.value = 'pos_parto';
+                } else if (semanas) {
+                    const s = parseInt(semanas);
+                    if (s <= 12) {
+                        tipoSelect.value = '1_trimestre';
+                    } else if (s <= 27) {
+                        tipoSelect.value = '2_trimestre';
+                    } else {
+                        tipoSelect.value = '3_trimestre';
+                    }
+                }
+            }
         } else {
             infoDiv.classList.add('hidden');
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        const select = document.getElementById('patient-id');
+        const select = document.getElementById('patient_id');
         if (select && select.value) {
             updatePatientInfo(select);
         }

@@ -42,6 +42,18 @@ class ConsultationController extends Controller
                 } else {
                     $etapaPuerperio = 'Consulta Pós-Parto Tardio / Planeamento Familiar';
                 }
+            } else {
+                // Cálculo automático por semanas de gestação (Trimesters MISAU)
+                $semanas = $patient->semanas_gestacao ?? $patient->getSemanasGestacionaisNaData(now());
+                if ($semanas) {
+                    if ($semanas <= 12) {
+                        $sugeridoTipoConsulta = '1_trimestre';
+                    } elseif ($semanas <= 27) {
+                        $sugeridoTipoConsulta = '2_trimestre';
+                    } else {
+                        $sugeridoTipoConsulta = '3_trimestre';
+                    }
+                }
             }
         }
         
