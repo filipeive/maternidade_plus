@@ -62,6 +62,26 @@
                 <div id="patient-details" class="text-xs"></div>
             </div>
 
+            @if(isset($latestBirth) && $latestBirth)
+                <div class="p-4 bg-brand-50 border border-brand-200 rounded-xl flex items-start gap-3 text-brand-900 shadow-xs">
+                    <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center shrink-0 text-lg shadow-xs">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="font-bold text-sm text-brand-900 flex items-center gap-2">
+                            <span>Registo de Parto Detectado</span>
+                            <span class="badge-success text-3xs uppercase">{{ $etapaPuerperio ?? 'Consulta de Puerpério' }}</span>
+                        </h4>
+                        <p class="text-xs text-brand-800">
+                            A paciente <strong>{{ $patient->nome_completo }}</strong> registou o parto em <strong>{{ $latestBirth->data_parto?->format('d/m/Y \à\s H:i') }}</strong> (há {{ $diasPosParto }} {{ $diasPosParto == 1 ? 'dia' : 'dias' }}).
+                        </p>
+                        <p class="text-2xs text-brand-700 font-semibold">
+                            <i class="fas fa-magic mr-1"></i> O tipo de consulta foi automaticamente definido para <strong>Pós-Parto / Puerpério</strong>.
+                        </p>
+                    </div>
+                </div>
+            @endif
+
             {{-- Data & Tipo --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -70,7 +90,7 @@
                            class="input-tw @error('data_consulta') input-error-tw @enderror"
                            id="data_consulta"
                            name="data_consulta"
-                           value="{{ old('data_consulta') }}"
+                           value="{{ old('data_consulta', now()->format('Y-m-d\TH:i')) }}"
                            required>
                     @error('data_consulta')
                         <p class="error-text-tw">{{ $message }}</p>
@@ -84,11 +104,11 @@
                             name="tipo_consulta"
                             required>
                         <option value="">Selecione o tipo</option>
-                        <option value="1_trimestre" {{ old('tipo_consulta') === '1_trimestre' ? 'selected' : '' }}>1º Trimestre (Até 12 semanas)</option>
-                        <option value="2_trimestre" {{ old('tipo_consulta') === '2_trimestre' ? 'selected' : '' }}>2º Trimestre (13 a 27 semanas)</option>
-                        <option value="3_trimestre" {{ old('tipo_consulta') === '3_trimestre' ? 'selected' : '' }}>3º Trimestre (28+ semanas)</option>
-                        <option value="pos_parto" {{ old('tipo_consulta') === 'pos_parto' ? 'selected' : '' }}>Pós-parto / Puerpério</option>
-                        <option value="emergencia" {{ old('tipo_consulta') === 'emergencia' ? 'selected' : '' }}>Emergência / Não agendada</option>
+                        <option value="1_trimestre" {{ (old('tipo_consulta') === '1_trimestre') ? 'selected' : '' }}>1º Trimestre (Até 12 semanas)</option>
+                        <option value="2_trimestre" {{ (old('tipo_consulta') === '2_trimestre') ? 'selected' : '' }}>2º Trimestre (13 a 27 semanas)</option>
+                        <option value="3_trimestre" {{ (old('tipo_consulta') === '3_trimestre') ? 'selected' : '' }}>3º Trimestre (28+ semanas)</option>
+                        <option value="pos_parto" {{ (old('tipo_consulta') === 'pos_parto' || (isset($sugeridoTipoConsulta) && $sugeridoTipoConsulta === 'pos_parto')) ? 'selected' : '' }}>👶 Pós-parto / Puerpério</option>
+                        <option value="emergencia" {{ (old('tipo_consulta') === 'emergencia') ? 'selected' : '' }}>Emergência / Não agendada</option>
                     </select>
                     @error('tipo_consulta')
                         <p class="error-text-tw">{{ $message }}</p>

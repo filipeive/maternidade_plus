@@ -22,7 +22,30 @@ class ConsultationController extends Controller
     {
         $patients = Patient::where('ativo', true)->orderBy('nome_completo')->get();
         
-        return view('consultations.create', compact('patient', 'patients'));
+        $latestBirth = null;
+        $diasPosParto = null;
+        $sugeridoTipoConsulta = null;
+        $etapaPuerperio = null;
+
+        if ($patient) {
+            $latestBirth = \App\Models\Birth::where('patient_id', $patient->id)->latest('data_parto')->first();
+            if ($latestBirth && $latestBirth->data_parto) {
+                $diasPosParto = Carbon::parse($latestBirth->data_parto)->diffInDays(now());
+                $sugeridoTipoConsulta = 'pos_parto';
+                
+                if ($diasPosParto <= 3) {
+                    $etapaPuerperio = '1ª Consulta de Puerpério (48 horas pós-parto)';
+                } elseif ($diasPosParto <= 10) {
+                    $etapaPuerperio = '2ª Consulta de Puerpério (7 dias pós-parto)';
+                } elseif ($diasPosParto <= 42) {
+                    $etapaPuerperio = '3ª Consulta de Puerpério (28 a 42 dias pós-parto)';
+                } else {
+                    $etapaPuerperio = 'Consulta Pós-Parto Tardio / Planeamento Familiar';
+                }
+            }
+        }
+        
+        return view('consultations.create', compact('patient', 'patients', 'latestBirth', 'diasPosParto', 'sugeridoTipoConsulta', 'etapaPuerperio'));
     }
 
     public function store(Request $request)
