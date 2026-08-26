@@ -15,6 +15,7 @@ use App\Http\Controllers\BirthController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\SmsNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [PatientController::class, 'create'])->name('create');
         Route::post('/', [PatientController::class, 'store'])->name('store');
         Route::get('/{patient}', [PatientController::class, 'show'])->name('show');
+        Route::get('/{patient}/card', [PatientController::class, 'card'])->name('card');
+        Route::get('/{patient}/card/pdf', [PatientController::class, 'cardPdf'])->name('card.pdf');
         Route::get('/{patient}/edit', [PatientController::class, 'edit'])->name('edit');
         Route::patch('/{patient}', [PatientController::class, 'update'])->name('update');
         Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
@@ -236,6 +239,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manual', [HelpController::class, 'manual'])->name('manual');
         Route::get('/faq', [HelpController::class, 'faq'])->name('faq');
         Route::post('/ai/ask', [HelpController::class, 'askAi'])->name('ai.ask');
+    });
+
+    // Central de Notificações SMS & Disparo para Faltosas
+    Route::prefix('sms')->name('sms.')->group(function () {
+        Route::get('/center', [SmsNotificationController::class, 'index'])->name('index');
+        Route::post('/send-single', [SmsNotificationController::class, 'sendSingle'])->name('send-single');
+        Route::post('/send-bulk', [SmsNotificationController::class, 'sendBulk'])->name('send-bulk');
     });
 
     // APIs internas para dashboards e gráficos

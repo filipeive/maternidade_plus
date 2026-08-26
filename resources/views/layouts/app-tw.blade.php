@@ -164,6 +164,12 @@
                 <span class="sidebar-text">Partos</span>
             </a>
 
+            <a href="{{ route('sms.index') }}"
+               class="sidebar-link {{ request()->routeIs('sms.*') ? 'active' : '' }}">
+                <span class="sidebar-link-icon"><i class="fas fa-comment-sms"></i></span>
+                <span class="sidebar-text">Central de SMS</span>
+            </a>
+
             <a href="{{ route('reports.index') }}"
                class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                 <span class="sidebar-link-icon"><i class="fas fa-chart-pie"></i></span>
@@ -324,7 +330,12 @@
                 </div>
 
                 {{-- Action Icons --}}
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5" x-data="{ openQrModal: false, manualQr: '' }">
+
+                    {{-- QR Code Scanner --}}
+                    <button @click="openQrModal = true" class="btn-icon-tw relative text-brand-600 hover:bg-brand-50" title="Escanear QR Code da Gestante">
+                        <i class="fas fa-qrcode text-base"></i>
+                    </button>
 
                     {{-- Alertas Precoces --}}
                     <a href="{{ route('alertas.index') }}"
@@ -805,6 +816,58 @@
                     </button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    {{-- ============================================================
+         GLOBAL QR CODE SCANNER MODAL
+         ============================================================ --}}
+    <div x-data="{ openQrModal: false, manualQr: '' }"
+         x-show="openQrModal"
+         x-cloak
+         @open-qr-scanner.window="openQrModal = true"
+         @keydown.escape.window="openQrModal = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/60 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl shadow-2xl border border-surface-200 w-full max-w-md p-6 space-y-4 text-left"
+             @click.outside="openQrModal = false">
+            <div class="flex items-center justify-between border-b border-surface-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h3 class="font-bold text-surface-900 text-sm">Leitor de QR Code da Gestante</h3>
+                </div>
+                <button @click="openQrModal = false" class="text-surface-400 hover:text-surface-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-surface-600">
+                Aproxime o QR Code do Cartão da Gestante da câmara do dispositivo ou introduza a URL/código da paciente:
+            </p>
+
+            <form @submit.prevent="
+                if (!manualQr.trim()) return;
+                let val = manualQr.trim();
+                if (val.includes('/patients/')) {
+                    window.location.href = val;
+                } else {
+                    window.location.href = '{{ url('/patients') }}/' + val.replace(/\D/g, '');
+                }
+            " class="space-y-3">
+                <div>
+                    <label class="label-tw">Código ou URL do Cartão</label>
+                    <input type="text" x-model="manualQr" placeholder="Cole a URL do QR Code ou digite o ID..." class="input-tw text-xs">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" @click="openQrModal = false" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
+                    <button type="submit" class="btn-primary-tw btn-sm-tw">
+                        <i class="fas fa-arrow-right text-xs"></i>
+                        <span>Abrir Ficha da Paciente</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

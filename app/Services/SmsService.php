@@ -119,4 +119,31 @@ class SmsService
 
         return '+' . $phone;
     }
+
+    /**
+     * Envia SMS e grava o histórico na tabela sms_logs.
+     */
+    public static function sendSmsAndLog(?int $patientId, string $to, string $message, ?int $alertaId = null): array
+    {
+        [$success, $statusMessage] = self::sendSms($to, $message);
+
+        try {
+            \Illuminate\Support\Facades\DB::table('sms_logs')->insert([
+                'patient_id' => $patientId,
+                'alerta_id' => $alertaId,
+                'telefone' => $to,
+                'mensagem' => $message,
+                'status' => $success ? 'enviado' : 'falha',
+                'resposta_api' => $statusMessage,
+                'erro' => $success ? null : $statusMessage,
+                'enviado_em' => $success ? now() : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[SMS] Erro ao gravar log de SMS: ' . $e->getMessage());
+        }
+
+        return [$success, $statusMessage];
+    }
 }

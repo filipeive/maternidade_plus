@@ -106,6 +106,10 @@
                             <i class="fas fa-calendar-plus text-xs"></i>
                             <span>Nova Consulta</span>
                         </a>
+                        <a href="{{ route('patients.card', $patient) }}" class="btn-secondary-tw btn-sm-tw" title="Cartão da Gestante com QR Code">
+                            <i class="fas fa-id-card text-brand-600 text-xs"></i>
+                            <span>Cartão QR Code</span>
+                        </a>
                         <a href="{{ route('patients.edit', $patient) }}" class="btn-secondary-tw btn-sm-tw">
                             <i class="fas fa-edit text-xs"></i>
                             <span>Editar</span>

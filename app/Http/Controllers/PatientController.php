@@ -118,6 +118,25 @@ class PatientController extends Controller
         return view('patients.show', compact('patient'));
     }
 
+    public function card(Patient $patient)
+    {
+        $patientUrl = route('patients.show', $patient->id);
+        $qrCode = \App\Services\QrCodeService::generateBase64($patientUrl);
+
+        return view('patients.card', compact('patient', 'qrCode', 'patientUrl'));
+    }
+
+    public function cardPdf(Patient $patient)
+    {
+        $patientUrl = route('patients.show', $patient->id);
+        $qrCode = \App\Services\QrCodeService::generateBase64($patientUrl);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('patients.card-pdf', compact('patient', 'qrCode', 'patientUrl'));
+        $pdf->setPaper('a6', 'landscape');
+        
+        return $pdf->download("cartao_gestante_{$patient->id}.pdf");
+    }
+
     public function edit(Patient $patient)
     {
         return view('patients.edit', compact('patient'));

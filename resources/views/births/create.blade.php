@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-full mx-auto space-y-6">
 
     {{-- Banner de Dados da Gestante --}}
     <div class="card-tw p-5 bg-gradient-to-r from-brand-50 to-surface-50 border border-brand-200 shadow-2xs">
