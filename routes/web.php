@@ -39,10 +39,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/metricas/pdf', [AlertaMetricasController::class, 'exportPdf'])->name('metricas.export-pdf');
     });
     
-    // Usuários
-    Route::resource('users', UserController::class);
-    Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
-    Route::match(['get', 'post'], '/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    // Usuários (Apenas Administrador)
+    Route::middleware(['role:Administrador'])->group(function () {
+        Route::resource('users', UserController::class);
+        Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
+        Route::match(['get', 'post'], '/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    });
 
     // Gestantes (Patients) - Rotas expandidas
     Route::prefix('patients')->name('patients.')->group(function () {
@@ -226,8 +228,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/api/dashboard-data', [ReportController::class, 'dashboardDataAPI'])->name('dashboard-data-api');
     });
 
-    // Configurações do Sistema - NOVO
-    Route::prefix('settings')->name('settings.')->group(function () {
+    // Configurações do Sistema (Apenas Administrador)
+    Route::middleware(['role:Administrador'])->prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::patch('/general', [SettingsController::class, 'updateGeneral'])->name('update-general');
         Route::patch('/notifications', [SettingsController::class, 'updateNotifications'])->name('update-notifications');

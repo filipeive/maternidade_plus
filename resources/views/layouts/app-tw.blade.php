@@ -187,20 +187,22 @@
             </a>
 
             {{-- SECTION: Sistema --}}
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-section-title sidebar-text">Sistema</div>
+            @hasrole('Administrador')
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-section-title sidebar-text">Sistema</div>
 
-            <a href="{{ route('users.index') }}"
-               class="sidebar-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                <span class="sidebar-link-icon"><i class="fas fa-users-gear"></i></span>
-                <span class="sidebar-text">Utilizadores</span>
-            </a>
+                <a href="{{ route('users.index') }}"
+                   class="sidebar-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <span class="sidebar-link-icon"><i class="fas fa-users-gear"></i></span>
+                    <span class="sidebar-text">Utilizadores</span>
+                </a>
 
-            <a href="{{ route('settings.index') }}"
-               class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                <span class="sidebar-link-icon"><i class="fas fa-sliders"></i></span>
-                <span class="sidebar-text">Configurações</span>
-            </a>
+                <a href="{{ route('settings.index') }}"
+                   class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <span class="sidebar-link-icon"><i class="fas fa-sliders"></i></span>
+                    <span class="sidebar-text">Configurações</span>
+                </a>
+            @endhasrole
 
             <a href="{{ route('help.index') }}"
                class="sidebar-link {{ request()->routeIs('help.*') ? 'active' : '' }}">

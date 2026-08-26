@@ -70,6 +70,7 @@ class RoleAndPermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
         $medico = Role::firstOrCreate(['name' => 'Médico', 'guard_name' => 'web']);
         $enfermeiro = Role::firstOrCreate(['name' => 'Enfermeiro', 'guard_name' => 'web']);
+        $laboratorista = Role::firstOrCreate(['name' => 'Laboratorista', 'guard_name' => 'web']);
 
         // Atribuir permissões aos roles
         $admin->syncPermissions(Permission::all());
@@ -78,31 +79,58 @@ class RoleAndPermissionSeeder extends Seeder
             'view_patients', 'create_patients', 'edit_patients',
             'view_consultations', 'create_consultations', 'edit_consultations',
             'view_exams', 'create_exams', 'edit_exams',
-            'view_dashboard', 'manage_alerts', 'view_alerts'
+            'view_births', 'create_births', 'edit_births',
+            'view_vaccines', 'view_dashboard', 'manage_alerts', 'view_alerts'
         ]);
 
         $enfermeiro->syncPermissions([
             'view_patients', 'create_patients', 'edit_patients',
             'view_consultations', 'create_consultations',
-            'view_exams', 'view_dashboard', 'view_alerts'
+            'view_exams', 'view_births', 'create_births',
+            'view_vaccines', 'create_vaccines', 'edit_vaccines',
+            'view_dashboard', 'view_alerts'
         ]);
 
-        // Criar usuário admin padrão
-        $adminUser = User::create([
-            'name' => 'Administrador',
-            'email' => 'admin@maternidade.mz',
-            'password' => bcrypt('admin123'),
-            'email_verified_at' => now()
+        $laboratorista->syncPermissions([
+            'view_laboratory', 'create_laboratory', 'edit_laboratory',
+            'view_exams', 'create_exams', 'edit_exams',
+            'view_dashboard'
         ]);
-        $adminUser->assignRole('Administrador');
 
-        // Criar usuário médico exemplo
-        $medico = User::create([
-            'name' => 'Dr. João Machel',
-            'email' => 'medico@maternidade.mz',
-            'password' => bcrypt('medico123'),
-            'email_verified_at' => now()
-        ]);
-        $medico->assignRole('Médico');
+        // Criar usuário admin padrão (se não existir)
+        if (!User::where('email', 'admin@maternidade.mz')->exists()) {
+            $adminUser = User::create([
+                'name' => 'Administrador MISAU',
+                'email' => 'admin@maternidade.mz',
+                'password' => bcrypt('admin123'),
+                'email_verified_at' => now(),
+                'especialidade' => 'Gestão de Saúde'
+            ]);
+            $adminUser->assignRole('Administrador');
+        }
+
+        // Criar utilizador médico exemplo (se não existir)
+        if (!User::where('email', 'medico@maternidade.mz')->exists()) {
+            $medicoUser = User::create([
+                'name' => 'Dr. João Machel',
+                'email' => 'medico@maternidade.mz',
+                'password' => bcrypt('medico123'),
+                'email_verified_at' => now(),
+                'especialidade' => 'Obstetrícia e Ginecologia'
+            ]);
+            $medicoUser->assignRole('Médico');
+        }
+
+        // Criar utilizador enfermeira exemplo (se não existir)
+        if (!User::where('email', 'enfermeira@maternidade.mz')->exists()) {
+            $enfermeiraUser = User::create([
+                'name' => 'Enf. Maria Eugenia Simbine',
+                'email' => 'enfermeira@maternidade.mz',
+                'password' => bcrypt('enfermeira123'),
+                'email_verified_at' => now(),
+                'especialidade' => 'Enfermagem de Saúde Materno-Infantil'
+            ]);
+            $enfermeiraUser->assignRole('Enfermeiro');
+        }
     }
 }
