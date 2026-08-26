@@ -65,6 +65,12 @@
                 <i class="fas fa-user-xmark"></i>
                 <span>Pacientes Faltosas ({{ $totalFaltosas }})</span>
             </button>
+            <button @click="activeTab = 'nova_mensagem'"
+                    class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
+                    :class="activeTab === 'nova_mensagem' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
+                <i class="fas fa-paper-plane"></i>
+                <span>Enviar SMS Individual</span>
+            </button>
             <button @click="activeTab = 'logs'"
                     class="py-3 px-1 border-b-2 text-sm font-semibold transition-colors flex items-center gap-2"
                     :class="activeTab === 'logs' ? 'border-brand-600 text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-800'">
@@ -171,11 +177,95 @@
             </div>
 
             @if($faltosas->hasPages())
-                <div class="p-4 border-t border-surface-100">
-                    {{ $faltosas->appends(request()->except('faltosas_page'))->links() }}
-                </div>
-            @endif
+    {{-- TAB 3: ENVIAR SMS INDIVIDUAL / SERVIÇOS / RESULTADOS --}}
+    <div x-show="activeTab === 'nova_mensagem'" class="card-tw p-6 space-y-6" x-data="{
+        selectedPatientId: '',
+        patientName: '',
+        patientPhone: '',
+        templateType: 'exames',
+        servicoNome: 'Hemograma Completo',
+        customText: '',
+        updateMsg() {
+            let pName = this.patientName || '{nome}';
+            let serv = this.servicoNome || 'Serviço Clínico';
+            if (this.templateType === 'exames') {
+                this.customText = 'Estimada ' + pName + ', informamos que o resultado do seu exame clínico de ' + serv + ' já se encontra disponível no Centro de Saúde de Quelimane Urbano. Compareça para levantamento.';
+            } else if (this.templateType === 'lembrete') {
+                this.customText = 'Estimada ' + pName + ', lembramos que a sua consulta de acompanhamento pré-natal no Centro de Saúde está agendada para breve. Cuide de si e do seu bebê.';
+            } else if (this.templateType === 'vacinacao') {
+                this.customText = 'Estimada ' + pName + ', a sua dose de vacina/prevenção contra malária (IPTp) está pronta no Centro de Saúde de Quelimane Urbano. Compareça para proteção.';
+            } else if (this.templateType === 'geral') {
+                this.customText = 'Estimada ' + pName + ', solicitamos a sua comparência no Centro de Saúde de Quelimane Urbano para o serviço de ' + serv + '.';
+            }
+        }
+    }" x-init="updateMsg()">
+        <div class="border-b border-surface-100 pb-3 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-surface-900 flex items-center gap-2">
+                <i class="fas fa-paper-plane text-brand-600"></i> Envio Individual de Notificação SMS
+            </h3>
+            <span class="badge-neutral text-2xs uppercase">httpSMS Provider</span>
         </div>
+
+        <form method="POST" action="{{ route('sms.send-single') }}" class="space-y-4">
+            @csrf
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {{-- Selecionar Paciente --}}
+                <div>
+                    <label class="label-tw">Selecione a Paciente / Gestante <span class="text-crimson-500">*</span></label>
+                    <select name="patient_id" x-model="selectedPatientId" @change="
+                        let opt = $el.options[$el.selectedIndex];
+                        patientName = opt.getAttribute('data-nome') || '';
+                        patientPhone = opt.getAttribute('data-fone') || '';
+                        updateMsg();
+                    " required class="input-tw text-xs">
+                        <option value="">Escolha a paciente na lista...</option>
+                        @foreach($allPatients as $patientItem)
+                            <option value="{{ $patientItem->id }}" 
+                                    data-nome="{{ $patientItem->nome_completo }}"
+                                    data-fone="{{ $patientItem->contacto ?? $patientItem->contacto_emergencia }}">
+                                {{ $patientItem->nome_completo }} — {{ $patientItem->contacto ?? 'Sem Telefone' }} (NID: {{ $patientItem->documento_bi ?? 'N/A' }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Tipo de Notificação / Serviço --}}
+                <div>
+                    <label class="label-tw">Tipo de Notificação / Serviço</label>
+                    <select x-model="templateType" @change="updateMsg()" class="input-tw text-xs">
+                        <option value="exames">🔬 Resultado de Exame Pronto</option>
+                        <option value="lembrete">📅 Lembrete de Consulta ANC</option>
+                        <option value="vacinacao">💉 Aviso de Vacinação & IPTp-SP</option>
+                        <option value="geral">💬 Notificação Geral de Serviço</option>
+                    </select>
+                </div>
+
+                {{-- Nome do Exame / Serviço Especifico --}}
+                <div x-show="templateType === 'exames' || templateType === 'geral'" class="md:col-span-2">
+                    <label class="label-tw">Nome do Exame / Serviço Específico</label>
+                    <input type="text" x-model="servicoNome" @input="updateMsg()" placeholder="Ex: Hemograma Completo, Ecografia Obstétrica, Tétano" class="input-tw text-xs">
+                </div>
+
+            </div>
+
+            {{-- Caixa da Mensagem --}}
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="label-tw mb-0">Texto da Mensagem SMS <span class="text-crimson-500">*</span></label>
+                    <span class="text-3xs font-mono text-surface-400" x-text="customText.length + ' / 480 caracteres'"></span>
+                </div>
+                <textarea name="mensagem" x-model="customText" rows="4" required class="input-tw text-xs font-sans leading-relaxed"></textarea>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button type="submit" class="btn-primary-tw font-bold text-xs py-2.5 px-6">
+                    <i class="fas fa-paper-plane text-xs mr-1"></i>
+                    <span>Enviar Notificação SMS</span>
+                </button>
+            </div>
+        </form>
     </div>
 
     {{-- TAB 2: HISTÓRICO DE LOGS DE SMS --}}
