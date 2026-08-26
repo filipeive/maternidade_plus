@@ -17,7 +17,10 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HelpController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::any('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
     return redirect()->route('login');
 });
 
