@@ -38,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Usuários
     Route::resource('users', UserController::class);
     Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
-    Route::get('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::match(['get', 'post'], '/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
     // Gestantes (Patients) - Rotas expandidas
     Route::prefix('patients')->name('patients.')->group(function () {
@@ -290,8 +290,6 @@ Route::middleware('auth')->group(function () {
 });
 //rotas de usuarios
 Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-Route::get('/users/{user}/activity', [UserController::class, 'activity'])->name('users.activity');
-Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
 Route::get('/users/template', [UserController::class, 'template'])->name('users.template');
 Route::get('/users/export', [UserController::class, 'export'])->name('users.export');
