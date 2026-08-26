@@ -11,7 +11,75 @@
 @endsection
 
 @section('content')
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div x-data="{ openCompleteModal: false, modalAction: '' }" class="space-y-6">
+
+    {{-- Modal Conclusão / Agendamento Próxima Consulta --}}
+    <div x-show="openCompleteModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="openCompleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-surface-900/60 backdrop-blur-xs transition-opacity" @click="openCompleteModal = false"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="openCompleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-surface-200">
+                <form :action="modalAction" method="POST" class="p-6 space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="flex items-center gap-3 border-b border-surface-100 pb-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-lg font-bold">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-surface-900">Conclusão de Consulta ANC</h3>
+                            <p class="text-xs text-surface-500">Paciente: <strong>{{ $consultation->patient->nome_completo }}</strong></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Notas Clínicas / Observações</label>
+                        <textarea name="observacoes" rows="2" class="input-tw" placeholder="Notas sobre a consulta...">{{ $consultation->observacoes }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Orientações Médicas para a Mãe</label>
+                        <textarea name="orientacoes" rows="2" class="input-tw" placeholder="Recomendações nutricionais, vacinação, sinais de alarme...">{{ $consultation->orientacoes }}</textarea>
+                    </div>
+
+                    <div class="p-3 bg-brand-50/70 rounded-xl border border-brand-100 space-y-3">
+                        <div>
+                            <label class="label-tw text-brand-900 flex items-center gap-1.5">
+                                <i class="fas fa-calendar-plus text-brand-600"></i>
+                                <span>Agendar Próxima Consulta</span>
+                            </label>
+                            <input type="datetime-local" name="proxima_consulta" class="input-tw" value="{{ old('proxima_consulta', $consultation->proxima_consulta ? $consultation->proxima_consulta->format('Y-m-d\TH:i') : now()->addWeeks(4)->format('Y-m-d\TH:i')) }}">
+                        </div>
+
+                        <div class="space-y-2 pt-1 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer font-medium text-surface-800">
+                                <input type="checkbox" name="agendar_proxima" value="1" checked class="rounded border-surface-300 text-brand-600 focus:ring-brand-500">
+                                <span>Criar agendamento automático no sistema</span>
+                            </label>
+
+                            <label class="flex items-center gap-2 cursor-pointer font-medium text-brand-900">
+                                <input type="checkbox" name="enviar_sms" value="1" checked class="rounded border-surface-300 text-brand-600 focus:ring-brand-500">
+                                <span>📱 Enviar SMS de lembrete com a data da próxima consulta</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-surface-100">
+                        <button type="button" @click="openCompleteModal = false" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
+                        <button type="submit" class="btn-primary-tw btn-sm-tw">
+                            <i class="fas fa-paper-plane text-xs"></i>
+                            <span>Gravar & Enviar SMS</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     {{-- Main Column (2/3) --}}
     <div class="lg:col-span-2 space-y-6">
@@ -37,24 +105,16 @@
                         </a>
                     @endif
                     @if($consultation->status === 'agendada')
-                        <form method="POST" action="{{ route('consultations.confirm', $consultation) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn-primary-tw btn-sm-tw">
-                                <i class="fas fa-check text-xs"></i>
-                                <span>Confirmar</span>
-                            </button>
-                        </form>
+                        <button @click="openCompleteModal = true; modalAction = '{{ route('consultations.confirm', $consultation) }}'" class="btn-primary-tw btn-sm-tw">
+                            <i class="fas fa-check text-xs"></i>
+                            <span>Confirmar Consulta</span>
+                        </button>
                     @endif
-                    @if($consultation->status === 'confirmada')
-                        <form method="POST" action="{{ route('consultations.complete', $consultation) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn-primary-tw btn-sm-tw">
-                                <i class="fas fa-check-double text-xs"></i>
-                                <span>Marcar Realizada</span>
-                            </button>
-                        </form>
+                    @if($consultation->status === 'confirmada' || $consultation->status === 'agendada')
+                        <button @click="openCompleteModal = true; modalAction = '{{ route('consultations.complete', $consultation) }}'" class="btn-success-tw btn-sm-tw">
+                            <i class="fas fa-check-double text-xs"></i>
+                            <span>Marcar Realizada</span>
+                        </button>
                     @endif
                 </div>
             </div>
@@ -291,5 +351,6 @@
         </div>
 
     </div>
+</div>
 </div>
 @endsection

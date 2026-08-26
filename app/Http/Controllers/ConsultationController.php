@@ -89,8 +89,13 @@ class ConsultationController extends Controller
 
         $consultation = Consultation::create($validated);
 
+        $smsStatusNotice = '';
+        if (!empty($validated['proxima_consulta'])) {
+            $smsStatusNotice = $this->handleProximaConsulta($consultation, $validated['proxima_consulta'], true, true);
+        }
+
         return redirect()->route('consultations.show', $consultation)
-            ->with('success', 'Consulta criada com sucesso!');
+            ->with('success', 'Consulta criada com sucesso! ' . $smsStatusNotice);
     }
 
     public function show(Consultation $consultation)
@@ -133,8 +138,13 @@ class ConsultationController extends Controller
 
         $consultation->update($validated);
 
+        $smsStatusNotice = '';
+        if (!empty($validated['proxima_consulta'])) {
+            $smsStatusNotice = $this->handleProximaConsulta($consultation, $validated['proxima_consulta'], true, true);
+        }
+
         return redirect()->route('consultations.show', $consultation)
-            ->with('success', 'Consulta atualizada com sucesso!');
+            ->with('success', 'Consulta atualizada com sucesso! ' . $smsStatusNotice);
     }
 
     public function destroy(Consultation $consultation)
@@ -157,18 +167,120 @@ class ConsultationController extends Controller
     }
 
     // Método para confirmar consulta
-    public function confirm(Consultation $consultation)
+    public function confirm(Request $request, Consultation $consultation)
     {
-        $consultation->update(['status' => 'confirmada']);
-        
-        return back()->with('success', 'Consulta confirmada!');
+        $data = $request->validate([
+            'observacoes' => 'nullable|string',
+            'orientacoes' => 'nullable|string',
+            'proxima_consulta' => 'nullable|date',
+            'agendar_proxima' => 'nullable|boolean',
+            'enviar_sms' => 'nullable|boolean'
+        ]);
+
+        $updateData = ['status' => 'confirmada'];
+        if (!empty($data['observacoes'])) $updateData['observacoes'] = $data['observacoes'];
+        if (!empty($data['orientacoes'])) $updateData['orientacoes'] = $data['orientacoes'];
+        if (!empty($data['proxima_consulta'])) $updateData['proxima_consulta'] = $data['proxima_consulta'];
+
+        $consultation->update($updateData);
+
+        $smsNotice = '';
+        if (!empty($data['proxima_consulta'])) {
+            $agendar = $request->boolean('agendar_proxima', true);
+            $sms = $request->boolean('enviar_sms', true);
+            $smsNotice = $this->handleProximaConsulta($consultation, $data['proxima_consulta'], $agendar, $sms);
+        }
+
+        return back()->with('success', 'Consulta confirmada com sucesso! ' . $smsNotice);
     }
 
     // Método para marcar como realizada
-    public function complete(Consultation $consultation)
+    public function complete(Request $request, Consultation $consultation)
     {
-        $consultation->update(['status' => 'realizada']);
-        
-        return back()->with('success', 'Consulta marcada como realizada!');
+        $data = $request->validate([
+            'observacoes' => 'nullable|string',
+            'orientacoes' => 'nullable|string',
+            'proxima_consulta' => 'nullable|date',
+            'agendar_proxima' => 'nullable|boolean',
+            'enviar_sms' => 'nullable|boolean'
+        ]);
+
+        $updateData = ['status' => 'realizada'];
+        if (!empty($data['observacoes'])) $updateData['observacoes'] = $data['observacoes'];
+        if (!empty($data['orientacoes'])) $updateData['orientacoes'] = $data['orientacoes'];
+        if (!empty($data['proxima_consulta'])) $updateData['proxima_consulta'] = $data['proxima_consulta'];
+
+        $consultation->update($updateData);
+
+        $smsNotice = '';
+        if (!empty($data['proxima_consulta'])) {
+            $agendar = $request->boolean('agendar_proxima', true);
+            $sms = $request->boolean('enviar_sms', true);
+            $smsNotice = $this->handleProximaConsulta($consultation, $data['proxima_consulta'], $agendar, $sms);
+        }
+
+        return back()->with('success', 'Consulta realizada com sucesso! ' . $smsNotice);
+    }
+
+    /**
+     * Helper privado para agendamento automático da próxima consulta e envio de SMS de lembrete
+     */
+    private function handleProximaConsulta(Consultation $consultation, string $proximaData, bool $agendarAutomatico = true, bool $enviarSms = true): string
+    {
+        $patient = $consultation->patient;
+        if (!$patient) return '';
+
+        $dataProx = Carbon::parse($proximaData);
+        $dataFormatted = $dataProx->format('d/m/Y \à\s H:i');
+
+        // 1. Agendamento automático no sistema
+        if ($agendarAutomatico) {
+            $exists = Consultation::where('patient_id', $patient->id)
+                ->whereDate('data_consulta', $dataProx->toDateString())
+                ->exists();
+
+            if (!$exists) {
+                // Determinar o próximo tipo de consulta
+                $nextType = $consultation->tipo_consulta;
+                if ($nextType !== 'pos_parto') {
+                    $proxSemanas = $patient->semanas_gestacao ? ($patient->semanas_gestacao + 4) : null;
+                    if ($proxSemanas) {
+                        if ($proxSemanas <= 12) $nextType = '1_trimestre';
+                        elseif ($proxSemanas <= 27) $nextType = '2_trimestre';
+                        else $nextType = '3_trimestre';
+                    }
+                }
+
+                Consultation::create([
+                    'patient_id' => $patient->id,
+                    'user_id' => auth()->id(),
+                    'data_consulta' => $dataProx,
+                    'tipo_consulta' => $nextType,
+                    'status' => 'agendada',
+                    'observacoes' => 'Próxima consulta agendada automaticamente após a consulta de ' . $consultation->data_consulta->format('d/m/Y')
+                ]);
+            }
+        }
+
+        // 2. Envio de SMS
+        $notice = '';
+        if ($enviarSms) {
+            $phone = $patient->contacto ?? $patient->contacto_emergencia;
+            if (!empty($phone)) {
+                $primeiroNome = explode(' ', trim($patient->nome_completo))[0];
+                $mensagem = "Maternidade+: Olá Sra. {$primeiroNome}! A sua consulta foi registada. A sua próxima consulta pré-natal/puerpério foi agendada para {$dataFormatted}. Por favor, compareça à unidade sanitária.";
+                
+                list($success, $msg) = \App\Services\SmsService::sendSmsAndLog($patient->id, $phone, $mensagem);
+                if ($success) {
+                    $notice = '📱 SMS de lembrete enviado para a paciente.';
+                } else {
+                    $notice = '⚠️ SMS não entregue: ' . $msg;
+                }
+            } else {
+                $notice = '⚠️ Paciente sem contacto de telemóvel registado.';
+            }
+        }
+
+        return $notice;
     }
 }
