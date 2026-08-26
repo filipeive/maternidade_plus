@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="w-full mx-auto">
     <div class="card-tw">
         <div class="card-header-tw">
             <div class="flex items-center gap-2">

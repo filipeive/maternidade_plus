@@ -883,8 +883,82 @@
         </div>
     </div>
 
-    @stack('scripts')
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Configuração Global de Toast SweetAlert2
+        const SwalToast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4500,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        // Interceptador de Mensagens Flash Laravel
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                SwalToast.fire({
+                    icon: 'success',
+                    title: @json(session('success'))
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atenção',
+                    text: @json(session('error')),
+                    confirmButtonColor: '#0f766e',
+                    confirmButtonText: 'Compreendido'
+                });
+            @endif
+
+            @if(session('warning'))
+                SwalToast.fire({
+                    icon: 'warning',
+                    title: @json(session('warning'))
+                });
+            @endif
+
+            @if(session('info'))
+                SwalToast.fire({
+                    icon: 'info',
+                    title: @json(session('info'))
+                });
+            @endif
+        });
+
+        // Função utilitária global para confirmação SweetAlert2
+        function confirmSwal(formOrUrl, message = "Esta ação não poderá ser desfeita!", title = "Tem a certeza?") {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0f766e',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Sim, confirmar!',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'rounded-2xl shadow-2xl font-sans'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (typeof formOrUrl === 'string') {
+                        window.location.href = formOrUrl;
+                    } else if (formOrUrl && typeof formOrUrl.submit === 'function') {
+                        formOrUrl.submit();
+                    }
+                }
+            });
+            return false;
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {});
