@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Agendar Visita Domiciliária')
 @section('page-title', 'Agendar Nova Visita Domiciliária')

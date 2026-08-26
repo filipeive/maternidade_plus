@@ -76,54 +76,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ExamController::class, 'index'])->name('index');
         Route::get('/create', [ExamController::class, 'create'])->name('create');
         Route::post('/', [ExamController::class, 'store'])->name('store');
-        Route::get('/{exam}', [ExamController::class, 'show'])->name('show');
-        Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
-        //Route::patch('/{exam}', [ExamController::class, 'update'])->name('update');
-        Route::put('/{patient}', [PatientController::class, 'update'])->name('update');
-        Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');
 
-        // Rotas especiais
+        // Rotas especiais (DEVEM VIR ANTES DE /{exam})
         Route::get('/pending-results', [ExamController::class, 'pendingResults'])->name('pending-results');
         Route::get('/report', [ExamController::class, 'generateReport'])->name('report');
         Route::get('/create/{consultation}', [ExamController::class, 'create'])->name('create.consultation');
+        Route::get('/consultation/{consultation}', [ExamController::class, 'byConsultation'])->name('by-consultation');
+        Route::get('/attachments/{attachment}/download', [ExamController::class, 'downloadAttachment'])->name('attachment.download');
+
+        // Rotas parametrizadas por id
+        Route::get('/{exam}', [ExamController::class, 'show'])->name('show');
+        Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
+        Route::put('/{exam}', [ExamController::class, 'update'])->name('update');
+        Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');
         
         // Rotas de resultado
         Route::get('/{exam}/result', [ExamController::class, 'resultForm'])->name('result-form');
         Route::post('/{exam}/result', [ExamController::class, 'storeResult'])->name('store-result');
-        
-        // Rotas de consulta
-        Route::get('/consultation/{consultation}', [ExamController::class, 'byConsultation'])->name('by-consultation');
-        
-        // Rotas de ação específica
         Route::patch('/{exam}/complete', [ExamController::class, 'markAsCompleted'])->name('mark-as-completed');
-        Route::get('/attachments/{attachment}/download', [ExamController::class, 'downloadAttachment'])->name('attachment.download');
     });
 
     // Vacinas & IPTp - NOVO
-      Route::prefix('vaccines')->name('vaccines.')->group(function () {
+    Route::prefix('vaccines')->name('vaccines.')->group(function () {
         Route::get('/', [VaccineController::class, 'index'])->name('index');
         Route::get('/create', [VaccineController::class, 'create'])->name('create');
         Route::post('/', [VaccineController::class, 'store'])->name('store');
+
+        // Rotas estáticas/especiais (DEVEM VIR ANTES DE /{vaccine})
+        Route::get('/alerts/pending', [VaccineController::class, 'pendingAlert'])->name('pending-alert');
+        Route::get('/reports/coverage', [VaccineController::class, 'generateReport'])->name('generate-report');
+        Route::get('/coverage-report', [VaccineController::class, 'generateReport'])->name('coverage-report');
+        Route::get('/iptp/report', [VaccineController::class, 'iptpReport'])->name('iptp-report');
+        Route::get('/patient/{patient}', [VaccineController::class, 'byPatient'])->name('by-patient');
+        Route::post('/export/excel', [VaccineController::class, 'exportExcel'])->name('export-excel');
+        Route::post('/export/pdf', [VaccineController::class, 'exportPDF'])->name('export-pdf');
+        Route::post('/export/csv', [VaccineController::class, 'exportCSV'])->name('export-csv');
+
+        // Rotas parametrizadas por id
         Route::get('/{vaccine}', [VaccineController::class, 'show'])->name('show');
         Route::get('/{vaccine}/edit', [VaccineController::class, 'edit'])->name('edit');
         Route::patch('/{vaccine}', [VaccineController::class, 'update'])->name('update');
         Route::delete('/{vaccine}', [VaccineController::class, 'destroy'])->name('destroy');
-        
-        // Rotas específicas para vacinas
-        Route::get('/patient/{patient}', [VaccineController::class, 'byPatient'])->name('by-patient');
-        Route::get('/alerts/pending', [VaccineController::class, 'pendingAlert'])->name('pending-alert');
         Route::patch('/{vaccine}/administer', [VaccineController::class, 'markAsAdministered'])->name('mark-as-administered');
         Route::patch('/{vaccine}/reschedule', [VaccineController::class, 'reschedule'])->name('reschedule');
-        Route::get('/reports/coverage', [VaccineController::class, 'generateReport'])->name('coverage-report');
-        Route::get('/reports/coverage', [VaccineController::class, 'generateReport'])->name('generate-report');
-        //generate generateReport
-
-        Route::get('/iptp/report', [VaccineController::class, 'iptpReport'])->name('iptp-report');
-        //export data
-        Route::post('/export/excel', [VaccineController::class, 'exportExcel'])->name('export-excel');
-        Route::post('/export/pdf', [VaccineController::class, 'exportPDF'])->name('export-pdf');
-        Route::post('/export/csv', [VaccineController::class, 'exportCSV'])->name('export-csv');
-        });
+    });
 
         // Laboratório - NOVO
         Route::prefix('laboratory')->name('laboratory.')->group(function () {

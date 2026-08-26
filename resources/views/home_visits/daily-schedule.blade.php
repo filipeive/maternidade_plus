@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Agenda Diária de Visitas')
 @section('page-title', 'Agenda Diária - ' . \Carbon\Carbon::parse($date)->format('d/m/Y'))

@@ -1,151 +1,135 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Editar Exame')
-@section('page-title', 'Editar Exame')
+@section('page-title', 'Editar Exame Laboratorial')
+@section('title-icon', 'fa-pen-to-square')
+
 @section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('exams.index') }}">Exames</a></li>
-    <li class="breadcrumb-item active">Editar</li>
+    <a href="{{ route('exams.index') }}">Exames</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Editar</span>
 @endsection
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Editar Exame</h5>
-                <div class="mt-2">
-                    <small class="text-muted">
-                        <strong>Gestante:</strong> {{ $exam->consultation->patient->nome_completo }} | 
-                        <strong>BI:</strong> {{ $exam->consultation->patient->documento_bi }}
-                    </small>
+<div class="max-w-3xl mx-auto">
+    <div class="card-tw">
+        <div class="card-header-tw">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">
+                    <i class="fas fa-pen-to-square"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-surface-900">Editar Exame #{{ $exam->id }}</h3>
+                    <p class="text-2xs text-surface-500">Gestante: <strong>{{ $exam->consultation->patient->nome_completo }}</strong> (BI: {{ $exam->consultation->patient->documento_bi }})</p>
                 </div>
             </div>
-            <div class="card-body">
-                <form action="{{ route('exams.update', $exam) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="tipo_exame" class="form-label">Tipo de Exame <span class="text-danger">*</span></label>
-                            <select class="form-select @error('tipo_exame') is-invalid @enderror" 
-                                    id="tipo_exame" name="tipo_exame" required>
-                                <option value="">Selecione o tipo de exame</option>
-                                @foreach($tiposExames as $key => $label)
-                                    <option value="{{ $key }}" {{ old('tipo_exame', $exam->tipo_exame) === $key ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('tipo_exame')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label for="data_solicitacao" class="form-label">Data da Solicitação <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control @error('data_solicitacao') is-invalid @enderror" 
-                                   id="data_solicitacao" name="data_solicitacao" 
-                                   value="{{ old('data_solicitacao', $exam->data_solicitacao->format('Y-m-d')) }}" required>
-                            @error('data_solicitacao')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="descricao_exame" class="form-label">Descrição Específica</label>
-                        <input type="text" class="form-control @error('descricao_exame') is-invalid @enderror" 
-                               id="descricao_exame" name="descricao_exame" 
-                               value="{{ old('descricao_exame', $exam->descricao_exame) }}"
-                               placeholder="Detalhes específicos do exame (opcional)">
-                        @error('descricao_exame')
-                            <div class="invalid-feedback">{{ $message }}</div>
+            <a href="{{ route('exams.show', $exam) }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-arrow-left text-xs"></i>
+                <span>Voltar</span>
+            </a>
+        </div>
+
+        <div class="card-body-tw">
+            <form action="{{ route('exams.update', $exam) }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label for="tipo_exame" class="label-tw">Tipo de Exame <span class="text-crimson-500">*</span></label>
+                        <select class="input-tw @error('tipo_exame') input-error-tw @enderror"
+                                id="tipo_exame"
+                                name="tipo_exame"
+                                required>
+                            <option value="">Selecione o tipo</option>
+                            @foreach($tiposExames as $key => $label)
+                                <option value="{{ $key }}" {{ old('tipo_exame', $exam->tipo_exame) === $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('tipo_exame')
+                            <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="data_realizacao" class="form-label">Data de Realização</label>
-                            <input type="date" class="form-control @error('data_realizacao') is-invalid @enderror" 
-                                   id="data_realizacao" name="data_realizacao" 
-                                   value="{{ old('data_realizacao', optional($exam->data_realizacao)->format('Y-m-d')) }}">
-                            @error('data_realizacao')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select class="form-select @error('status') is-invalid @enderror" 
-                                    id="status" name="status" required>
-                                <option value="solicitado" {{ old('status', $exam->status) === 'solicitado' ? 'selected' : '' }}>Solicitado</option>
-                                <option value="realizado" {{ old('status', $exam->status) === 'realizado' ? 'selected' : '' }}>Realizado</option>
-                                <option value="pendente" {{ old('status', $exam->status) === 'pendente' ? 'selected' : '' }}>Pendente</option>
-                            </select>
-                            @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="resultado" class="form-label">Resultado</label>
-                        <textarea class="form-control @error('resultado') is-invalid @enderror" 
-                                  id="resultado" name="resultado" rows="4"
-                                  placeholder="Resultado do exame">{{ old('resultado', $exam->resultado) }}</textarea>
-                        @error('resultado')
-                            <div class="invalid-feedback">{{ $message }}</div>
+
+                    <div>
+                        <label for="data_solicitacao" class="label-tw">Data da Solicitação <span class="text-crimson-500">*</span></label>
+                        <input type="date"
+                               class="input-tw @error('data_solicitacao') input-error-tw @enderror"
+                               id="data_solicitacao"
+                               name="data_solicitacao"
+                               value="{{ old('data_solicitacao', $exam->data_solicitacao->format('Y-m-d')) }}"
+                               required>
+                        @error('data_solicitacao')
+                            <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">Observações</label>
-                        <textarea class="form-control @error('observacoes') is-invalid @enderror" 
-                                  id="observacoes" name="observacoes" rows="3"
-                                  placeholder="Observações adicionais">{{ old('observacoes', $exam->observacoes) }}</textarea>
-                        @error('observacoes')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                </div>
+
+                <div>
+                    <label for="descricao_exame" class="label-tw">Descrição Específica</label>
+                    <input type="text"
+                           class="input-tw @error('descricao_exame') input-error-tw @enderror"
+                           id="descricao_exame"
+                           name="descricao_exame"
+                           value="{{ old('descricao_exame', $exam->descricao_exame) }}"
+                           placeholder="Detalhes específicos do exame (opcional)">
+                    @error('descricao_exame')
+                        <p class="error-text-tw">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="data_realizacao" class="label-tw">Data de Realização</label>
+                        <input type="date"
+                               class="input-tw @error('data_realizacao') input-error-tw @enderror"
+                               id="data_realizacao"
+                               name="data_realizacao"
+                               value="{{ old('data_realizacao', optional($exam->data_realizacao)->format('Y-m-d')) }}">
+                        @error('data_realizacao')
+                            <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
-                    
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('exams.show', $exam) }}" class="btn btn-secondary">
-                            <i class="fas fa-times me-1"></i>Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Salvar Alterações
-                        </button>
+
+                    <div>
+                        <label for="status" class="label-tw">Status <span class="text-crimson-500">*</span></label>
+                        <select class="input-tw @error('status') input-error-tw @enderror"
+                                id="status"
+                                name="status"
+                                required>
+                            <option value="solicitado" {{ old('status', $exam->status) === 'solicitado' ? 'selected' : '' }}>Solicitado</option>
+                            <option value="realizado" {{ old('status', $exam->status) === 'realizado' ? 'selected' : '' }}>Realizado</option>
+                            <option value="pendente" {{ old('status', $exam->status) === 'pendente' ? 'selected' : '' }}>Pendente</option>
+                        </select>
+                        @error('status')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div>
+                    <label for="resultado" class="label-tw">Resultado</label>
+                    <textarea class="input-tw @error('resultado') input-error-tw @enderror"
+                              id="resultado"
+                              name="resultado"
+                              rows="4"
+                              placeholder="Resultado do exame">{{ old('resultado', $exam->resultado) }}</textarea>
+                    @error('resultado')
+                        <p class="error-text-tw">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-surface-100 pt-6">
+                    <a href="{{ route('exams.show', $exam) }}" class="btn-secondary-tw">Cancelar</a>
+                    <button type="submit" class="btn-primary-tw">
+                        <i class="fas fa-save text-xs"></i>
+                        <span>Salvar Alterações</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Validação da data de realização
-    const dataSolicitacao = document.getElementById('data_solicitacao');
-    const dataRealizacao = document.getElementById('data_realizacao');
-    
-    dataSolicitacao.addEventListener('change', function() {
-        if (dataRealizacao.value && new Date(dataRealizacao.value) < new Date(this.value)) {
-            dataRealizacao.setCustomValidity('A data de realização não pode ser anterior à data de solicitação.');
-        } else {
-            dataRealizacao.setCustomValidity('');
-        }
-    });
-    
-    dataRealizacao.addEventListener('change', function() {
-        if (this.value && new Date(this.value) < new Date(dataSolicitacao.value)) {
-            this.setCustomValidity('A data de realização não pode ser anterior à data de solicitação.');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-});
-</script>
-@endpush

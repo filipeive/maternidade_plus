@@ -78,10 +78,10 @@
         <button @click="toggleSidebar()"
                 class="hidden lg:flex absolute top-5 -right-3 w-6 h-6 items-center justify-center
                        bg-white rounded-full shadow-md border border-surface-200
-                       text-blue hover:text-brand-600
+                       text-surface-500 hover:text-brand-600
                        transition-transform duration-200 z-50"
                 :class="{'rotate-180': sidebarCollapsed}"
-                title="Recolher menu" style="margin-right: 20px !important; margin-top: 45px !important;">
+                title="Recolher menu">
             <i class="fas fa-chevron-left text-2xs"></i>
         </button>
 
@@ -93,8 +93,8 @@
 
             <a href="{{ route('dashboard') }}"
                class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <span class="sidebar-link-icon"><i class="fas fa-home"></i></span>
-                <span class="sidebar-text">Início</span>
+                <span class="sidebar-link-icon"><i class="fas fa-grid-2"></i></span>
+                <span class="sidebar-text">Dashboard</span>
             </a>
 
             <a href="{{ route('alertas.index') }}"
@@ -484,7 +484,7 @@
                 </div>
             @endif
 
-            @if (isset($errors) && $errors->any())
+            @if ($errors->any())
                 <div class="alert-danger-tw mb-5 animate-fade-in-up" x-data="{show: true}" x-show="show" x-transition>
                     <i class="fas fa-exclamation-triangle text-crimson-500 mt-0.5 shrink-0"></i>
                     <div class="flex-1">

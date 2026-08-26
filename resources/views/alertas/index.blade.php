@@ -1,336 +1,344 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Alertas Precoces')
 @section('page-title', 'Módulo de Alerta Precoce')
-@section('title-icon', 'fa-exclamation-triangle')
+@section('title-icon', 'fa-triangle-exclamation')
+
+@section('breadcrumbs')
+    <span class="active">Alertas Precoces</span>
+@endsection
 
 @section('content')
-<div class="container-fluid px-0">
-    <!-- Header e Ações -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+
+{{-- Header & Action Buttons --}}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+        <h2 class="text-xl font-bold text-surface-900">Painel de Alertas Clínicos</h2>
+        <p class="text-sm text-surface-500">Monitoria e triagem de sinais de risco materno-fetal baseada em evidência</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('alertas.metricas') }}" class="btn-secondary-tw">
+            <i class="fas fa-chart-line text-xs text-brand-600"></i>
+            <span>Métricas de Impacto (M&E)</span>
+        </a>
+        <a href="{{ route('dashboard') }}" class="btn-secondary-tw">
+            <i class="fas fa-arrow-left text-xs"></i>
+            <span>Dashboard</span>
+        </a>
+    </div>
+</div>
+
+{{-- Stat Summary Cards --}}
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-crimson-500 to-crimson-600">
+            <i class="fas fa-bolt"></i>
+        </div>
         <div>
-            <h4 class="fw-bold mb-1 text-dark">
-                <i class="fas fa-bell me-2 text-danger"></i>Painel de Alertas Clínicos
-            </h4>
-            <p class="text-muted mb-0">Monitoria e triagem de sinais de risco materno-fetal baseada em evidência.</p>
+            <p class="stat-card-value text-crimson-600">{{ $estatisticas['altos_ativos'] ?? 0 }}</p>
+            <p class="stat-card-label">Alertas Altos Ativos</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('alertas.metricas') }}" class="btn btn-outline-primary">
-                <i class="fas fa-chart-line me-1"></i>Métricas de Impacto (M&E)
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-gold-700">{{ $estatisticas['total_ativos'] ?? 0 }}</p>
+            <p class="stat-card-label">Total Ativos / Pendentes</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600">
+            <i class="fas fa-user-clock"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-ocean-700">{{ $estatisticas['em_seguimento'] ?? 0 }}</p>
+            <p class="stat-card-label">Em Seguimento</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-brand-700">{{ $estatisticas['resolvidos'] ?? 0 }}</p>
+            <p class="stat-card-label">Resolvidos</p>
+        </div>
+    </div>
+</div>
+
+{{-- Filters --}}
+<div class="card-tw p-4 mb-6" x-data="{expanded: false}">
+    <div class="flex items-center justify-between mb-3 lg:mb-0">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-surface-500 flex items-center gap-2">
+            <i class="fas fa-filter text-brand-500"></i> Filtros de Pesquisa
+        </h3>
+    </div>
+
+    <form method="GET" action="{{ route('alertas.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end mt-3">
+        <div>
+            <label class="label-tw">Pesquisar Paciente / BI</label>
+            <input type="text"
+                   name="search"
+                   class="input-tw"
+                   placeholder="Nome ou BI..."
+                   value="{{ request('search') ?? request('paciente') }}">
+        </div>
+
+        <div>
+            <label class="label-tw">Nível de Severidade</label>
+            <select name="nivel" class="input-tw">
+                <option value="">Todos os Níveis</option>
+                <option value="alto" {{ request('nivel') === 'alto' ? 'selected' : '' }}>Alto</option>
+                <option value="medio" {{ request('nivel') === 'medio' ? 'selected' : '' }}>Médio</option>
+                <option value="baixo" {{ request('nivel') === 'baixo' ? 'selected' : '' }}>Baixo</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="label-tw">Status do Alerta</label>
+            <select name="status" class="input-tw">
+                <option value="">Todos os Status</option>
+                <option value="ativo" {{ request('status') === 'ativo' ? 'selected' : '' }}>Ativo</option>
+                <option value="em_seguimento" {{ request('status') === 'em_seguimento' ? 'selected' : '' }}>Em Seguimento</option>
+                <option value="resolvido" {{ request('status') === 'resolvido' ? 'selected' : '' }}>Resolvido</option>
+                <option value="ignorado" {{ request('status') === 'ignorado' ? 'selected' : '' }}>Ignorado</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="label-tw">Regra Clínica / Tipo</label>
+            <select name="tipo" class="input-tw">
+                <option value="">Todas as Regras</option>
+                <option value="pressao_arterial_grave" {{ request('tipo') === 'pressao_arterial_grave' ? 'selected' : '' }}>PA Grave (>= 160/110)</option>
+                <option value="pressao_arterial_alta" {{ request('tipo') === 'pressao_arterial_alta' ? 'selected' : '' }}>PA Elevada (>= 140/90)</option>
+                <option value="bcf_anormal" {{ request('tipo') === 'bcf_anormal' ? 'selected' : '' }}>BCF Anormal (<110 ou >160)</option>
+                <option value="gestante_faltosa" {{ request('tipo') === 'gestante_faltosa' ? 'selected' : '' }}>Gestante Faltosa</option>
+                <option value="alto_risco_sem_seguimento" {{ request('tipo') === 'alto_risco_sem_seguimento' ? 'selected' : '' }}>Alto Risco Sem Seguimento</option>
+                <option value="vacinas_em_atraso" {{ request('tipo') === 'vacinas_em_atraso' ? 'selected' : '' }}>Vacinas em Atraso</option>
+                <option value="exames_criticos" {{ request('tipo') === 'exames_criticos' ? 'selected' : '' }}>Exames Críticos (HIV/Anemia)</option>
+                <option value="ganho_peso_anormal" {{ request('tipo') === 'ganho_peso_anormal' ? 'selected' : '' }}>Ganho/Perda de Peso</option>
+                <option value="pos_termo" {{ request('tipo') === 'pos_termo' ? 'selected' : '' }}>Gestação Pós-Termo (>41 sem)</option>
+                <option value="sangramento_reportado" {{ request('tipo') === 'sangramento_reportado' ? 'selected' : '' }}>Sangramento Reportado</option>
+            </select>
+        </div>
+
+        <div class="col-span-full flex items-center justify-end gap-2 pt-2 border-t border-surface-100">
+            <button type="submit" class="btn-primary-tw btn-sm-tw">
+                <i class="fas fa-search text-xs"></i>
+                <span>Aplicar Filtros</span>
+            </button>
+            <a href="{{ route('alertas.index') }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-times text-xs"></i>
+                <span>Limpar</span>
             </a>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i>Dashboard
-            </a>
         </div>
+    </form>
+</div>
+
+{{-- Alerts Table Card --}}
+<div class="card-tw overflow-hidden" x-data="{activeModal: null}">
+    <div class="card-header-tw">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-crimson-100 text-crimson-700 flex items-center justify-center text-sm">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-base font-semibold text-surface-900">Lista de Alertas Clínicos</h3>
+        </div>
+        <span class="badge-neutral font-medium">{{ $alertas->total() }} alertas</span>
     </div>
 
-    <!-- Cards de Resumo Estatístico -->
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-start border-danger border-4 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3 text-danger">
-                        <i class="fas fa-exclamation-circle fa-2x"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted small text-uppercase fw-bold">Alertas Altos Ativos</span>
-                        <h3 class="fw-bold mb-0 text-danger">{{ $estatisticas['altos_ativos'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-start border-warning border-4 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3 text-warning">
-                        <i class="fas fa-bell fa-2x"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted small text-uppercase fw-bold">Total Ativos / Pendentes</span>
-                        <h3 class="fw-bold mb-0 text-dark">{{ $estatisticas['total_ativos'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 text-primary">
-                        <i class="fas fa-user-clock fa-2x"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted small text-uppercase fw-bold">Em Seguimento</span>
-                        <h3 class="fw-bold mb-0 text-primary">{{ $estatisticas['em_seguimento'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-start border-success border-4 h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3 text-success">
-                        <i class="fas fa-check-circle fa-2x"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted small text-uppercase fw-bold">Resolvidos</span>
-                        <h3 class="fw-bold mb-0 text-success">{{ $estatisticas['resolvidos'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Formulário de Filtros -->
-    <div class="card shadow-sm mb-4 border-0">
-        <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="fas fa-filter me-2 text-primary"></i>Filtros de Pesquisa
-            </h6>
-        </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('alertas.index') }}" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Pesquisar Paciente / BI</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Nome ou BI..."
-                               value="{{ request('search') ?? request('paciente') }}">
-                    </div>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold">Nível de Severidade</label>
-                    <select name="nivel" class="form-select">
-                        <option value="">Todos os Níveis</option>
-                        <option value="alto" {{ request('nivel') === 'alto' ? 'selected' : '' }}>Alto</option>
-                        <option value="medio" {{ request('nivel') === 'medio' ? 'selected' : '' }}>Médio</option>
-                        <option value="baixo" {{ request('nivel') === 'baixo' ? 'selected' : '' }}>Baixo</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold">Status do Alerta</label>
-                    <select name="status" class="form-select">
-                        <option value="">Todos os Status</option>
-                        <option value="ativo" {{ request('status') === 'ativo' ? 'selected' : '' }}>Ativo</option>
-                        <option value="em_seguimento" {{ request('status') === 'em_seguimento' ? 'selected' : '' }}>Em Seguimento</option>
-                        <option value="resolvido" {{ request('status') === 'resolvido' ? 'selected' : '' }}>Resolvido</option>
-                        <option value="ignorado" {{ request('status') === 'ignorado' ? 'selected' : '' }}>Ignorado</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Regra Clínica / Tipo</label>
-                    <select name="tipo" class="form-select">
-                        <option value="">Todas as Regras</option>
-                        <option value="pressao_arterial_grave" {{ request('tipo') === 'pressao_arterial_grave' ? 'selected' : '' }}>PA Grave (>= 160/110)</option>
-                        <option value="pressao_arterial_alta" {{ request('tipo') === 'pressao_arterial_alta' ? 'selected' : '' }}>PA Elevada (>= 140/90)</option>
-                        <option value="bcf_anormal" {{ request('tipo') === 'bcf_anormal' ? 'selected' : '' }}>BCF Anormal (<110 ou >160)</option>
-                        <option value="gestante_faltosa" {{ request('tipo') === 'gestante_faltosa' ? 'selected' : '' }}>Gestante Faltosa</option>
-                        <option value="alto_risco_sem_seguimento" {{ request('tipo') === 'alto_risco_sem_seguimento' ? 'selected' : '' }}>Alto Risco Sem Seguimento</option>
-                        <option value="vacinas_em_atraso" {{ request('tipo') === 'vacinas_em_atraso' ? 'selected' : '' }}>Vacinas em Atraso</option>
-                        <option value="exames_criticos" {{ request('tipo') === 'exames_criticos' ? 'selected' : '' }}>Exames Críticos (HIV/Anemia)</option>
-                        <option value="ganho_peso_anormal" {{ request('tipo') === 'ganho_peso_anormal' ? 'selected' : '' }}>Ganho/Perda de Peso</option>
-                        <option value="pos_termo" {{ request('tipo') === 'pos_termo' ? 'selected' : '' }}>Gestação Pós-Termo (>41 sem)</option>
-                        <option value="sangramento_reportado" {{ request('tipo') === 'sangramento_reportado' ? 'selected' : '' }}>Sangramento Reportado</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold">Data Início</label>
-                    <input type="date" name="data_inicio" class="form-control" value="{{ request('data_inicio') }}">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold">Data Fim</label>
-                    <input type="date" name="data_fim" class="form-control" value="{{ request('data_fim') }}">
-                </div>
-
-                <div class="col-md-4 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
-                        <i class="fas fa-search me-1"></i>Filtrar
-                    </button>
-                    <a href="{{ route('alertas.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times me-1"></i>Limpar
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Tabela de Alertas -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="fas fa-list me-2 text-primary"></i>Lista de Alertas Clínicos ({{ $alertas->total() }})
-            </h6>
-        </div>
-        <div class="card-body p-0">
-            @if($alertas->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Severidade</th>
-                                <th>Gestante</th>
-                                <th>Tipo de Alerta</th>
-                                <th>Mensagem / Detalhes</th>
-                                <th>Data Emissão</th>
-                                <th>Status</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($alertas as $alerta)
-                                <tr>
-                                    <td>
-                                        @if($alerta->nivel === 'alto')
-                                            <span class="badge bg-danger text-white px-2 py-1">
-                                                <i class="fas fa-bolt me-1"></i>Alto
-                                            </span>
-                                        @elseif($alerta->nivel === 'medio')
-                                            <span class="badge bg-warning text-dark px-2 py-1">
-                                                <i class="fas fa-exclamation me-1"></i>Médio
-                                            </span>
-                                        @else
-                                            <span class="badge bg-info text-dark px-2 py-1">
-                                                <i class="fas fa-info-circle me-1"></i>Baixo
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($alerta->patient)
-                                            <div>
-                                                <a href="{{ route('patients.show', $alerta->patient) }}" class="fw-bold text-primary text-decoration-none">
-                                                    {{ $alerta->patient->nome_completo }}
-                                                </a>
-                                                <div class="small text-muted">BI: {{ $alerta->patient->documento_bi ?? 'N/D' }}</div>
-                                            </div>
-                                        @else
-                                            <span class="text-muted">Paciente N/D</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="fw-semibold text-dark">{{ $alerta->tipo_label }}</span>
-                                    </td>
-                                    <td style="max-width: 320px;">
-                                        <div class="text-dark small">{{ $alerta->mensagem }}</div>
-                                        @if($alerta->nota_resolucao)
-                                            <div class="small text-muted mt-1 bg-light p-1 rounded">
-                                                <i class="fas fa-comment-medical me-1"></i>{{ $alerta->nota_resolucao }}
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="small text-dark">{{ $alerta->created_at->format('d/m/Y') }}</div>
-                                        <div class="small text-muted">{{ $alerta->created_at->format('H:i') }}</div>
-                                    </td>
-                                    <td>
-                                        @if($alerta->status === 'ativo')
-                                            <span class="badge bg-danger">Ativo</span>
-                                        @elseif($alerta->status === 'em_seguimento')
-                                            <span class="badge bg-warning text-dark">Em Seguimento</span>
-                                        @elseif($alerta->status === 'resolvido')
-                                            <span class="badge bg-success">Resolvido</span>
-                                        @else
-                                            <span class="badge bg-secondary">Ignorado</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-primary"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalResolver{{ $alerta->id }}">
-                                            <i class="fas fa-stethoscope me-1"></i>Tratar
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <!-- Modal de Resolução / Transição -->
-                                <div class="modal fade" id="modalResolver{{ $alerta->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content border-0 shadow">
-                                            <form method="POST" action="{{ route('alertas.transitar', $alerta) }}">
-                                                @csrf
-                                                <div class="modal-header bg-primary text-white">
-                                                    <h5 class="modal-title">
-                                                        <i class="fas fa-notes-medical me-2"></i>Tratar Alerta Clínico
-                                                    </h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body p-4">
-                                                    <div class="mb-3 p-3 bg-light rounded border">
-                                                        <div class="d-flex justify-content-between mb-1">
-                                                            <strong>{{ $alerta->patient->nome_completo ?? 'Paciente' }}</strong>
-                                                            <span class="badge bg-{{ $alerta->nivel_cor }}">{{ $alerta->nivel_label }}</span>
-                                                        </div>
-                                                        <p class="mb-0 text-muted small">{{ $alerta->mensagem }}</p>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label fw-bold">Novo Status <span class="text-danger">*</span></label>
-                                                        <select name="status" class="form-select" required>
-                                                            <option value="em_seguimento" {{ $alerta->status === 'em_seguimento' ? 'selected' : '' }}>
-                                                                Em Seguimento (Contacto realizado / Consulta marcada)
-                                                            </option>
-                                                            <option value="resolvido" {{ $alerta->status === 'resolvido' ? 'selected' : '' }}>
-                                                                Resolvido (Conduta executada / Sinais normalizados)
-                                                            </option>
-                                                            <option value="ignorado" {{ $alerta->status === 'ignorado' ? 'selected' : '' }}>
-                                                                Ignorado (Falso positivo verificado)
-                                                            </option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label fw-bold">Nota Clínica de Resolução / Conduta <span class="text-danger">*</span></label>
-                                                        <textarea name="nota" class="form-control" rows="4" required maxlength="1000"
-                                                                  placeholder="Descreva detalhadamente a conduta tomada, medicação prescrita ou motivo do encerramento...">{{ old('nota', $alerta->nota_resolucao) }}</textarea>
-                                                        <small class="text-muted">Obrigatório para fins de rastreabilidade e auditoria clínica.</small>
-                                                    </div>
-
-                                                    @if($alerta->acoes->count() > 0)
-                                                        <hr>
-                                                        <h6 class="fw-bold small text-muted text-uppercase mb-2">Histórico de Transições</h6>
-                                                        <div class="small">
-                                                            @foreach($alerta->acoes as $acao)
-                                                                <div class="mb-2 pb-1 border-bottom">
-                                                                    <div class="d-flex justify-content-between text-muted">
-                                                                        <span><strong>{{ $acao->user->name ?? 'Sistema' }}</strong>: {{ $acao->de_status ?? $acao->status_anterior ?? 'ativo' }} &rarr; {{ $acao->para_status ?? $acao->status_novo }}</span>
-                                                                        <span>{{ $acao->created_at->format('d/m/Y H:i') }}</span>
-                                                                    </div>
-                                                                    @if($acao->nota)
-                                                                        <div class="text-dark">{{ $acao->nota }}</div>
-                                                                    @endif
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                                <div class="modal-footer bg-light">
-                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class="fas fa-save me-1"></i>Registar Ação
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
+    @if($alertas->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="table-tw">
+                <thead>
+                    <tr>
+                        <th>Severidade</th>
+                        <th>Gestante</th>
+                        <th>Tipo de Alerta</th>
+                        <th>Mensagem / Detalhes</th>
+                        <th>Data Emissão</th>
+                        <th>Status</th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($alertas as $alerta)
+                    <tr>
+                        <td>
+                            @if($alerta->nivel === 'alto')
+                                <span class="badge-danger">
+                                    <i class="fas fa-bolt mr-1 text-2xs animate-pulse"></i>Alto
+                                </span>
+                            @elseif($alerta->nivel === 'medio')
+                                <span class="badge-warning">
+                                    <i class="fas fa-exclamation mr-1 text-2xs"></i>Médio
+                                </span>
+                            @else
+                                <span class="badge-info">
+                                    <i class="fas fa-info-circle mr-1 text-2xs"></i>Baixo
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($alerta->patient)
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                        {{ strtoupper(substr($alerta->patient->nome_completo ?? 'G', 0, 1)) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <a href="{{ route('patients.show', $alerta->patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
+                                            {{ $alerta->patient->nome_completo }}
+                                        </a>
+                                        <p class="text-2xs text-surface-400">BI: {{ $alerta->patient->documento_bi ?? 'N/D' }}</p>
                                     </div>
                                 </div>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <div class="p-3 border-top">
-                    {{ $alertas->links() }}
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                    <h5 class="fw-bold">Nenhum alerta encontrado</h5>
-                    <p class="text-muted">Não existem alertas clínicos correspondentes aos filtros selecionados.</p>
-                </div>
-            @endif
+                            @else
+                                <span class="text-surface-400 italic">Paciente N/D</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="font-medium text-surface-900">{{ $alerta->tipo_label }}</span>
+                        </td>
+                        <td class="max-w-xs">
+                            <p class="text-xs text-surface-700 leading-relaxed">{{ $alerta->mensagem }}</p>
+                            @if($alerta->nota_resolucao)
+                                <div class="text-2xs text-surface-500 mt-1 bg-surface-50 p-2 rounded border border-surface-200/60">
+                                    <i class="fas fa-comment-medical text-brand-500 mr-1"></i>{{ $alerta->nota_resolucao }}
+                                </div>
+                            @endif
+                        </td>
+                        <td>
+                            <p class="font-medium text-surface-800 text-xs">{{ $alerta->created_at->format('d/m/Y') }}</p>
+                            <p class="text-2xs text-surface-400">{{ $alerta->created_at->format('H:i') }}</p>
+                        </td>
+                        <td>
+                            @php
+                                $badgeClass = match($alerta->status) {
+                                    'ativo' => 'badge-danger',
+                                    'em_seguimento' => 'badge-warning',
+                                    'resolvido' => 'badge-success',
+                                    default => 'badge-neutral'
+                                };
+                            @endphp
+                            <span class="{{ $badgeClass }}">{{ ucfirst(str_replace('_', ' ', $alerta->status)) }}</span>
+                        </td>
+                        <td class="text-right">
+                            <button type="button"
+                                    @click="activeModal = {{ $alerta->id }}"
+                                    class="btn-primary-tw btn-sm-tw">
+                                <i class="fas fa-stethoscope text-xs"></i>
+                                <span>Tratar</span>
+                            </button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-    </div>
+
+        {{-- Modais Alpine.js para Resolução --}}
+        @foreach($alertas as $alerta)
+        <div x-show="activeModal === {{ $alerta->id }}"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+             x-cloak>
+            <div @click.outside="activeModal = null"
+                 class="bg-white rounded-xl shadow-toast border border-surface-200 w-full max-w-lg overflow-hidden animate-fade-in-up">
+
+                <form method="POST" action="{{ route('alertas.transitar', $alerta) }}">
+                    @csrf
+                    <div class="px-5 py-4 bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-notes-medical"></i>
+                            <h4 class="font-semibold text-sm">Tratar Alerta Clínico</h4>
+                        </div>
+                        <button type="button" @click="activeModal = null" class="text-white/70 hover:text-white">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        <div class="p-3 bg-surface-50 rounded-lg border border-surface-200/60">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-semibold text-surface-900 text-sm">{{ $alerta->patient->nome_completo ?? 'Paciente' }}</span>
+                                @if($alerta->nivel === 'alto')
+                                    <span class="badge-danger text-2xs">Alto</span>
+                                @elseif($alerta->nivel === 'medio')
+                                    <span class="badge-warning text-2xs">Médio</span>
+                                @else
+                                    <span class="badge-info text-2xs">Baixo</span>
+                                @endif
+                            </div>
+                            <p class="text-xs text-surface-600">{{ $alerta->mensagem }}</p>
+                        </div>
+
+                        <div>
+                            <label class="label-tw">Novo Status <span class="text-crimson-500">*</span></label>
+                            <select name="status" class="input-tw" required>
+                                <option value="em_seguimento" {{ $alerta->status === 'em_seguimento' ? 'selected' : '' }}>
+                                    Em Seguimento (Contacto realizado / Consulta marcada)
+                                </option>
+                                <option value="resolvido" {{ $alerta->status === 'resolvido' ? 'selected' : '' }}>
+                                    Resolvido (Conduta executada / Sinais normalizados)
+                                </option>
+                                <option value="ignorado" {{ $alerta->status === 'ignorado' ? 'selected' : '' }}>
+                                    Ignorado (Falso positivo verificado)
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="label-tw">Nota Clínica de Resolução / Conduta <span class="text-crimson-500">*</span></label>
+                            <textarea name="nota"
+                                      class="input-tw"
+                                      rows="3"
+                                      required
+                                      maxlength="1000"
+                                      placeholder="Descreva detalhadamente a conduta tomada, medicação prescrita ou motivo do encerramento...">{{ old('nota', $alerta->nota_resolucao) }}</textarea>
+                            <p class="text-2xs text-surface-400 mt-1">Obrigatório para fins de auditoria clínica e histórico do MISAU.</p>
+                        </div>
+                    </div>
+
+                    <div class="px-5 py-3 bg-surface-50 border-t border-surface-100 flex items-center justify-end gap-2">
+                        <button type="button" @click="activeModal = null" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
+                        <button type="submit" class="btn-primary-tw btn-sm-tw">
+                            <i class="fas fa-save text-xs"></i>
+                            <span>Registar Ação</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endforeach
+
+        <div class="card-footer-tw flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-xs text-surface-500">
+                Mostrando <span class="font-medium text-surface-800">{{ $alertas->firstItem() ?? 0 }}</span> a
+                <span class="font-medium text-surface-800">{{ $alertas->lastItem() ?? 0 }}</span> de
+                <span class="font-medium text-surface-800">{{ $alertas->total() }}</span> alertas
+            </p>
+            <div>
+                {{ $alertas->appends(request()->query())->links() }}
+            </div>
+        </div>
+    @else
+        <div class="py-16 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-50 flex items-center justify-center">
+                <i class="fas fa-shield-check text-3xl text-brand-500"></i>
+            </div>
+            <h3 class="text-base font-semibold text-surface-800 mb-1">Nenhum alerta clínico encontrado</h3>
+            <p class="text-sm text-surface-500">Não existem alertas para os filtros selecionados.</p>
+        </div>
+    @endif
 </div>
 @endsection

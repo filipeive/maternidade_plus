@@ -1,94 +1,71 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Controle de Qualidade - Laboratório')
 @section('page-title', 'Controle de Qualidade Laboratorial')
 @section('title-icon', 'fa-shield-virus')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item"><a href="{{ route('laboratory.index') }}">Laboratório</a></li>
-<li class="breadcrumb-item active">Controle de Qualidade</li>
+    <a href="{{ route('laboratory.index') }}">Laboratório</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Controle de Qualidade</span>
 @endsection
 
 @section('content')
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="text-muted small">Tempo Médio Entrega</div>
-                <h3 class="fw-bold text-primary mb-0">{{ $qualityMetrics['tempo_medio_entrega'] ?? 0 }}d</h3>
-            </div>
-        </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="card-tw p-4 text-center">
+        <p class="text-xs text-surface-500 uppercase tracking-wider mb-1">Tempo Médio Entrega</p>
+        <h3 class="text-2xl font-extrabold text-ocean-600">{{ $qualityMetrics['tempo_medio_entrega'] ?? 0 }}d</h3>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="text-muted small">Resultados Críticos</div>
-                <h3 class="fw-bold text-danger mb-0">{{ $qualityMetrics['exames_criticos'] ?? 0 }}</h3>
-            </div>
-        </div>
+    <div class="card-tw p-4 text-center">
+        <p class="text-xs text-surface-500 uppercase tracking-wider mb-1">Resultados Críticos</p>
+        <h3 class="text-2xl font-extrabold text-crimson-600">{{ $qualityMetrics['exames_criticos'] ?? 0 }}</h3>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="text-muted small">Taxa de Reprocessamento</div>
-                <h3 class="fw-bold text-warning mb-0">{{ $qualityMetrics['taxa_reprocessamento'] ?? 0 }}%</h3>
-            </div>
-        </div>
+    <div class="card-tw p-4 text-center">
+        <p class="text-xs text-surface-500 uppercase tracking-wider mb-1">Taxa Reprocessamento</p>
+        <h3 class="text-2xl font-extrabold text-gold-600">{{ $qualityMetrics['taxa_reprocessamento'] ?? 0 }}%</h3>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="text-muted small">Conformidade Qualidade</div>
-                <h3 class="fw-bold text-success mb-0">{{ $qualityMetrics['satisfacao_cliente'] ?? 95 }}%</h3>
-            </div>
-        </div>
+    <div class="card-tw p-4 text-center">
+        <p class="text-xs text-surface-500 uppercase tracking-wider mb-1">Conformidade Qualidade</p>
+        <h3 class="text-2xl font-extrabold text-brand-600">{{ $qualityMetrics['satisfacao_cliente'] ?? 95 }}%</h3>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white fw-bold py-3">
-        <i class="fas fa-microscope text-warning me-2"></i>Resultados Alterados ou Anormais (Este Mês)
+<div class="card-tw overflow-hidden">
+    <div class="card-header-tw">
+        <h6 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+            <i class="fas fa-microscope text-gold-500"></i> Resultados Alterados ou Anormais (Este Mês)
+        </h6>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Data Realização</th>
-                        <th>Gestante</th>
-                        <th>Tipo de Exame</th>
-                        <th>Resultado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($alteredResults as $exam)
-                    <tr>
-                        <td>{{ $exam->data_realizacao ? \Carbon\Carbon::parse($exam->data_realizacao)->format('d/m/Y') : 'N/D' }}</td>
-                        <td>
-                            @if($exam->consultation?->patient)
-                                <a href="{{ route('patients.show', $exam->consultation->patient) }}" class="fw-bold text-primary">
-                                    {{ $exam->consultation->patient->nome_completo }}
-                                </a>
-                            @else
-                                <span class="text-muted">N/D</span>
-                            @endif
-                        </td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $exam->tipo_exame)) }}</td>
-                        <td><span class="badge bg-warning text-dark">{{ $exam->resultado }}</span></td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">Nenhum resultado alterado encontrado.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <div class="overflow-x-auto">
+        <table class="table-tw">
+            <thead>
+                <tr>
+                    <th>Data Realização</th>
+                    <th>Gestante</th>
+                    <th>Tipo de Exame</th>
+                    <th>Resultado</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($alteredExams ?? [] as $exam)
+                <tr>
+                    <td>{{ $exam->data_realizacao ? $exam->data_realizacao->format('d/m/Y') : 'N/D' }}</td>
+                    <td class="font-semibold text-surface-900">{{ $exam->consultation?->patient?->nome_completo ?? 'N/D' }}</td>
+                    <td>{{ ucfirst(str_replace('_', ' ', $exam->tipo_exame)) }}</td>
+                    <td class="font-mono text-xs text-crimson-600 font-semibold">{{ $exam->resultado }}</td>
+                    <td><span class="badge-danger">Alterado</span></td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="py-8 text-center text-surface-500">
+                        <i class="fas fa-shield-check text-2xl text-brand-500 mb-2"></i>
+                        <p class="text-sm font-semibold">Nenhum exame com resultado alterado registrado este mês.</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
-    @if(method_exists($alteredResults, 'links'))
-        <div class="card-footer bg-white py-3">
-            {{ $alteredResults->links() }}
-        </div>
-    @endif
 </div>
 @endsection

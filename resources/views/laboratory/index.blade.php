@@ -1,511 +1,296 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Laboratório')
-@section('page-title', 'Gestão Laboratorial')
-@section('title-icon', 'fa-flask')
+@section('page-title', 'Gestão Laboratorial Pré-Natal')
+@section('title-icon', 'fa-flask-vial')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item active">Laboratório</li>
+    <span class="active">Laboratório</span>
 @endsection
 
 @section('content')
-<!-- Estatísticas Rápidas -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h3 class="text-warning mb-1">{{ $stats['exames_pendentes'] }}</h3>
-                        <p class="text-muted mb-0">Exames Pendentes</p>
-                    </div>
-                    <i class="fas fa-clock fa-2x text-warning"></i>
-                </div>
-            </div>
+
+{{-- Stat Cards --}}
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-gold-700">{{ $stats['exames_pendentes'] ?? 0 }}</p>
+            <p class="stat-card-label">Exames Pendentes</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h3 class="text-success mb-1">{{ $stats['exames_realizados_hoje'] }}</h3>
-                        <p class="text-muted mb-0">Realizados Hoje</p>
-                    </div>
-                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                </div>
-            </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-brand-700">{{ $stats['exames_realizados_hoje'] ?? 0 }}</p>
+            <p class="stat-card-label">Realizados Hoje</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h3 class="text-danger mb-1">{{ $stats['exames_atrasados'] }}</h3>
-                        <p class="text-muted mb-0">Atrasados</p>
-                    </div>
-                    <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
-                </div>
-            </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-crimson-500 to-crimson-600">
+            <i class="fas fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-crimson-600">{{ $stats['exames_atrasados'] ?? 0 }}</p>
+            <p class="stat-card-label">Exames Atrasados</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h3 class="text-primary mb-1">{{ $stats['total_este_mes'] }}</h3>
-                        <p class="text-muted mb-0">Total Este Mês</p>
-                    </div>
-                    <i class="fas fa-chart-line fa-2x text-primary"></i>
-                </div>
-            </div>
+
+    <div class="stat-card">
+        <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div>
+            <p class="stat-card-value text-ocean-700">{{ $stats['total_este_mes'] ?? 0 }}</p>
+            <p class="stat-card-label">Total Este Mês</p>
         </div>
     </div>
 </div>
 
-<!-- Barra de Ações e Filtros -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('laboratory.pending-queue') }}" class="btn btn-warning">
-                        <i class="fas fa-clock me-1"></i> Fila de Pendentes
-                    </a>
-                    <a href="{{ route('laboratory.critical-alerts') }}" class="btn btn-danger">
-                        <i class="fas fa-exclamation-triangle me-1"></i> Alertas Críticos
-                    </a>
-                    <a href="{{ route('laboratory.workload') }}" class="btn btn-info">
-                        <i class="fas fa-chart-bar me-1"></i> Carga de Trabalho
-                    </a>
-                </div>
-            </div>
-            <div class="col-md-6 text-end">
-                <button class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-                    <i class="fas fa-filter me-1"></i> Filtros
-                </button>
-                <a href="{{ route('laboratory.export-results') }}" class="btn btn-outline-success">
-                    <i class="fas fa-download me-1"></i> Exportar
-                </a>
-            </div>
-        </div>
-
-        <!-- Filtros Expansíveis -->
-        <div class="collapse mt-3" id="filtersCollapse">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="pendente" {{ request('status') == 'pendente' ? 'selected' : '' }}>Pendente</option>
-                        <option value="realizado" {{ request('status') == 'realizado' ? 'selected' : '' }}>Realizado</option>
-                        <option value="cancelado" {{ request('status') == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Tipo de Exame</label>
-                    <select name="tipo_exame" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="hemograma">Hemograma</option>
-                        <option value="glicemia_jejum">Glicemia de Jejum</option>
-                        <option value="teste_hiv">Teste HIV</option>
-                        <option value="teste_sifilis">Teste Sífilis</option>
-                        <option value="urina_rotina">Urina de Rotina</option>
-                        <option value="ultrassom">Ultrassom</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Data Início</label>
-                    <input type="date" name="data_inicio" class="form-control" value="{{ request('data_inicio') }}">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Data Fim</label>
-                    <input type="date" name="data_fim" class="form-control" value="{{ request('data_fim') }}">
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
-                    <a href="{{ route('laboratory.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-            </form>
-        </div>
+{{-- Header Action Bar --}}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+        <h2 class="text-xl font-bold text-surface-900">Painel do Laboratório</h2>
+        <p class="text-sm text-surface-500">Gestão de amostras, registo de resultados e alertas de reagentes</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+        <a href="{{ route('laboratory.pending-queue') }}" class="btn-primary-tw">
+            <i class="fas fa-clock text-xs"></i>
+            <span>Fila de Pendentes</span>
+        </a>
+        <a href="{{ route('laboratory.critical-alerts') }}" class="btn-danger-tw">
+            <i class="fas fa-biohazard text-xs"></i>
+            <span>Alertas Críticos</span>
+        </a>
+        <a href="{{ route('laboratory.export-results') }}" class="btn-secondary-tw">
+            <i class="fas fa-download text-xs text-brand-600"></i>
+            <span>Exportar</span>
+        </a>
     </div>
 </div>
 
-<!-- Lista de Exames -->
-<div class="row">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Lista de Exames
-                </h5>
-                <div>
-                    <select class="form-select form-select-sm" onchange="changeOrder(this.value)">
-                        <option value="data_solicitacao">Data de Solicitação</option>
-                        <option value="urgencia">Urgência</option>
-                        <option value="tipo_exame">Tipo de Exame</option>
-                        <option value="status">Status</option>
-                    </select>
-                </div>
+{{-- Filters --}}
+<div class="card-tw p-4 mb-6">
+    <form method="GET" action="{{ route('laboratory.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div>
+            <label class="label-tw">Status do Exame</label>
+            <select name="status" class="input-tw">
+                <option value="">Todos os status</option>
+                <option value="solicitado" {{ request('status') === 'solicitado' ? 'selected' : '' }}>Solicitado</option>
+                <option value="em_andamento" {{ request('status') === 'em_andamento' ? 'selected' : '' }}>Em Andamento</option>
+                <option value="realizado" {{ request('status') === 'realizado' ? 'selected' : '' }}>Realizado</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="label-tw">Tipo de Exame</label>
+            <select name="tipo_exame" class="input-tw">
+                <option value="">Todos os tipos</option>
+                <option value="teste_hiv" {{ request('tipo_exame') === 'teste_hiv' ? 'selected' : '' }}>HIV (Teste Rápido)</option>
+                <option value="teste_sifilis" {{ request('tipo_exame') === 'teste_sifilis' ? 'selected' : '' }}>Sífilis (VDRL)</option>
+                <option value="hemograma_completo" {{ request('tipo_exame') === 'hemograma_completo' ? 'selected' : '' }}>Hemograma Completo</option>
+                <option value="glicemia_jejum" {{ request('tipo_exame') === 'glicemia_jejum' ? 'selected' : '' }}>Glicemia em Jejum</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="label-tw">Pesquisar Gestante</label>
+            <input type="text" name="search" class="input-tw" placeholder="Nome ou BI..." value="{{ request('search') }}">
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="submit" class="btn-primary-tw btn-sm-tw flex-1">
+                <i class="fas fa-search text-xs"></i>
+                <span>Filtrar</span>
+            </button>
+            <a href="{{ route('laboratory.index') }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-times text-xs"></i>
+                <span>Limpar</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+{{-- Main Table Card --}}
+<div class="card-tw overflow-hidden" x-data="{activeModal: null}">
+    <div class="card-header-tw">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">
+                <i class="fas fa-flask"></i>
             </div>
-            <div class="card-body p-0">
-                @if($exams->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>
-                                    <input type="checkbox" id="selectAll" class="form-check-input">
-                                </th>
-                                <th>Paciente</th>
-                                <th>Tipo de Exame</th>
-                                <th>Data Solicitação</th>
-                                <th>Status</th>
-                                <th>Prioridade</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($exams as $exam)
-                            <tr class="{{ $exam->status == 'pendente' && $exam->data_solicitacao->diffInDays() > 7 ? 'table-warning' : '' }}">
-                                <td>
-                                    <input type="checkbox" class="form-check-input exam-checkbox" value="{{ $exam->id }}">
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
-                                             style="width: 35px; height: 35px;">
-                                            <i class="fas fa-female"></i>
-                                        </div>
-                                        <div>
-                                            <strong>{{ $exam->consultation->patient->nome_completo }}</strong>
-                                            <br>
-                                            <small class="text-muted">BI: {{ $exam->consultation->patient->documento_bi }}</small>
-                                        </div>
+            <h3 class="text-base font-semibold text-surface-900">Processamento Laboratorial</h3>
+        </div>
+        <span class="badge-neutral font-medium">{{ $exams->total() }} exames</span>
+    </div>
+
+    @if($exams->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="table-tw">
+                <thead>
+                    <tr>
+                        <th>Gestante</th>
+                        <th>Tipo de Exame</th>
+                        <th>Data Solicitação</th>
+                        <th>Status</th>
+                        <th>Resultado</th>
+                        <th class="text-right">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($exams as $exam)
+                    @php $patient = $exam->patient ?? $exam->consultation?->patient; @endphp
+                    <tr>
+                        <td>
+                            @if($patient)
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-ocean-100 text-ocean-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                        {{ strtoupper(substr($patient->nome_completo ?? 'G', 0, 1)) }}
                                     </div>
-                                </td>
-                                <td>
-                                    @php
-                                        $tipoClass = match($exam->tipo_exame) {
-                                            'teste_hiv', 'teste_sifilis' => 'bg-danger',
-                                            'hemograma', 'glicemia_jejum' => 'bg-warning',
-                                            'ultrassom' => 'bg-info',
-                                            default => 'bg-secondary'
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $tipoClass }}">
-                                        {{ ucfirst(str_replace('_', ' ', $exam->tipo_exame)) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {{ $exam->data_solicitacao->format('d/m/Y') }}
-                                    <br>
-                                    <small class="text-muted">{{ $exam->data_solicitacao->diffForHumans() }}</small>
-                                </td>
-                                <td>
-                                    @php
-                                        $statusClass = match($exam->status) {
-                                            'pendente' => 'bg-warning',
-                                            'realizado' => 'bg-success',
-                                            'cancelado' => 'bg-danger',
-                                            default => 'bg-secondary'
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $statusClass }}">
-                                        {{ ucfirst($exam->status) }}
-                                    </span>
-                                    @if($exam->status == 'realizado' && $exam->data_realizacao)
-                                        <br>
-                                        <small class="text-success">{{ $exam->data_realizacao->format('d/m/Y') }}</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if(in_array($exam->tipo_exame, ['teste_hiv', 'teste_sifilis']))
-                                        <span class="badge bg-danger">Alta</span>
-                                    @elseif($exam->data_solicitacao->diffInDays() > 7)
-                                        <span class="badge bg-warning">Urgente</span>
-                                    @else
-                                        <span class="badge bg-secondary">Normal</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        @if($exam->status == 'pendente')
-                                            <button class="btn btn-outline-success" onclick="processExam({{ $exam->id }})">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                        @endif
-                                        <a href="{{ route('exams.show', $exam) }}" class="btn btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
+                                    <div class="min-w-0">
+                                        <a href="{{ route('patients.show', $patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
+                                            {{ $patient->nome_completo }}
                                         </a>
-                                        @if($exam->status == 'realizado')
-                                            <button class="btn btn-outline-info" onclick="printResult({{ $exam->id }})">
-                                                <i class="fas fa-print"></i>
-                                            </button>
-                                        @endif
+                                        <p class="text-2xs text-surface-400">BI: {{ $patient->documento_bi ?? 'N/D' }}</p>
                                     </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Ações em Lote -->
-                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-                    <div>
-                        <button class="btn btn-success btn-sm" onclick="bulkProcess()" disabled id="bulkProcessBtn">
-                            <i class="fas fa-play me-1"></i> Processar Selecionados
+                                </div>
+                            @else
+                                <span class="text-surface-400 italic">Gestante N/D</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="font-medium text-surface-900">{{ $exam->tipo_exame_label }}</span>
+                        </td>
+                        <td>
+                            <p class="font-medium text-surface-800 text-xs">{{ $exam->data_solicitacao ? $exam->data_solicitacao->format('d/m/Y') : '-' }}</p>
+                        </td>
+                        <td>
+                            @php
+                                $badgeClass = match($exam->status) {
+                                    'realizado' => 'badge-success',
+                                    'em_andamento' => 'badge-info',
+                                    'solicitado' => 'badge-warning',
+                                    default => 'badge-neutral'
+                                };
+                            @endphp
+                            <span class="{{ $badgeClass }}">{{ ucfirst(str_replace('_', ' ', $exam->status)) }}</span>
+                        </td>
+                        <td>
+                            @if($exam->resultado)
+                                <span class="font-semibold {{ str_contains(strtolower($exam->resultado), 'positivo') ? 'text-crimson-600' : 'text-brand-700' }}">
+                                    {{ $exam->resultado }}
+                                </span>
+                            @else
+                                <span class="text-2xs text-surface-400 italic">Pendente</span>
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($exam->status !== 'realizado')
+                                <button type="button"
+                                        @click="activeModal = {{ $exam->id }}"
+                                        class="btn-primary-tw btn-sm-tw">
+                                    <i class="fas fa-vial text-xs"></i>
+                                    <span>Lançar</span>
+                                </button>
+                            @else
+                                <a href="{{ route('exams.show', $exam) }}" class="btn-icon-tw" title="Ver Detalhes">
+                                    <i class="fas fa-eye text-xs"></i>
+                                </a>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Modais Alpine.js para Lançamento de Resultado --}}
+        @foreach($exams as $exam)
+        @if($exam->status !== 'realizado')
+        <div x-show="activeModal === {{ $exam->id }}"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+             x-cloak>
+            <div @click.outside="activeModal = null"
+                 class="bg-white rounded-xl shadow-toast border border-surface-200 w-full max-w-md overflow-hidden animate-fade-in-up">
+
+                <form method="POST" action="{{ route('laboratory.process-exam', $exam) }}">
+                    @csrf
+                    <div class="px-5 py-4 bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-flask"></i>
+                            <h4 class="font-semibold text-sm">Lançar Resultado Laboratorial</h4>
+                        </div>
+                        <button type="button" @click="activeModal = null" class="text-white/70 hover:text-white">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div>
-                        {{ $exams->links() }}
-                    </div>
-                </div>
-                @else
-                <div class="text-center py-5">
-                    <i class="fas fa-flask fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Nenhum exame encontrado</h5>
-                    <p class="text-muted">Não há exames com os filtros aplicados.</p>
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
 
-    <!-- Painel Lateral -->
-    <div class="col-md-4">
-        <!-- Exames Mais Solicitados -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-chart-pie me-2"></i>
-                    Exames Mais Solicitados
-                </h6>
-            </div>
-            <div class="card-body">
-                @foreach($tiposExamePopulares as $tipo)
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>{{ ucfirst(str_replace('_', ' ', $tipo->tipo_exame)) }}</span>
-                    <span class="badge bg-primary">{{ $tipo->total }}</span>
-                </div>
-                @endforeach
-            </div>
-        </div>
+                    <div class="p-5 space-y-4">
+                        <div class="p-3 bg-surface-50 rounded-lg border border-surface-200/60 text-xs space-y-1">
+                            <p>Gestante: <strong class="text-surface-900">{{ $exam->patient->nome_completo ?? $exam->consultation?->patient?->nome_completo ?? 'N/D' }}</strong></p>
+                            <p>Exame: <strong class="text-brand-700">{{ $exam->tipo_exame_label }}</strong></p>
+                        </div>
 
-        <!-- Ações Rápidas -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-bolt me-2"></i>
-                    Ações Rápidas
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('laboratory.pending-queue') }}" class="btn btn-outline-warning">
-                        <i class="fas fa-clock me-1"></i> Ver Fila Pendente
-                    </a>
-                    <a href="{{ route('laboratory.quality-control') }}" class="btn btn-outline-info">
-                        <i class="fas fa-shield-alt me-1"></i> Controle de Qualidade
-                    </a>
-                    <button class="btn btn-outline-primary" onclick="generateDailyReport()">
-                        <i class="fas fa-file-alt me-1"></i> Relatório do Dia
-                    </button>
-                </div>
-            </div>
-        </div>
+                        <div>
+                            <label class="label-tw">Resultado Encontrado <span class="text-crimson-500">*</span></label>
+                            <input type="text"
+                                   name="resultado"
+                                   class="input-tw"
+                                   required
+                                   placeholder="Ex: Negativo, Reagente, 12.5 g/dL...">
+                        </div>
 
-        <!-- Indicadores de Performance -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-info text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-tachometer-alt me-2"></i>
-                    Indicadores
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small>Taxa de Processamento</small>
-                        <small>85%</small>
+                        <div>
+                            <label class="label-tw">Observações Laboratoriais</label>
+                            <textarea name="observacoes"
+                                      class="input-tw"
+                                      rows="3"
+                                      placeholder="Notas do técnico, lote do reativo..."></textarea>
+                        </div>
                     </div>
-                    <div class="progress" style="height: 5px;">
-                        <div class="progress-bar bg-success" style="width: 85%"></div>
+
+                    <div class="px-5 py-3 bg-surface-50 border-t border-surface-100 flex items-center justify-end gap-2">
+                        <button type="button" @click="activeModal = null" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
+                        <button type="submit" class="btn-primary-tw btn-sm-tw">
+                            <i class="fas fa-check text-xs"></i>
+                            <span>Salvar Resultado</span>
+                        </button>
                     </div>
-                </div>
-                
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small>Tempo Médio</small>
-                        <small>2.5 dias</small>
-                    </div>
-                    <div class="progress" style="height: 5px;">
-                        <div class="progress-bar bg-warning" style="width: 60%"></div>
-                    </div>
-                </div>
-                
-                <div class="mb-0">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small>Qualidade</small>
-                        <small>98%</small>
-                    </div>
-                    <div class="progress" style="height: 5px;">
-                        <div class="progress-bar bg-success" style="width: 98%"></div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
+        @endif
+        @endforeach
+
+        <div class="card-footer-tw flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-xs text-surface-500">
+                Mostrando <span class="font-medium text-surface-800">{{ $exams->firstItem() ?? 0 }}</span> a
+                <span class="font-medium text-surface-800">{{ $exams->lastItem() ?? 0 }}</span> de
+                <span class="font-medium text-surface-800">{{ $exams->total() }}</span> exames
+            </p>
+            <div>
+                {{ $exams->appends(request()->query())->links() }}
+            </div>
+        </div>
+    @else
+        <div class="py-16 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-100 flex items-center justify-center">
+                <i class="fas fa-flask text-3xl text-surface-400"></i>
+            </div>
+            <h3 class="text-base font-semibold text-surface-800 mb-1">Nenhum exame encontrado</h3>
+            <p class="text-sm text-surface-500">Ajuste os filtros de pesquisa.</p>
+        </div>
+    @endif
 </div>
-
-<!-- Modal para Processar Exame -->
-<div class="modal fade" id="processExamModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-flask text-success me-2"></i>
-                    Processar Exame
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="processExamForm" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="data_realizacao" class="form-label required">Data de Realização</label>
-                        <input type="date" class="form-control" id="data_realizacao" name="data_realizacao" 
-                               value="{{ date('Y-m-d') }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="resultado" class="form-label required">Resultado</label>
-                        <textarea class="form-control" id="resultado" name="resultado" rows="4" required
-                                  placeholder="Digite o resultado do exame..."></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">Observações</label>
-                        <textarea class="form-control" id="observacoes" name="observacoes" rows="2"
-                                  placeholder="Observações adicionais (opcional)..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i> Processar Exame
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @endsection
-
-@push('scripts')
-<script>
-// Checkbox management
-document.getElementById('selectAll').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.exam-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-    updateBulkButton();
-});
-
-document.querySelectorAll('.exam-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', updateBulkButton);
-});
-
-function updateBulkButton() {
-    const selected = document.querySelectorAll('.exam-checkbox:checked').length;
-    const bulkBtn = document.getElementById('bulkProcessBtn');
-    bulkBtn.disabled = selected === 0;
-    bulkBtn.textContent = selected > 0 ? `Processar Selecionados (${selected})` : 'Processar Selecionados';
-}
-
-// Process single exam
-function processExam(examId) {
-    const form = document.getElementById('processExamForm');
-    form.action = `/laboratory/process/${examId}`;
-    
-    const modal = new bootstrap.Modal(document.getElementById('processExamModal'));
-    modal.show();
-}
-
-// Bulk processing
-function bulkProcess() {
-    const selected = Array.from(document.querySelectorAll('.exam-checkbox:checked')).map(cb => cb.value);
-    
-    if (selected.length === 0) {
-        alert('Selecione pelo menos um exame para processar.');
-        return;
-    }
-    
-    if (confirm(`Processar ${selected.length} exames selecionados?`)) {
-        // Implementation for bulk processing
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route("laboratory.bulk-process") }}';
-        
-        // Add CSRF token
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = '{{ csrf_token() }}';
-        form.appendChild(csrfInput);
-        
-        // Add exam IDs
-        const idsInput = document.createElement('input');
-        idsInput.type = 'hidden';
-        idsInput.name = 'exam_ids';
-        idsInput.value = JSON.stringify(selected);
-        form.appendChild(idsInput);
-        
-        // Add date
-        const dateInput = document.createElement('input');
-        dateInput.type = 'hidden';
-        dateInput.name = 'data_realizacao';
-        dateInput.value = new Date().toISOString().split('T')[0];
-        form.appendChild(dateInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-// Change order
-function changeOrder(orderBy) {
-    const url = new URL(window.location);
-    url.searchParams.set('order_by', orderBy);
-    window.location = url;
-}
-
-// Generate daily report
-function generateDailyReport() {
-    const date = new Date().toISOString().split('T')[0];
-    window.open(`{{ route('laboratory.daily-report') }}?date=${date}`, '_blank');
-}
-
-// Print result
-function printResult(examId) {
-    window.open(`/laboratory/print-result/${examId}`, '_blank');
-}
-
-// Auto-refresh every 5 minutes for real-time updates
-setInterval(function() {
-    if (document.visibilityState === 'visible') {
-        window.location.reload();
-    }
-}, 300000);
-</script>
-@endpush

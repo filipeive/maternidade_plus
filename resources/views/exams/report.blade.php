@@ -1,46 +1,69 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Relatório de Exames')
-@section('page-title', 'Relatório de Exames')
+@section('page-title', 'Relatório de Exames Laboratoriais')
+@section('title-icon', 'fa-file-invoice')
+
 @section('breadcrumbs')
-    <li class="breadcrumb-item active">Relatório</li>
+    <a href="{{ route('exams.index') }}">Exames</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Relatório</span>
 @endsection
 
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Relatório de Exames</h5>
-            <div>
-                <button onclick="window.print()" class="btn btn-sm btn-outline-secondary me-2">
-                    <i class="fas fa-print me-1"></i>Imprimir
-                </button>
-                <a href="{{ route('exams.index') }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
-            </div>
+<div class="card-tw overflow-hidden">
+    <div class="card-header-tw">
+        <div>
+            <h3 class="text-base font-semibold text-surface-900">Relatório Consolidado de Exames</h3>
+            <p class="text-xs text-surface-500">Resumo por período e tipo de exame</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-print text-xs"></i>
+                <span>Imprimir</span>
+            </button>
+            <a href="{{ route('exams.index') }}" class="btn-primary-tw btn-sm-tw">
+                <i class="fas fa-arrow-left text-xs"></i>
+                <span>Voltar</span>
+            </a>
         </div>
     </div>
-    <div class="card-body">
-        <div class="mb-4">
-            <h6 class="text-muted">Filtros Aplicados:</h6>
-            <ul class="list-unstyled">
-                <li><strong>Período:</strong> 
+
+    <div class="card-body-tw">
+        <div class="mb-6 p-4 bg-surface-50 rounded-xl border border-surface-200 text-xs">
+            <h6 class="font-bold text-surface-700 uppercase tracking-wider text-2xs mb-2">Filtros Aplicados:</h6>
+            <div class="flex flex-wrap gap-4">
+                <p><strong>Período:</strong> 
                     {{ request('data_inicio') ? \Carbon\Carbon::parse(request('data_inicio'))->format('d/m/Y') : 'Início' }} 
                     até 
                     {{ request('data_fim') ? \Carbon\Carbon::parse(request('data_fim'))->format('d/m/Y') : 'Fim' }}
-                </li>
+                </p>
                 @if(request('tipo_exame'))
-                <li><strong>Tipo de Exame:</strong> {{ $tiposExames[request('tipo_exame')] ?? request('tipo_exame') }}</li>
+                    <p><strong>Tipo de Exame:</strong> {{ $tiposExames[request('tipo_exame')] ?? request('tipo_exame') }}</p>
                 @endif
-            </ul>
+            </div>
         </div>
-        
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-light">
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="card-tw p-4 text-center">
+                <p class="text-2xl font-bold text-ocean-600">{{ $exams->where('status', 'solicitado')->count() }}</p>
+                <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Solicitados</p>
+            </div>
+            <div class="card-tw p-4 text-center">
+                <p class="text-2xl font-bold text-brand-600">{{ $exams->where('status', 'realizado')->count() }}</p>
+                <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Realizados</p>
+            </div>
+            <div class="card-tw p-4 text-center">
+                <p class="text-2xl font-bold text-gold-600">{{ $exams->where('status', 'pendente')->count() }}</p>
+                <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Pendentes</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table-tw">
+                <thead>
                     <tr>
-                        <th>#</th>
+                        <th># ID</th>
                         <th>Gestante</th>
                         <th>Tipo de Exame</th>
                         <th>Data Solicitação</th>
@@ -51,95 +74,32 @@
                 <tbody>
                     @forelse($exams as $exam)
                     <tr>
-                        <td>{{ $exam->id }}</td>
-                        <td>{{ $exam->consultation->patient->nome_completo }}</td>
+                        <td class="font-mono text-xs text-surface-500">#{{ $exam->id }}</td>
+                        <td class="font-semibold text-surface-900">{{ $exam->consultation->patient->nome_completo }}</td>
                         <td>{{ $tiposExames[$exam->tipo_exame] ?? $exam->tipo_exame }}</td>
                         <td>{{ $exam->data_solicitacao->format('d/m/Y') }}</td>
                         <td>{{ $exam->data_realizacao ? $exam->data_realizacao->format('d/m/Y') : '--' }}</td>
                         <td>
                             @if($exam->status === 'realizado')
-                                <span class="badge bg-success">Realizado</span>
+                                <span class="badge-success">Realizado</span>
                             @elseif($exam->status === 'solicitado')
-                                <span class="badge bg-warning text-dark">Solicitado</span>
+                                <span class="badge-warning">Solicitado</span>
                             @else
-                                <span class="badge bg-secondary">Pendente</span>
+                                <span class="badge-neutral">Pendente</span>
                             @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-4">
-                            <i class="fas fa-exclamation-circle fa-2x text-warning mb-3"></i>
-                            <h5>Nenhum exame encontrado</h5>
-                            <p class="text-muted">Nenhum exame corresponde aos filtros aplicados.</p>
+                        <td colspan="6" class="py-12 text-center text-surface-500">
+                            <i class="fas fa-exclamation-circle text-2xl text-gold-500 mb-2"></i>
+                            <p class="text-sm font-semibold">Nenhum exame encontrado com os filtros selecionados.</p>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        
-        <div class="mt-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body text-center">
-                            <h3 class="text-primary">{{ $exams->where('status', 'solicitado')->count() }}</h3>
-                            <p class="text-muted mb-0">Exames Solicitados</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body text-center">
-                            <h3 class="text-success">{{ $exams->where('status', 'realizado')->count() }}</h3>
-                            <p class="text-muted mb-0">Exames Realizados</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body text-center">
-                            <h3>{{ $exams->count() }}</h3>
-                            <p class="text-muted mb-0">Total de Exames</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card-footer text-muted text-end">
-        Relatório gerado em: {{ now()->format('d/m/Y H:i') }}
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .card, .card * {
-            visibility: visible;
-        }
-        .card {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            border: none;
-        }
-        .card-header, .card-footer {
-            display: none;
-        }
-        table {
-            page-break-inside: auto;
-        }
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
-    }
-</style>
-@endpush

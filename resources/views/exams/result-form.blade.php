@@ -1,177 +1,125 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Registrar Resultado')
 @section('page-title', 'Registrar Resultado de Exame')
+@section('title-icon', 'fa-file-signature')
+
 @section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('exams.index') }}">Exames</a></li>
-    <li class="breadcrumb-item active">Resultado</li>
+    <a href="{{ route('exams.index') }}">Exames</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Resultado</span>
 @endsection
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Registrar Resultado do Exame</h5>
-                <div class="mt-2">
-                    <small>
-                        <strong>Gestante:</strong> {{ $exam->consultation->patient->nome_completo }} | 
-                        <strong>BI:</strong> {{ $exam->consultation->patient->documento_bi }}
-                    </small>
+<div class="max-w-3xl mx-auto">
+    <div class="card-tw">
+        <div class="card-header-tw">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-surface-900">Lançamento de Resultado de Exame</h3>
+                    <p class="text-2xs text-surface-500">Gestante: <strong>{{ $exam->consultation->patient->nome_completo }}</strong> (BI: {{ $exam->consultation->patient->documento_bi }})</p>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <h6 class="text-primary">Detalhes do Exame</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Tipo:</strong> {{ $tiposExames[$exam->tipo_exame] ?? $exam->tipo_exame }}</p>
-                            <p><strong>Solicitado em:</strong> {{ $exam->data_solicitacao->format('d/m/Y') }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Médico:</strong> {{ $exam->consultation->user->name }}</p>
-                            <p><strong>Observações:</strong> {{ $exam->observacoes ?? 'Nenhuma' }}</p>
-                        </div>
+            <a href="{{ route('exams.show', $exam) }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-arrow-left text-xs"></i>
+                <span>Voltar</span>
+            </a>
+        </div>
+
+        <div class="card-body-tw">
+            <div class="p-4 bg-surface-50 rounded-xl mb-6 border border-surface-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                    <span class="text-surface-500 block">Tipo de Exame:</span>
+                    <strong class="text-surface-900 font-semibold">{{ $tiposExames[$exam->tipo_exame] ?? $exam->tipo_exame }}</strong>
+                </div>
+                <div>
+                    <span class="text-surface-500 block">Data Solicitação:</span>
+                    <span class="text-surface-900">{{ $exam->data_solicitacao->format('d/m/Y') }}</span>
+                </div>
+                <div>
+                    <span class="text-surface-500 block">Solicitante:</span>
+                    <span class="text-surface-900">{{ $exam->consultation->user->name ?? 'Médico' }}</span>
+                </div>
+                <div>
+                    <span class="text-surface-500 block">Observações Prévia:</span>
+                    <span class="text-surface-900">{{ $exam->observacoes ?? 'Nenhuma' }}</span>
+                </div>
+            </div>
+
+            <form action="{{ route('exams.store-result', $exam) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                @csrf
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="data_realizacao" class="label-tw">Data de Realização <span class="text-crimson-500">*</span></label>
+                        <input type="date"
+                               class="input-tw @error('data_realizacao') input-error-tw @enderror"
+                               id="data_realizacao"
+                               name="data_realizacao"
+                               value="{{ old('data_realizacao', date('Y-m-d')) }}"
+                               required>
+                        @error('data_realizacao')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Data de Solicitação</label>
+                        <input type="text" class="input-tw bg-surface-100 cursor-not-allowed" value="{{ $exam->data_solicitacao->format('d/m/Y') }}" readonly>
                     </div>
                 </div>
-                
-                <form action="{{ route('exams.store-result', $exam) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="data_realizacao" class="form-label">Data de Realização <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control @error('data_realizacao') is-invalid @enderror" 
-                                   id="data_realizacao" name="data_realizacao" 
-                                   value="{{ old('data_realizacao', date('Y-m-d')) }}" required>
-                            @error('data_realizacao')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Data de Solicitação</label>
-                            <input type="text" class="form-control" 
-                                   value="{{ $exam->data_solicitacao->format('d/m/Y') }}" readonly>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="resultado" class="form-label">Resultado <span class="text-danger">*</span></label>
-                        <textarea class="form-control @error('resultado') is-invalid @enderror" 
-                                  id="resultado" name="resultado" rows="6" required
-                                  placeholder="Descreva os resultados do exame...">{{ old('resultado') }}</textarea>
-                        @error('resultado')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">Observações do Laboratório</label>
-                        <textarea class="form-control @error('observacoes') is-invalid @enderror" 
-                                  id="observacoes" name="observacoes" rows="3"
-                                  placeholder="Observações adicionais...">{{ old('observacoes', $exam->observacoes) }}</textarea>
-                        @error('observacoes')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="attachments" class="form-label">Anexos</label>
-                        <input type="file" class="form-control @error('attachments') is-invalid @enderror" 
-                               id="attachments" name="attachments[]" multiple
-                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                        <small class="text-muted">Formatos aceitos: JPG, PNG, PDF, DOC (Máx. 10MB cada)</small>
-                        @error('attachments')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        
-                        <div id="file-preview" class="mt-2 d-none">
-                            <h6 class="text-muted">Arquivos selecionados:</h6>
-                            <ul id="file-list" class="list-group"></ul>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('exams.show', $exam) }}" class="btn btn-secondary">
-                            <i class="fas fa-times me-1"></i>Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-check-circle me-1"></i>Registrar Resultado
-                        </button>
-                    </div>
-                </form>
-            </div>
+
+                <div>
+                    <label for="resultado" class="label-tw">Resultado / Laudo Clínico <span class="text-crimson-500">*</span></label>
+                    <textarea class="input-tw @error('resultado') input-error-tw @enderror"
+                              id="resultado"
+                              name="resultado"
+                              rows="6"
+                              required
+                              placeholder="Descreva detalhadamente o resultado do exame...">{{ old('resultado') }}</textarea>
+                    @error('resultado')
+                        <p class="error-text-tw">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="observacoes" class="label-tw">Observações Adicionais do Laboratório</label>
+                    <textarea class="input-tw @error('observacoes') input-error-tw @enderror"
+                              id="observacoes"
+                              name="observacoes"
+                              rows="3"
+                              placeholder="Observações técnicas ou notas adicionais...">{{ old('observacoes', $exam->observacoes) }}</textarea>
+                    @error('observacoes')
+                        <p class="error-text-tw">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="attachments" class="label-tw">Anexos / Documentos (PDF, Imagens)</label>
+                    <input type="file"
+                           class="input-tw p-1.5 text-xs @error('attachments') input-error-tw @enderror"
+                           id="attachments"
+                           name="attachments[]"
+                           multiple
+                           accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                    <p class="text-2xs text-surface-400 mt-1">Formatos aceites: JPG, PNG, PDF, DOC (Máx. 10MB cada)</p>
+                    @error('attachments')
+                        <p class="error-text-tw">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-surface-100 pt-6">
+                    <a href="{{ route('exams.show', $exam) }}" class="btn-secondary-tw">Cancelar</a>
+                    <button type="submit" class="btn-primary-tw">
+                        <i class="fas fa-check-circle text-xs"></i>
+                        <span>Registrar Resultado</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Validação da data de realização
-    const dataRealizacao = document.getElementById('data_realizacao');
-    const dataSolicitacao = new Date('{{ $exam->data_solicitacao->format('Y-m-d') }}');
-    
-    dataRealizacao.addEventListener('change', function() {
-        const selectedDate = new Date(this.value);
-        
-        if (selectedDate < dataSolicitacao) {
-            this.setCustomValidity('A data de realização não pode ser anterior à data de solicitação.');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-    
-    // Preview dos arquivos selecionados
-    const fileInput = document.getElementById('attachments');
-    const filePreview = document.getElementById('file-preview');
-    const fileList = document.getElementById('file-list');
-    
-    fileInput.addEventListener('change', function() {
-        fileList.innerHTML = '';
-        
-        if (this.files.length > 0) {
-            filePreview.classList.remove('d-none');
-            
-            Array.from(this.files).forEach(file => {
-                const listItem = document.createElement('li');
-                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-                
-                const fileInfo = document.createElement('span');
-                fileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-outline-danger';
-                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                removeBtn.addEventListener('click', () => {
-                    // Cria um novo DataTransfer para remover o arquivo
-                    const newFiles = new DataTransfer();
-                    Array.from(fileInput.files).forEach(f => {
-                        if (f !== file) newFiles.items.add(f);
-                    });
-                    
-                    fileInput.files = newFiles.files;
-                    fileInput.dispatchEvent(new Event('change'));
-                });
-                
-                listItem.appendChild(fileInfo);
-                listItem.appendChild(removeBtn);
-                fileList.appendChild(listItem);
-            });
-        } else {
-            filePreview.classList.add('d-none');
-        }
-    });
-    
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-});
-</script>
-@endpush

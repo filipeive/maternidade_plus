@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Novo Usuário')
 @section('page-title', 'Criar Novo Usuário')

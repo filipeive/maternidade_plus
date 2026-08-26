@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Planejamento de Rota')
 @section('page-title', 'Planejamento de Rota - ' . \Carbon\Carbon::parse($date)->format('d/m/Y'))

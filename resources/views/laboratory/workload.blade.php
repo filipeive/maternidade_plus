@@ -1,99 +1,64 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Carga de Trabalho - Laboratório')
 @section('page-title', 'Carga de Trabalho do Laboratório')
 @section('title-icon', 'fa-chart-bar')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item"><a href="{{ route('laboratory.index') }}">Laboratório</a></li>
-<li class="breadcrumb-item active">Carga de Trabalho</li>
+    <a href="{{ route('laboratory.index') }}">Laboratório</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Carga de Trabalho</span>
 @endsection
 
 @section('content')
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm border-start border-4 border-info">
-            <div class="card-body">
-                <div class="text-muted small">Tempo Médio de Processamento</div>
-                <h3 class="fw-bold text-info mb-0">
-                    {{ round($avgProcessingTime ?? 0, 1) }} <span class="fs-6 text-muted">dias</span>
-                </h3>
-            </div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="card-tw p-4 flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded-xl bg-ocean-100 text-ocean-700 flex items-center justify-center font-bold text-xl">
+            <i class="fas fa-stopwatch"></i>
+        </div>
+        <div>
+            <span class="text-2xs font-semibold uppercase tracking-wider text-surface-400">Tempo Médio de Processamento</span>
+            <h3 class="text-2xl font-extrabold text-ocean-600">
+                {{ round($avgProcessingTime ?? 0, 1) }} <span class="text-xs text-surface-500 font-normal">dias</span>
+            </h3>
         </div>
     </div>
-    <div class="col-md-8 text-end align-self-center">
-        <a href="{{ route('laboratory.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Voltar ao Laboratório
-        </a>
-    </div>
+    <a href="{{ route('laboratory.index') }}" class="btn-secondary-tw self-start sm:self-auto">
+        <i class="fas fa-arrow-left text-xs"></i>
+        <span>Voltar ao Laboratório</span>
+    </a>
 </div>
 
-<div class="row g-4">
-    <!-- Carga por Dia -->
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white fw-bold py-3">
-                <i class="fas fa-calendar-day text-primary me-2"></i>Solicitações por Dia da Semana (Este Mês)
-            </div>
-            <div class="card-body">
-                @if(isset($workloadByDay) && count($workloadByDay) > 0)
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Dia</th>
-                                    <th>Solicitações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($workloadByDay as $day => $total)
-                                <tr>
-                                    <td class="fw-bold">{{ $day }}</td>
-                                    <td><span class="badge bg-primary fs-6">{{ $total }}</span></td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-muted text-center py-4">Sem dados de carga registrados.</p>
-                @endif
-            </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card-tw overflow-hidden">
+        <div class="card-header-tw">
+            <h6 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                <i class="fas fa-calendar-day text-brand-500"></i> Solicitações por Dia da Semana (Este Mês)
+            </h6>
         </div>
-    </div>
-
-    <!-- Exames por Tipo -->
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white fw-bold py-3">
-                <i class="fas fa-list-check text-success me-2"></i>Exames por Tipo (Solicitados vs Realizados)
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tipo de Exame</th>
-                                <th>Solicitados</th>
-                                <th>Realizados</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($examsByType as $item)
-                            <tr>
-                                <td class="fw-bold">{{ ucfirst(str_replace('_', ' ', $item->tipo_exame)) }}</td>
-                                <td><span class="badge bg-secondary">{{ $item->total }}</span></td>
-                                <td><span class="badge bg-success">{{ $item->realizados }}</span></td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">Sem registros este mês.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="card-body-tw p-0">
+            @if(isset($workloadByDay) && count($workloadByDay) > 0)
+                <table class="table-tw">
+                    <thead>
+                        <tr>
+                            <th>Dia</th>
+                            <th class="text-right">Solicitações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($workloadByDay as $day => $total)
+                        <tr>
+                            <td class="font-bold text-surface-900">{{ $day }}</td>
+                            <td class="text-right">
+                                <span class="badge-info font-bold">{{ $total }}</span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p class="text-xs text-surface-400 text-center py-6">Sem dados de carga registrados.</p>
+            @endif
         </div>
     </div>
 </div>

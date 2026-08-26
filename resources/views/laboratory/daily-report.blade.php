@@ -1,87 +1,78 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Relatório Diário - Laboratório')
 @section('page-title', 'Relatório Diário do Laboratório')
 @section('title-icon', 'fa-file-invoice')
 
 @section('breadcrumbs')
-<li class="breadcrumb-item"><a href="{{ route('laboratory.index') }}">Laboratório</a></li>
-<li class="breadcrumb-item active">Relatório Diário</li>
+    <a href="{{ route('laboratory.index') }}">Laboratório</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="active">Relatório Diário</span>
 @endsection
 
 @section('content')
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="GET" class="row align-items-center g-3">
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Data do Relatório</label>
-                <input type="date" name="date" class="form-control" value="{{ \Carbon\Carbon::parse($report['data'] ?? now())->format('Y-m-d') }}">
-            </div>
-            <div class="col-md-4 align-self-end">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search me-1"></i> Filtrar Data
-                </button>
-            </div>
-        </form>
+<div class="card-tw p-4 mb-6">
+    <form method="GET" class="flex flex-col sm:flex-row items-end gap-4">
+        <div class="flex-1">
+            <label class="label-tw">Data do Relatório</label>
+            <input type="date" name="date" class="input-tw" value="{{ \Carbon\Carbon::parse($report['data'] ?? now())->format('Y-m-d') }}">
+        </div>
+        <button type="submit" class="btn-primary-tw btn-sm-tw">
+            <i class="fas fa-search text-xs"></i>
+            <span>Filtrar Data</span>
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="card-tw p-4 text-center">
+        <p class="text-2xl font-bold text-ocean-600">{{ $report['exames_solicitados'] ?? 0 }}</p>
+        <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Exames Solicitados</p>
+    </div>
+    <div class="card-tw p-4 text-center">
+        <p class="text-2xl font-bold text-brand-600">{{ $report['exames_realizados'] ?? 0 }}</p>
+        <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Exames Realizados</p>
+    </div>
+    <div class="card-tw p-4 text-center">
+        <p class="text-2xl font-bold text-gold-600">{{ $report['exames_pendentes'] ?? 0 }}</p>
+        <p class="text-xs text-surface-500 uppercase tracking-wider mt-1">Exames Pendentes</p>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-            <div class="card-body">
-                <h4 class="text-primary fw-bold mb-0">{{ $report['exames_solicitados'] ?? 0 }}</h4>
-                <div class="text-muted small">Exames Solicitados</div>
-            </div>
-        </div>
+<div class="card-tw overflow-hidden">
+    <div class="card-header-tw">
+        <h6 class="font-bold text-surface-900 text-sm">
+            Resultados Alterados no Dia ({{ \Carbon\Carbon::parse($report['data'] ?? now())->format('d/m/Y') }})
+        </h6>
     </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-            <div class="card-body">
-                <h4 class="text-success fw-bold mb-0">{{ $report['exames_realizados'] ?? 0 }}</h4>
-                <div class="text-muted small">Exames Realizados</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-            <div class="card-body">
-                <h4 class="text-warning fw-bold mb-0">{{ $report['exames_pendentes'] ?? 0 }}</h4>
-                <div class="text-muted small">Pendentes</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white fw-bold py-3">
-        Resultados Alterados no Dia ({{ \Carbon\Carbon::parse($report['data'] ?? now())->format('d/m/Y') }})
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Gestante</th>
-                        <th>Tipo de Exame</th>
-                        <th>Resultado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($report['resultados_alterados'] ?? [] as $exam)
-                    <tr>
-                        <td class="fw-bold">{{ $exam->consultation?->patient?->nome_completo ?? 'N/D' }}</td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $exam->tipo_exame)) }}</td>
-                        <td><span class="badge bg-warning text-dark">{{ $exam->resultado }}</span></td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="3" class="text-center py-4 text-muted">Sem resultados alterados nesta data.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <div class="overflow-x-auto">
+        <table class="table-tw">
+            <thead>
+                <tr>
+                    <th>Gestante</th>
+                    <th>Tipo de Exame</th>
+                    <th>Resultado</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($report['exames_alterados'] ?? [] as $exam)
+                <tr>
+                    <td class="font-semibold text-surface-900">{{ $exam->consultation?->patient?->nome_completo ?? 'N/D' }}</td>
+                    <td>{{ ucfirst(str_replace('_', ' ', $exam->tipo_exame)) }}</td>
+                    <td class="font-mono text-xs text-crimson-600 font-semibold">{{ $exam->resultado }}</td>
+                    <td><span class="badge-danger">Alterado</span></td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="py-8 text-center text-surface-500">
+                        <i class="fas fa-check-circle text-2xl text-brand-500 mb-2"></i>
+                        <p class="text-sm font-semibold">Nenhum resultado alterado nesta data.</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 @endsection

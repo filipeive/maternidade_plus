@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-tw')
 
 @section('title', 'Detalhes da Visita Domiciliária')
 @section('page-title', 'Visita Domiciliária #' . $homeVisit->id)
