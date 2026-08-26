@@ -170,6 +170,12 @@
                 <span class="sidebar-text">Central de SMS</span>
             </a>
 
+            <a href="{{ route('scanner') }}"
+               class="sidebar-link {{ request()->routeIs('scanner') ? 'active' : '' }}">
+                <span class="sidebar-link-icon"><i class="fas fa-qrcode"></i></span>
+                <span class="sidebar-text">Leitor QR Code</span>
+            </a>
+
             <a href="{{ route('reports.index') }}"
                class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                 <span class="sidebar-link-icon"><i class="fas fa-chart-pie"></i></span>

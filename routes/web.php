@@ -61,6 +61,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Nova rota para pesquisa AJAX
         Route::get('/search/ajax', [PatientController::class, 'search'])->name('search');
     });
+
+    // Scanner dedicado de QR Code
+    Route::view('/scanner', 'scanner.index')->name('scanner');
     
     // Consultas
     Route::prefix('consultations')->name('consultations.')->group(function () {

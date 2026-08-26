@@ -16,10 +16,16 @@
         <h2 class="text-xl font-bold text-surface-900">Lista de Gestantes</h2>
         <p class="text-sm text-surface-500">Gerencie o cadastro e acompanhamento das gestantes</p>
     </div>
-    <a href="{{ route('patients.create') }}" class="btn-primary-tw shrink-0">
-        <i class="fas fa-user-plus text-xs"></i>
-        <span>Nova Gestante</span>
-    </a>
+    <div class="flex items-center gap-2 shrink-0">
+        <a href="{{ route('scanner') }}" class="btn-secondary-tw" title="Scanner de QR Code da Paciente">
+            <i class="fas fa-qrcode text-brand-600 text-xs"></i>
+            <span>Leitor QR Code</span>
+        </a>
+        <a href="{{ route('patients.create') }}" class="btn-primary-tw">
+            <i class="fas fa-user-plus text-xs"></i>
+            <span>Nova Gestante</span>
+        </a>
+    </div>
 </div>
 
 {{-- Filter Card --}}

@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6" x-data="{ activeTab: 'faltosas', openModalSingle: false, selectedPatient: null, messageText: '' }">
+<div class="max-w-full mx-auto space-y-6" x-data="{ activeTab: 'faltosas', openModalSingle: false, selectedPatient: null, messageText: '' }">
 
     {{-- Stat Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
