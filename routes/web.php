@@ -17,12 +17,12 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HelpController;
 use Illuminate\Support\Facades\Route;
 
-Route::any('/', function () {
+Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
     return redirect()->route('login');
-});
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
