@@ -21,12 +21,12 @@ class SmsService
      */
     public static function sendSms(string $to, string $message): array
     {
-        $apiKey = env('HTTPSMS_KEY') ?: env('HTTPSMS_API_KEY');
-        $from   = env('HTTPSMS_FROM');
+        $apiKey = config('services.httpsms.key') ?: env('HTTPSMS_KEY') ?: env('HTTPSMS_API_KEY');
+        $from   = config('services.httpsms.from') ?: env('HTTPSMS_FROM');
 
         if (empty($apiKey) || empty($from)) {
             Log::warning('[SMS] Configuração do httpSMS ausente no .env (HTTPSMS_KEY ou HTTPSMS_FROM).');
-            return [false, 'Configuração do httpSMS em falta no .env.'];
+            return [false, 'Configuração do httpSMS em falta no .env. (Defina HTTPSMS_KEY e HTTPSMS_FROM)'];
         }
 
         $toNormalized = self::normalizePhone($to);

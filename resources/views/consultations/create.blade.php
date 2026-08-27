@@ -123,7 +123,7 @@
                     <i class="fas fa-heart-pulse text-brand-500"></i> Sinais Vitais & Biometria (Opcional no Agendamento)
                 </h4>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                         <label for="semanas_gestacao" class="label-tw">Semanas de Gestação</label>
                         <input type="number"
@@ -164,6 +164,37 @@
                                value="{{ old('pressao_arterial') }}"
                                placeholder="Ex: 120/80">
                         @error('pressao_arterial')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="altura_uterina" class="label-tw">Altura Uterina (cm)</label>
+                        <input type="number"
+                               step="0.5"
+                               min="10"
+                               max="50"
+                               class="input-tw @error('altura_uterina') input-error-tw @enderror"
+                               id="altura_uterina"
+                               name="altura_uterina"
+                               value="{{ old('altura_uterina') }}"
+                               placeholder="Ex: 28">
+                        @error('altura_uterina')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="batimentos_fetais" class="label-tw">FC Fetal (FCF bpm)</label>
+                        <input type="number"
+                               min="110"
+                               max="180"
+                               class="input-tw @error('batimentos_fetais') input-error-tw @enderror"
+                               id="batimentos_fetais"
+                               name="batimentos_fetais"
+                               value="{{ old('batimentos_fetais') }}"
+                               placeholder="Ex: 140">
+                        @error('batimentos_fetais')
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>

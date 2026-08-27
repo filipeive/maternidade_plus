@@ -16,11 +16,11 @@ class AiAssistantService
      */
     public function ask(string $userPrompt, array $history = []): array
     {
-        $openRouterKey = env('OPENROUTER_API_KEY');
-        $geminiKey = env('GEMINI_API_KEY');
+        $openRouterKey = config('services.openrouter.key') ?: env('OPENROUTER_API_KEY');
+        $geminiKey     = config('services.gemini.key') ?: env('GEMINI_API_KEY');
 
         if (empty($openRouterKey) && empty($geminiKey)) {
-            return [false, 'Nenhuma chave de API de IA configurada no servidor (.env).'];
+            return [false, 'Nenhuma chave de API de IA configurada no servidor (.env). Defina GEMINI_API_KEY ou OPENROUTER_API_KEY.'];
         }
 
         $systemInstruction = <<<EOT

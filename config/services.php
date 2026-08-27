@@ -32,9 +32,19 @@ return [
     ],
 
     'httpsms' => [
-        'key' => env('HTTPSMS_API_KEY'),
-        'from' => env('HTTPSMS_FROM', '+258840000000'),
+        'key' => env('HTTPSMS_KEY') ?: env('HTTPSMS_API_KEY'),
+        'from' => env('HTTPSMS_FROM'),
         'endpoint' => env('HTTPSMS_ENDPOINT', 'https://api.httpsms.com/v1/messages/send'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+    ],
+
+    'openrouter' => [
+        'key' => env('OPENROUTER_API_KEY'),
+        'model' => env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
     ],
 
 ];
