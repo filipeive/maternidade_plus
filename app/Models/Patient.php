@@ -86,6 +86,16 @@ class Patient extends Model
         return $this->hasMany(SmsLog::class);
     }
 
+    public function antenatalHistory()
+    {
+        return $this->hasOne(AntenatalHistory::class);
+    }
+
+    public function prophylaxis()
+    {
+        return $this->hasOne(MaternalProphylaxis::class)->withDefault();
+    }
+
     // Scopes
     public function scopeAtivo($query)
     {

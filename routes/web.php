@@ -82,6 +82,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{consultation}/complete', [ConsultationController::class, 'complete'])->name('complete');
         Route::get('/patient/{patient}', [ConsultationController::class, 'byPatient'])->name('by-patient');
     });
+
+    // Livro Eletrónico CPN & Resumo Mensal SIS (MOD-SIS-B01)
+    Route::prefix('mod-sis-b01')->name('mod_sis_b01.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ModSisB01Controller::class, 'index'])->name('index');
+        Route::get('/resumo-mensal', [\App\Http\Controllers\ModSisB01Controller::class, 'resumoMensal'])->name('resumo_mensal');
+        Route::get('/resumo-mensal/pdf', [\App\Http\Controllers\ModSisB01Controller::class, 'exportPdf'])->name('resumo_mensal.pdf');
+    });
     
     // Exames - Rotas expandidas
     Route::prefix('exams')->name('exams.')->group(function () {

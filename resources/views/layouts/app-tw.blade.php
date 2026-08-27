@@ -134,6 +134,12 @@
                 <span class="sidebar-text">Consultas ANC</span>
             </a>
 
+            <a href="{{ route('mod_sis_b01.index') }}"
+               class="sidebar-link {{ request()->routeIs('mod_sis_b01.*') ? 'active' : '' }}">
+                <span class="sidebar-link-icon"><i class="fas fa-book-medical"></i></span>
+                <span class="sidebar-text">Livro CPN (MOD-SIS-B01)</span>
+            </a>
+
             <a href="{{ route('exams.index') }}"
                class="sidebar-link {{ request()->routeIs('exams.*') ? 'active' : '' }}">
                 <span class="sidebar-link-icon"><i class="fas fa-microscope"></i></span>
