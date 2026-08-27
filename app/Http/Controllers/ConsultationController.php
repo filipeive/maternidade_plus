@@ -9,11 +9,41 @@ use Carbon\Carbon;
 
 class ConsultationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $consultations = Consultation::with(['patient', 'user'])
-            ->orderBy('data_consulta', 'desc')
-            ->paginate(15);
+        $query = Consultation::with(['patient', 'user']);
+
+        if ($request->boolean('hoje')) {
+            $query->whereDate('data_consulta', now()->toDateString());
+        }
+
+        if ($request->boolean('atrasadas')) {
+            $query->whereIn('status', ['agendada', 'confirmada'])
+                  ->where('data_consulta', '<', now()->startOfDay());
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo_consulta', $request->tipo);
+        }
+
+        if ($request->filled('data')) {
+            $query->whereDate('data_consulta', $request->data);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('patient', function ($q) use ($search) {
+                $q->where('nome_completo', 'like', "%{$search}%")
+                  ->orWhere('documento_bi', 'like', "%{$search}%")
+                  ->orWhere('contacto', 'like', "%{$search}%");
+            });
+        }
+
+        $consultations = $query->orderBy('data_consulta', 'desc')->paginate(15);
         
         return view('consultations.index', compact('consultations'));
     }
