@@ -191,4 +191,22 @@ class DashboardController extends Controller
             'ultimasTransferencias'
         ));
     }
+
+    public function home()
+    {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+        return redirect()->route('login');
+    }
+
+    public function getStats()
+    {
+        return response()->json([
+            'total_gestantes' => Patient::where('ativo', true)->count(),
+            'consultas_hoje' => Consultation::whereDate('data_consulta', today())->count(),
+            'partos_mes' => Birth::whereMonth('data_hora_parto', now()->month)->count(),
+            'alertas_ativos' => Alerta::whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])->count(),
+        ]);
+    }
 }
