@@ -1,8 +1,7 @@
 #!/bin/bash
 # ╔═══════════════════════════════════════════════════════╗
-# ║  Maternidade+ — Script de Deploy para Produção       ║
-# ║  Autor: Filipe dos Santos                            ║
-# ║  Servidor: 146.235.224.99 (Oracle Cloud)             ║
+# ║  Maternidade+ — Script de Deploy (Modelo Exemplo)     ║
+# ║  Copie este ficheiro para deploy.sh e ajuste os dados ║
 # ╚═══════════════════════════════════════════════════════╝
 
 set -e
@@ -14,11 +13,17 @@ RED='\033[0;31m'
 NC='\033[0m'
 BOLD='\033[1m'
 
-REMOTE_USER="ubuntu"
-REMOTE_HOST="146.235.224.99"
-REMOTE_PATH="/var/www/html/maternidade_plus"
-SSH_KEY="${HOME}/.ssh/oracle-2025"
-BRANCH="main"
+# Carregar variáveis de .env.deploy se existir
+if [ -f .env.deploy ]; then
+    # shellcheck source=/dev/null
+    source .env.deploy
+fi
+
+REMOTE_USER="${DEPLOY_USER:-ubuntu}"
+REMOTE_HOST="${DEPLOY_HOST:-SEU_IP_OU_DOMINIO}"
+REMOTE_PATH="${DEPLOY_PATH:-/var/www/html/maternidade_plus}"
+SSH_KEY="${DEPLOY_SSH_KEY:-${HOME}/.ssh/sua_chave_ssh}"
+BRANCH="${DEPLOY_BRANCH:-main}"
 
 echo ""
 echo -e "${BLUE}╔═══════════════════════════════════════════════════╗${NC}"
@@ -75,7 +80,7 @@ echo -e "${GREEN}  ✓ Servidor de produção atualizado com sucesso${NC}"
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║${NC}  ${BOLD}✅ Deploy concluído com sucesso em Produção!${NC}     ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}  🌐 ${BLUE}http://146.235.224.99/maternidade_plus/${NC}         ${GREEN}║${NC}"
+echo -e "${GREEN}║${NC}  🌐 ${BLUE}http://${REMOTE_HOST}/maternidade_plus/${NC}         ${GREEN}║${NC}"
 echo -e "${GREEN}║${NC}  📅 $(date '+%d/%m/%Y às %H:%M:%S')                       ${GREEN}║${NC}"
 echo -e "${GREEN}╚═══════════════════════════════════════════════════╝${NC}"
 echo ""

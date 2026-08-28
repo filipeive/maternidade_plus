@@ -820,11 +820,11 @@
     {{-- ============================================================
          FLOATING AI ASSISTANT WIDGET
          ============================================================ --}}
-    <div x-data="{ openAiWidget: false, aiInput: '', aiLoading: false, aiMessages: [{role: 'assistant', content: 'Olá! Sou o Assistente IA Maternidade+. Como posso ajudar?'}] }"
+    <div x-data="floatingAiWidget()"
          class="fixed bottom-5 right-5 z-50">
         
         {{-- Floating Trigger Button --}}
-        <button @click="openAiWidget = !openAiWidget"
+        <button @click="openAiWidget = !openAiWidget; if(openAiWidget) scrollToBottom();"
                 class="w-14 h-14 rounded-full bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-xl hover:shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 group relative"
                 title="Assistente IA Maternidade+">
             <i class="fas fa-robot text-xl text-gold-300 group-hover:rotate-12 transition-transform"></i>
@@ -840,7 +840,7 @@
              x-transition:leave-start="opacity-100 translate-y-0 scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 scale-95"
              @click.outside="openAiWidget = false"
-             class="absolute bottom-16 right-0 w-80 sm:w-96 h-[480px] bg-white rounded-2xl shadow-2xl border border-surface-200 flex flex-col overflow-hidden text-xs z-50">
+             class="absolute bottom-16 right-0 w-80 sm:w-96 h-[490px] bg-white rounded-2xl shadow-2xl border border-surface-200 flex flex-col overflow-hidden text-xs z-50">
             
             <div class="p-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -850,53 +850,140 @@
                         <span class="text-2xs text-white/70">MISAU Moçambique</span>
                     </div>
                 </div>
-                <button @click="openAiWidget = false" class="text-white/80 hover:text-white">
-                    <i class="fas fa-times text-sm"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button @click="clearChat()" class="text-white/70 hover:text-white text-xs p-1" title="Limpar conversa">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                    <button @click="openAiWidget = false" class="text-white/70 hover:text-white text-xs p-1" title="Fechar">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="flex-1 p-3 overflow-y-auto space-y-3 bg-surface-50/50" id="floating-chat-box">
                 <template x-for="(m, i) in aiMessages" :key="i">
                     <div class="flex gap-2" :class="m.role === 'user' ? 'justify-end' : 'justify-start'">
+                        <template x-if="m.role === 'assistant'">
+                            <div class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0 text-2xs shadow-xs">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                        </template>
                         <div class="max-w-[85%] rounded-xl p-2.5 leading-relaxed shadow-2xs"
                              :class="m.role === 'user' ? 'bg-brand-600 text-white rounded-tr-none' : 'bg-white border border-surface-200 text-surface-900 rounded-tl-none'">
-                            <p x-html="m.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')" class="whitespace-pre-line"></p>
+                            <p x-html="formatMessage(m.content)" class="whitespace-pre-line"></p>
                         </div>
                     </div>
                 </template>
                 <div x-show="aiLoading" class="text-surface-400 italic text-2xs flex items-center gap-1.5 p-2">
-                    <i class="fas fa-spinner fa-spin"></i> Assistente IA a pensar...
+                    <i class="fas fa-spinner fa-spin text-brand-600"></i> Assistente IA a pensar...
                 </div>
             </div>
 
             <div class="p-2.5 bg-white border-t border-surface-200">
-                <form @submit.prevent="
-                    if (!aiInput.trim() || aiLoading) return;
-                    const txt = aiInput.trim();
-                    aiMessages.push({role: 'user', content: txt});
-                    aiInput = '';
-                    aiLoading = true;
-                    fetch('{{ route('help.ai.ask') }}', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                        body: JSON.stringify({prompt: txt, history: aiMessages.slice(-4)})
-                    })
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.success) aiMessages.push({role: 'assistant', content: d.response});
-                        else aiMessages.push({role: 'assistant', content: '❌ ' + (d.message || 'Erro')});
-                    })
-                    .catch(() => aiMessages.push({role: 'assistant', content: '❌ Erro de ligação'}))
-                    .finally(() => { aiLoading = false; $nextTick(() => { const cb = document.getElementById('floating-chat-box'); if (cb) cb.scrollTop = cb.scrollHeight; }); });
-                " class="flex items-center gap-1.5">
-                    <input type="text" x-model="aiInput" placeholder="Pergunte ao assistente..." class="input-tw py-1.5 px-3 text-xs flex-1">
-                    <button type="submit" class="btn-primary-tw btn-sm-tw px-3 py-1.5" :disabled="aiLoading">
+                <form @submit.prevent="sendMessage()" class="flex items-center gap-1.5">
+                    <input type="text" x-model="aiInput" placeholder="Pergunte ao assistente..." class="input-tw py-1.5 px-3 text-xs flex-1" :disabled="aiLoading">
+                    <button type="submit" class="btn-primary-tw btn-sm-tw px-3 py-1.5" :disabled="aiLoading || !aiInput.trim()">
                         <i class="fas fa-paper-plane text-2xs"></i>
                     </button>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        function floatingAiWidget() {
+            const STORAGE_KEY = 'maternidade_ai_chat_history';
+            const defaultGreeting = {
+                role: 'assistant',
+                content: 'Olá! Sou o Assistente IA do Maternidade+. Como posso ajudar hoje?'
+            };
+
+            let saved = [];
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) saved = JSON.parse(raw);
+            } catch (e) {
+                saved = [];
+            }
+
+            return {
+                openAiWidget: false,
+                aiInput: '',
+                aiLoading: false,
+                aiMessages: (Array.isArray(saved) && saved.length > 0) ? saved : [defaultGreeting],
+
+                saveHistory() {
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.aiMessages));
+                    } catch (e) {}
+                },
+
+                async sendMessage() {
+                    const txt = this.aiInput.trim();
+                    if (!txt || this.aiLoading) return;
+
+                    const historyContext = this.aiMessages.slice(-8);
+
+                    this.aiMessages.push({ role: 'user', content: txt });
+                    this.saveHistory();
+                    this.aiInput = '';
+                    this.aiLoading = true;
+                    this.scrollToBottom();
+
+                    try {
+                        const response = await fetch('{{ route('help.ai.ask') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                prompt: txt,
+                                history: historyContext
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            this.aiMessages.push({ role: 'assistant', content: data.response });
+                        } else {
+                            this.aiMessages.push({ role: 'assistant', content: '⚠️ ' + (data.message || 'Erro ao consultar IA') });
+                        }
+                    } catch (e) {
+                        this.aiMessages.push({ role: 'assistant', content: '❌ Erro de ligação com o servidor de IA.' });
+                    } finally {
+                        this.aiLoading = false;
+                        this.saveHistory();
+                        this.scrollToBottom();
+                    }
+                },
+
+                clearChat() {
+                    this.aiMessages = [{
+                        role: 'assistant',
+                        content: 'Conversa reiniciada. Como posso ajudar?'
+                    }];
+                    this.saveHistory();
+                    this.scrollToBottom();
+                },
+
+                formatMessage(text) {
+                    if (!text) return '';
+                    return text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/`(.*?)`/g, '<code class="px-1 py-0.5 bg-surface-100 rounded text-brand-700 font-mono text-2xs">$1</code>');
+                },
+
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        const cb = document.getElementById('floating-chat-box');
+                        if (cb) cb.scrollTop = cb.scrollHeight;
+                    });
+                }
+            };
+        }
+    </script>
 
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

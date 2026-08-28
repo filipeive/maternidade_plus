@@ -4,6 +4,20 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.4.2] - 2026-08-28
+### Adicionado / Melhorado
+- **Assistente IA Clínico com Memória Conversacional Persistente**:
+  - Implementação de persistência de histórico de mensagens via `localStorage` no browser (`maternidade_ai_chat_history`), mantendo as conversas ativas mesmo após recarregar ou navegar entre páginas.
+  - Adicionado suporte multi-turn com envio do contexto das últimas conversas para as APIs do **Google Gemini Direct** e **OpenRouter**.
+  - Ajuste nas instruções de sistema (System Prompt) para eliminar saudações repetitivas durante o diálogo contínuo.
+  - Adicionado botão **"Limpar Chat"** no cabeçalho do widget flutuante e na central de ajuda para reinicialização sob demanda.
+  - Renderização aprimorada de markdown (negrito, itálico, código inline e formatação clínica).
+- **Segurança & DevSecOps no Deploy**:
+  - Remoção do ficheiro `deploy.sh` do controlo de versões do Git e inclusão no `.gitignore`.
+  - Criação do modelo `deploy.sh.example` com suporte ao carregamento de variáveis via `.env.deploy` ou variáveis de ambiente.
+
+---
+
 ## [2.4.1] - 2026-08-28
 ### Modificado / Melhorado
 - **Painel de Alertas Clínicos (`/alertas`)**: Diferenciação contextual dos botões de ação na tabela de alertas. Alertas já resolvidos ou ignorados exibem agora o botão **"Editar"** (com ícone e tema adaptado), abrindo o modal de edição da conduta e nota clínica em vez do botão "Tratar".

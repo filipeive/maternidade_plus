@@ -161,15 +161,36 @@
 @push('scripts')
 <script>
     function aiAssistant() {
+        const STORAGE_KEY = 'maternidade_ai_chat_history';
+        const defaultGreeting = {
+            role: 'assistant',
+            content: 'Olá! Sou o Assistente IA do Maternidade+. Posso ajudar com orientações sobre como utilizar o sistema ou esclarecer dúvidas sobre os protocolos de Cuidados Pré-Natais, Parto e Puerpério do MISAU Moçambique. Como posso ajudar hoje?'
+        };
+
+        let saved = [];
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) saved = JSON.parse(raw);
+        } catch (e) {
+            saved = [];
+        }
+
         return {
             inputPrompt: '',
             loading: false,
-            messages: [
-                {
-                    role: 'assistant',
-                    content: 'Olá! Sou o Assistente IA do Maternidade+. Posso ajudar com orientações sobre como utilizar o sistema ou esclarecer dúvidas sobre os protocolos de Cuidados Pré-Natais, Parto e Puerpério do MISAU Moçambique. Como posso ajudar hoje?'
-                }
-            ],
+            messages: (Array.isArray(saved) && saved.length > 0) ? saved : [defaultGreeting],
+
+            init() {
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+            },
+
+            saveHistory() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.messages));
+                } catch (e) {}
+            },
 
             sendPreset(question) {
                 this.inputPrompt = question;
@@ -180,7 +201,11 @@
                 const prompt = this.inputPrompt.trim();
                 if (!prompt || this.loading) return;
 
+                // Capturar contexto das últimas mensagens antes de adicionar a atual
+                const historyContext = this.messages.slice(-8);
+
                 this.messages.push({ role: 'user', content: prompt });
+                this.saveHistory();
                 this.inputPrompt = '';
                 this.loading = true;
                 this.scrollToBottom();
@@ -194,7 +219,7 @@
                         },
                         body: JSON.stringify({
                             prompt: prompt,
-                            history: this.messages.slice(-6)
+                            history: historyContext
                         })
                     });
 
@@ -202,12 +227,13 @@
                     if (data.success) {
                         this.messages.push({ role: 'assistant', content: data.response });
                     } else {
-                        this.messages.push({ role: 'assistant', content: 'Erro: ' + (data.message || 'Ocorreu um erro ao consultar a IA.') });
+                        this.messages.push({ role: 'assistant', content: '⚠️ ' + (data.message || 'Ocorreu um erro ao consultar a IA.') });
                     }
                 } catch (e) {
-                    this.messages.push({ role: 'assistant', content: 'Erro de ligação com o servidor de IA.' });
+                    this.messages.push({ role: 'assistant', content: '❌ Erro de ligação com o servidor de IA. Verifique a internet ou tente novamente.' });
                 } finally {
                     this.loading = false;
+                    this.saveHistory();
                     this.scrollToBottom();
                 }
             },
@@ -217,11 +243,18 @@
                     role: 'assistant',
                     content: 'Conversa reiniciada. Em que posso ajudar?'
                 }];
+                this.saveHistory();
+                this.scrollToBottom();
             },
 
             formatMessage(text) {
                 if (!text) return '';
-                return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Suporte a negrito, listas e código
+                let formatted = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code class="px-1 py-0.5 bg-surface-100 rounded text-brand-700 font-mono text-2xs">$1</code>');
+                return formatted;
             },
 
             scrollToBottom() {
