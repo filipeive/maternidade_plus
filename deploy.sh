@@ -17,6 +17,7 @@ BOLD='\033[1m'
 REMOTE_USER="ubuntu"
 REMOTE_HOST="146.235.224.99"
 REMOTE_PATH="/var/www/html/maternidade_plus"
+SSH_KEY="${HOME}/.ssh/oracle-2025"
 BRANCH="main"
 
 echo ""
@@ -48,7 +49,7 @@ echo -e "${GREEN}  ✓ GitHub atualizado${NC}"
 
 # 4. Executar comandos de deploy no servidor de produção
 echo -e "${YELLOW}[4/5]${NC} Atualizando código, dependências e caches no servidor remoto (${REMOTE_HOST})..."
-ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" "
+ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" "
     cd ${REMOTE_PATH} &&
     sudo git config --global --add safe.directory ${REMOTE_PATH} &&
     echo 'Puxando atualizações do GitHub...' &&
