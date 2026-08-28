@@ -32,7 +32,7 @@
         <div>
             <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <h2 class="text-base font-bold text-surface-900 tracking-tight">{{ $unidadeSanitaria }}</h2>
-                <span class="badge-brand text-3xs font-bold uppercase">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</span>
+                {{--<span class="badge-brand text-3xs font-bold uppercase">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</span>--}}
                 <span class="badge-neutral text-3xs font-medium">{{ $dataPt }}</span>
             </div>
             <p class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">
