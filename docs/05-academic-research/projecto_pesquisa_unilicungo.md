@@ -8,7 +8,7 @@
 # PROJECTO DE INVESTIGAÇÃO CIENTÍFICA
 
 ### **TÍTULO:**
-> **MATERNIDADE+: AVALIAÇÃO DO IMPACTO DE UM SISTEMA DIGITAL DE ALERTA PRECOCE, ENVOLVIMENTO FAMILIAR E MONITORIA PRÉ-NATAL (MISAU) NA REDUÇÃO DA MORBIMORTALIDADE MATERNO-INFANTIL NO MUNICÍPIO DE QUELIMANE**
+> **MATERNIDADE+: IMPLEMENTAÇÃO DE UM SISTEMA DIGITAL DE ALERTA PRECOCE, ENVOLVIMENTO FAMILIAR E MONITORIA DA ATENÇÃO PRÉ-NATAL (MISAU) PARA A REDUÇÃO DA MORTALIDADE MATERNO-INFANTIL NO MUNICÍPIO DE QUELIMANE**
 
 **Linha de Pesquisa:** Saúde Pública, Epidemiologia e Tecnologias de Informação em Saúde (e-Health/m-Health)  
 **Evento Alvo:** Jornadas Científicas da Universidade Licungo  
@@ -21,7 +21,7 @@
 ## RESUMO (ABSTRACT)
 
 ### Resumo em Português
-A morbimortalidade materna e neonatal permanece como um dos maiores desafios de saúde pública em Moçambique, com o Município de Quelimane a registar perdas substanciais decorrentes de atrasos no diagnóstico do Alto Risco Obstétrico (ARO), elevadas taxas de abandono de consultas de Acompanhamento Pré-Natal (CPN) e fraca participação da rede de suporte familiar. Este projecto de investigação científica propõe avaliar a eficácia clínica, aceitabilidade tecnológica e impacto comunitário da implementação da plataforma digital **Maternidade+** em Unidades Sanitárias estratégicas de Quelimane (Centro de Saúde de Quelimane Urbano, Centro de Saúde de Coalane e Hospital Geral de Quelimane). O sistema digitaliza integralmente a Ficha Pré-Natal (FPN), o Livro Eletrónico MOD-SIS-B01 e a triagem de ARO (Níveis I, II e III do MISAU), integrando um motor inteligente de alerta precoce e um inovador sistema de busca ativa via SMS direcionado não apenas à gestante, mas também ao parceiro ou familiar/acompanhante de apoio (mães, tias, irmãs) nos casos em que a mulher se encontra em situação de vulnerabilidade, abandono ou sem telefone próprio. A metodologia adopta uma abordagem mista (quanti-qualitativa), de intervenção quase-experimental longitudinal antes-e-depois com $n = 500$ gestantes. Os resultados esperados incluem a redução de $\ge 40\%$ no abandono de consultas CPN, aumento de $\ge 50\%$ na adesão à coorte de 4 ou mais consultas, triagem atempada em 100% dos casos de pré-eclâmpsia e isoimunização Rh, e eliminação de atrasos na consolidação dos resumos estatísticos distritais (MOD-SIS-B01-C).
+A mortalidade materna e neonatal continua a representar um dos mais severos desafios de saúde pública em Moçambique, com o Município de Quelimane a registar perdas substanciais decorrentes de atrasos no reconhecimento do Alto Risco Obstétrico (ARO), descontinuidades nas consultas de Acompanhamento Pré-Natal (CPN) e fraca participação da rede de suporte familiar. Este projecto de investigação científica propõe a implementação, validação clínica e avaliação do impacto do ecossistema digital **Maternidade+** em Unidades Sanitárias estratégicas de Quelimane (Centro de Saúde de Quelimane Urbano, Centro de Saúde de Coalane e Hospital Geral de Quelimane). O sistema digitaliza integralmente a Ficha Pré-Natal (FPN), o Livro Eletrónico MOD-SIS-B01 e a estratificação de ARO segundo as Normas Nacionais do MISAU (Níveis I, II e III), integrando algoritmos preditivos de alerta precoce e envio automatizado de SMS para busca ativa de faltosas direcionado tanto à gestante quanto ao seu parceiro ou acompanhante familiar de apoio (mães, tias, irmãs) em casos de vulnerabilidade ou ausência de telefone próprio. A metodologia adopta uma abordagem mista (quanti-qualitativa), de intervenção quase-experimental longitudinal antes-e-depois ($n = 500$). Os resultados esperados incluem a redução de $\ge 40\%$ no abandono de consultas CPN, aumento de $\ge 50\%$ na adesão à coorte de $\ge 4$ consultas, triagem atempada em 100% dos casos de pré-eclâmpsia e isoimunização Rh, e eliminação de atrasos na consolidação dos resumos estatísticos municipais (MOD-SIS-B01-C).
 
 **Palavras-chave:** Saúde Materno-Infantil, Atenção Pré-Natal, Alerta Precoce, Apoio Familiar, e-Health, Normas MISAU, Município de Quelimane, Universidade Licungo.
 
@@ -72,7 +72,7 @@ No Município de Quelimane:
 ## 4. OBJECTIVOS DO ESTUDO
 
 ### 4.1. Objectivo Geral
-Avaliar a eficácia clínica, a adesão comunitária e o impacto operacional da plataforma digital **Maternidade+** no acompanhamento pré-natal, na triagem de risco obstétrico e na integração da rede familiar no Município de Quelimane.
+Implementar e avaliar a eficácia clínica, a adesão comunitária e o impacto operacional da plataforma digital **Maternidade+** no acompanhamento pré-natal, na triagem de risco obstétrico (MISAU) e no fortalecimento da rede de suporte familiar no Município de Quelimane.
 
 ### 4.2. Objectivos Específicos
 1. Desenvolver e parametrizar o módulo de Rede de Apoio Familiar com envio de SMS de lembretes e alertas para gestantes, parceiros e acompanhantes responsáveis (mães/tias).
@@ -214,3 +214,4 @@ O estudo será circumscrito ao **Município / Distrito de Quelimane**, abrangend
 - Organização Mundial da Saúde — OMS. (2016). *Recomendações da OMS sobre Cuidados Pré-Natais para uma Experiência Positiva na Gravidez*. Genebra: World Health Organization.
 - Universidade Licungo — UniLicungo. (2024). *Normas de Elaboração e Publicação de Trabalhos Científicos na Universidade Licungo* (Edição 2024). Comissão Científica da UniLicungo, Quelimane.
 - World Health Organization — WHO. (2019). *WHO guideline: Recommendations on digital interventions for health system strengthening*. Geneva: World Health Organization.
+
