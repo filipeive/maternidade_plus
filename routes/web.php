@@ -19,12 +19,7 @@ use App\Http\Controllers\SmsNotificationController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
-    return redirect()->route('login');
-})->name('home');
+Route::match(['GET', 'HEAD'], '/', [DashboardController::class, 'home'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
