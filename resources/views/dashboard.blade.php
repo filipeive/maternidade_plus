@@ -34,14 +34,17 @@
                 <h2 class="text-base font-bold text-surface-900 tracking-tight">{{ $unidadeSanitaria }}</h2>
                 <span class="badge-neutral text-3xs font-medium">{{ $dataPt }}</span>
             </div>
-            <p class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">
+            <div class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">
                 <span>Bem-vindo(a), <strong class="text-surface-900 font-semibold">{{ $usuario->name ?? 'Utilizador' }}</strong></span>
                 <span class="text-surface-300">·</span>
                 <span class="text-brand-700 font-medium bg-brand-50 px-2 py-0.5 rounded-full text-3xs border border-brand-100">
                     <i class="fas fa-user-doctor text-3xs mr-0.5"></i> {{ $cargoUsuario }}
-                </span><br>
-                <p class="text-brand-700 text-3xs font-bold uppercase" style="display: block">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</p>
-            </p>
+                </span>
+                <span class="text-surface-300">·</span>
+                <span class="text-surface-600 font-medium text-3xs tracking-wide bg-surface-100 px-2 py-0.5 rounded-full">
+                    <i class="fas fa-location-dot text-3xs mr-0.5 text-brand-600"></i> {{ $provinciaConfig }}@if($distritoConfig) · {{ $distritoConfig }}@endif
+                </span>
+            </div>
         </div>
     </div>
 
