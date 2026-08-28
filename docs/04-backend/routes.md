@@ -32,6 +32,9 @@ Rotas web e endpoints da aplicação registrados em `routes/web.php`.
 | `GET` | `/patients/{patient}/card` | `patients.card` | `PatientController@card` |
 | `GET` | `/patients/{patient}/card/pdf` | `patients.card.pdf` | `PatientController@cardPdf` |
 | `GET` | `/patients/{patient}/history` | `patients.history` | `PatientController@history` |
+| `POST` | `/patients/{patient}/transfer` | `patients.transfer` | `PatientController@transfer` |
+| `POST` | `/patients/{patient}/reactivate` | `patients.reactivate` | `PatientController@reactivate` |
+| `GET` | `/patients/{patient}/transfer-guide/pdf` | `patients.transfer-guide.pdf` | `PatientController@transferGuidePdf` |
 | `GET` | `/patients/search/ajax` | `patients.search` | `PatientController@search` |
 
 ---

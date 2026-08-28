@@ -11,10 +11,46 @@
 @endsection
 
 @section('content')
+<div x-data="{ transferModalOpen: false }">
     @php
         $alertasAtivosPaciente = $patient->alertasAtivos()->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")->get();
         $temAlertaAlto = $alertasAtivosPaciente->where('nivel', 'alto')->count() > 0;
     @endphp
+
+    {{-- Banner de Paciente Transferida / Inativa --}}
+    @if(!$patient->ativo)
+        <div class="mb-6 bg-gold-50 border-l-4 border-gold-500 rounded-r-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gold-500 text-white flex items-center justify-center shrink-0">
+                    <i class="fas fa-arrow-right-from-bracket text-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-gold-900 flex items-center gap-2">
+                        <span class="badge-warning">{{ $patient->motivo_inativacao_formatado }}</span>
+                        @if($patient->unidade_sanitaria_destino)
+                            Destino: {{ $patient->unidade_sanitaria_destino }} ({{ $patient->provincia_destino ?? 'Província N/D' }})
+                        @endif
+                    </h5>
+                    <p class="text-xs text-gold-800 mt-0.5">
+                        Data: <strong>{{ $patient->data_transferencia?->format('d/m/Y') ?? 'N/D' }}</strong> · Guia Oficial: <strong class="font-mono">{{ $patient->guia_transferencia_numero ?? 'N/D' }}</strong> · Motivo: {{ $patient->motivo_transferencia }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('patients.transfer-guide.pdf', $patient) }}" target="_blank" class="btn-primary-tw btn-sm-tw bg-gold-600 hover:bg-gold-700">
+                    <i class="fas fa-file-pdf text-xs"></i>
+                    <span>Imprimir Guia Oficial</span>
+                </a>
+                <form method="POST" action="{{ route('patients.reactivate', $patient) }}" onsubmit="return confirm('Confirmar reativação desta paciente na Unidade Sanitária?');" class="inline">
+                    @csrf
+                    <button type="submit" class="btn-secondary-tw btn-sm-tw">
+                        <i class="fas fa-rotate-left text-xs text-brand-600"></i>
+                        <span>Reativar na US</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 
     {{-- Alerta Clínico Crítico Banner --}}
     @if($temAlertaAlto)
@@ -114,6 +150,12 @@
                             <i class="fas fa-edit text-xs"></i>
                             <span>Editar</span>
                         </a>
+                        @if($patient->ativo)
+                            <button type="button" @click="transferModalOpen = true" class="btn-secondary-tw btn-sm-tw text-crimson-700 bg-crimson-50 border-crimson-200 hover:bg-crimson-100" title="Transferir para outra US ou Província">
+                                <i class="fas fa-arrow-right-from-bracket text-xs text-crimson-600"></i>
+                                <span>Transferir / Inativar</span>
+                            </button>
+                        @endif
                     </div>
                 </div>
 
@@ -717,4 +759,119 @@
 
         </div>
     </div>
+
+    {{-- MODAL DE TRANSFERÊNCIA / INATIVAÇÃO DE PACIENTE (MISAU) --}}
+    <div x-show="transferModalOpen" 
+         x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/50 backdrop-blur-xs overflow-y-auto"
+         @keydown.escape.window="transferModalOpen = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-xl w-full p-6 space-y-5 border border-surface-200 my-8 max-h-[90vh] overflow-y-auto" @click.away="transferModalOpen = false">
+            <div class="flex items-center justify-between border-b border-surface-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-crimson-100 text-crimson-700 flex items-center justify-center text-sm font-bold">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                    </div>
+                    <h3 class="font-bold text-surface-900 text-base">Transferência / Inativação de Paciente</h3>
+                </div>
+                <button type="button" @click="transferModalOpen = false" class="text-surface-400 hover:text-surface-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('patients.transfer', $patient) }}" class="space-y-4">
+                @csrf
+
+                <div class="p-3 bg-brand-50 border border-brand-200 rounded-xl text-xs text-brand-900">
+                    <p class="font-bold">Paciente: {{ $patient->nome_completo }}</p>
+                    <p class="text-2xs text-brand-700">Ao registar a transferência, será gerada automaticamente a Guia Oficial de Transferência MISAU e as visitas no terreno serão dispensadas.</p>
+                </div>
+
+                {{-- Tipo de Saída & Data --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="label-tw">Tipo de Saída / Encaminhamento <span class="text-crimson-500">*</span></label>
+                        <select name="tipo_saida" required class="input-tw text-xs">
+                            <option value="transferencia_us">Transferência para outra US (Distrito)</option>
+                            <option value="transferencia_provincia">Transferência Inter-Provincial</option>
+                            <option value="mudanca_residencia">Mudança de Bairro / Residência</option>
+                            <option value="obito">Óbito Materno/Fetal</option>
+                            <option value="abandono">Abandono de Seguimento</option>
+                            <option value="outro">Outro Motivo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Data da Transferência / Saída <span class="text-crimson-500">*</span></label>
+                        <input type="date" name="data_transferencia" value="{{ now()->format('Y-m-d') }}" required class="input-tw text-xs">
+                    </div>
+                </div>
+
+                {{-- Unidade Sanitária & Província Destino --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="label-tw">Unidade Sanitária de Destino</label>
+                        <input type="text" name="unidade_sanitaria_destino" placeholder="Ex: Hospital Geral de Mavalane" class="input-tw text-xs" list="us-list">
+                        <datalist id="us-list">
+                            <option value="Hospital Central de Maputo (HCM)">
+                            <option value="Hospital Geral de Mavalane">
+                            <option value="Hospital Geral de Chamanculo">
+                            <option value="Hospital Geral José Macamo">
+                            <option value="Hospital Provincial de Xai-Xai">
+                            <option value="Hospital Central da Beira">
+                            <option value="Hospital Central de Nampula">
+                            <option value="Hospital Provincial de Tete">
+                            <option value="Hospital Provincial de Pemba">
+                            <option value="Hospital Provincial de Quelimane">
+                        </datalist>
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Província de Destino</label>
+                        <select name="provincia_destino" class="input-tw text-xs">
+                            <option value="">Selecione a província...</option>
+                            <option value="Maputo Cidade">Maputo Cidade</option>
+                            <option value="Maputo Província">Maputo Província</option>
+                            <option value="Gaza">Gaza</option>
+                            <option value="Inhambane">Inhambane</option>
+                            <option value="Sofala">Sofala</option>
+                            <option value="Manica">Manica</option>
+                            <option value="Tete">Tete</option>
+                            <option value="Zambézia">Zambézia</option>
+                            <option value="Nampula">Nampula</option>
+                            <option value="Cabo Delgado">Cabo Delgado</option>
+                            <option value="Niassa">Niassa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label-tw">Distrito de Destino (Opcional)</label>
+                    <input type="text" name="distrito_destino" placeholder="Ex: Kamubukwana, Matola, Xai-Xai..." class="input-tw text-xs">
+                </div>
+
+                <div>
+                    <label class="label-tw">Motivo Clínico da Transferência <span class="text-crimson-500">*</span></label>
+                    <input type="text" name="motivo_transferencia" placeholder="Ex: Alto Risco Obstétrico (ARO Nível III), Mudança de Bairro, Cesariana..." required class="input-tw text-xs">
+                </div>
+
+                <div>
+                    <label class="label-tw">Resumo Clínico / Observações para a US Receptora</label>
+                    <textarea name="resumo_clinico_transferencia" rows="3" placeholder="Idade gestacional, medicações administradas, sinais de perigo, exames realizados..." class="input-tw text-xs"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-surface-100">
+                    <button type="button" @click="transferModalOpen = false" class="btn-secondary-tw btn-sm-tw">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary-tw btn-sm-tw bg-crimson-600 hover:bg-crimson-700">
+                        <i class="fas fa-arrow-right-from-bracket text-xs"></i>
+                        <span>Confirmar Transferência</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
 @endsection
+

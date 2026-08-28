@@ -57,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
         Route::get('/{patient}/history', [PatientController::class, 'history'])->name('history');
         Route::get('patients/{patient}/debug', [PatientController::class, 'debug'])->name('patients.debug');
+        Route::post('/{patient}/transfer', [PatientController::class, 'transfer'])->name('transfer');
+        Route::post('/{patient}/reactivate', [PatientController::class, 'reactivate'])->name('reactivate');
+        Route::get('/{patient}/transfer-guide/pdf', [PatientController::class, 'transferGuidePdf'])->name('transfer-guide.pdf');
         
         // Nova rota para pesquisa AJAX
         Route::get('/search/ajax', [PatientController::class, 'search'])->name('search');

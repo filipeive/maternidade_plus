@@ -10,12 +10,24 @@ class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Patient::where('ativo', true)
-            ->with(['consultations' => function($q) {
+        $status = $request->get('status', 'ativas');
+
+        $query = Patient::with(['consultations' => function($q) {
                 $q->where('data_consulta', '>', now())
                   ->orderBy('data_consulta')
                   ->limit(1);
             }]);
+
+        if ($status === 'transferidas') {
+            $query->where('ativo', false)->whereIn('motivo_inativacao', ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia']);
+        } elseif ($status === 'inativas') {
+            $query->where('ativo', false);
+        } elseif ($status === 'todas') {
+            // todas
+        } else {
+            // default: ativas
+            $query->where('ativo', true);
+        }
 
         // Funcionalidade de pesquisa
         if ($request->filled('search')) {
@@ -23,21 +35,30 @@ class PatientController extends Controller
             $query->where(function($q) use ($searchTerm) {
                 $q->where('nome_completo', 'LIKE', "%{$searchTerm}%")
                   ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('contacto', 'LIKE', "%{$searchTerm}%");
+                  ->orWhere('contacto', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('unidade_sanitaria_destino', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('provincia_destino', 'LIKE', "%{$searchTerm}%");
             });
         }
 
         $patients = $query->orderBy('nome_completo')->paginate(15);
+
+        $stats = [
+            'total_ativas' => Patient::where('ativo', true)->count(),
+            'total_transferidas' => Patient::where('ativo', false)->whereIn('motivo_inativacao', ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia'])->count(),
+            'total_inativas' => Patient::where('ativo', false)->count(),
+            'total_geral' => Patient::count()
+        ];
         
         // Se é uma requisição AJAX (para pesquisa em tempo real)
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('patients.partials.patient-list', compact('patients'))->render(),
+                'html' => view('patients.partials.patient-list', compact('patients', 'stats', 'status'))->render(),
                 'pagination' => $patients->links()->render()
             ]);
         }
 
-        return view('patients.index', compact('patients'));
+        return view('patients.index', compact('patients', 'stats', 'status'));
     }
 
     // CORRIGIDO: Melhorar o método de search
@@ -312,5 +333,67 @@ class PatientController extends Controller
     public function debug(Patient $patient)
     {
         return response()->json($patient->debugIdadeGestacional());
+    }
+
+    public function transfer(Request $request, Patient $patient)
+    {
+        $validated = $request->validate([
+            'tipo_saida' => 'required|in:transferencia_us,transferencia_provincia,mudanca_residencia,obito,abandono,outro',
+            'unidade_sanitaria_destino' => 'nullable|string|max:255',
+            'provincia_destino' => 'nullable|string|max:100',
+            'distrito_destino' => 'nullable|string|max:100',
+            'motivo_transferencia' => 'required|string|max:255',
+            'resumo_clinico_transferencia' => 'nullable|string',
+            'data_transferencia' => 'required|date'
+        ]);
+
+        $guiaNumero = 'GT-' . date('Ym') . '-' . sprintf('%04d', $patient->id);
+
+        $patient->update([
+            'ativo' => false,
+            'motivo_inativacao' => $validated['tipo_saida'],
+            'data_transferencia' => $validated['data_transferencia'],
+            'unidade_sanitaria_destino' => $validated['unidade_sanitaria_destino'] ?? null,
+            'provincia_destino' => $validated['provincia_destino'] ?? null,
+            'distrito_destino' => $validated['distrito_destino'] ?? null,
+            'motivo_transferencia' => $validated['motivo_transferencia'],
+            'guia_transferencia_numero' => $guiaNumero,
+            'resumo_clinico_transferencia' => $validated['resumo_clinico_transferencia'] ?? null,
+            'profissional_transferencia_id' => auth()->id()
+        ]);
+
+        // Cancelar visitas domiciliárias pendentes com nota
+        $destino = $validated['unidade_sanitaria_destino'] ?? 'outra unidade';
+        $patient->homeVisits()->where('status', 'agendada')->update([
+            'status' => 'cancelada',
+            'observacoes_gerais' => \DB::raw("CONCAT(COALESCE(observacoes_gerais, ''), '\n[Dispensada: Paciente transferida para {$destino}]')")
+        ]);
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', "Transferência/Inativação registada com sucesso! Guia Oficial MISAU nº {$guiaNumero} gerada.");
+    }
+
+    public function reactivate(Request $request, Patient $patient)
+    {
+        $patient->update([
+            'ativo' => true,
+            'motivo_inativacao' => null
+        ]);
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', "Paciente {$patient->nome_completo} reativada com sucesso na Unidade Sanitária!");
+    }
+
+    public function transferGuidePdf(Patient $patient)
+    {
+        $patient->load(['consultations.exams', 'vaccines', 'prophylaxis', 'obstetricHistories', 'profissionalTransferencia']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('patients.transfer-guide-pdf', compact('patient'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+
+        $fileName = 'Guia_Transferencia_MISAU_' . \Str::slug($patient->nome_completo) . '_' . date('Ymd') . '.pdf';
+
+        return $pdf->stream($fileName);
     }
 }

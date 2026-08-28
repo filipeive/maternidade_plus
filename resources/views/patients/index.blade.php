@@ -28,15 +28,43 @@
     </div>
 </div>
 
+{{-- Filter Pills --}}
+<div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4">
+    <a href="{{ route('patients.index', ['status' => 'ativas']) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? 'ativas') === 'ativas' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
+        <i class="fas fa-person-pregnant"></i>
+        <span>Ativas no Centro ({{ $stats['total_ativas'] ?? 0 }})</span>
+    </a>
+
+    <a href="{{ route('patients.index', ['status' => 'transferidas']) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'transferidas' ? 'bg-gold-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
+        <i class="fas fa-arrow-right-from-bracket"></i>
+        <span>Transferidas ({{ $stats['total_transferidas'] ?? 0 }})</span>
+    </a>
+
+    <a href="{{ route('patients.index', ['status' => 'inativas']) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'inativas' ? 'bg-crimson-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
+        <i class="fas fa-user-slash"></i>
+        <span>Inativas ({{ $stats['total_inativas'] ?? 0 }})</span>
+    </a>
+
+    <a href="{{ route('patients.index', ['status' => 'todas']) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'todas' ? 'bg-surface-800 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
+        <i class="fas fa-users"></i>
+        <span>Todas ({{ $stats['total_geral'] ?? 0 }})</span>
+    </a>
+</div>
+
 {{-- Filter Card --}}
 <div class="card-tw p-4 mb-6">
     <form method="GET" action="{{ route('patients.index') }}" class="flex flex-col sm:flex-row gap-3 items-center">
+        <input type="hidden" name="status" value="{{ $status ?? 'ativas' }}">
         <div class="relative flex-1 w-full">
             <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs"></i>
             <input type="text"
                    name="search"
                    value="{{ request('search') }}"
-                   placeholder="Pesquisar por nome, BI ou contacto..."
+                   placeholder="Pesquisar por nome, BI, contacto, US ou província de destino..."
                    class="input-tw pl-9">
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -45,7 +73,7 @@
                 <span>Pesquisar</span>
             </button>
             @if(request('search'))
-                <a href="{{ route('patients.index') }}" class="btn-secondary-tw btn-sm-tw flex-1 sm:flex-none">
+                <a href="{{ route('patients.index', ['status' => $status ?? 'ativas']) }}" class="btn-secondary-tw btn-sm-tw flex-1 sm:flex-none">
                     <i class="fas fa-times text-xs"></i>
                     <span>Limpar</span>
                 </a>
@@ -109,16 +137,27 @@
                             @endif
                         </td>
                         <td>
-                            @php
-                                $status = $patient->status_gravidez;
-                                $badgeClass = match($status) {
-                                    'Gestante' => 'badge-success',
-                                    'A termo' => 'badge-warning',
-                                    'Pós-parto' => 'badge-neutral',
-                                    default => 'badge-neutral'
-                                };
-                            @endphp
-                            <span class="{{ $badgeClass }}">{{ $status }}</span>
+                            @if(!$patient->ativo)
+                                <span class="badge-danger text-3xs font-bold block w-fit mb-0.5">
+                                    <i class="fas fa-arrow-right-from-bracket mr-0.5"></i> {{ $patient->motivo_inativacao_formatado }}
+                                </span>
+                                @if($patient->unidade_sanitaria_destino)
+                                    <p class="text-3xs text-surface-500 font-medium truncate max-w-[130px]" title="{{ $patient->unidade_sanitaria_destino }}">
+                                        Dest: {{ $patient->unidade_sanitaria_destino }}
+                                    </p>
+                                @endif
+                            @else
+                                @php
+                                    $status = $patient->status_gravidez;
+                                    $badgeClass = match($status) {
+                                        'Gestante' => 'badge-success',
+                                        'A termo' => 'badge-warning',
+                                        'Pós-parto' => 'badge-neutral',
+                                        default => 'badge-neutral'
+                                    };
+                                @endphp
+                                <span class="{{ $badgeClass }}">{{ $status }}</span>
+                            @endif
                         </td>
                         <td>
                             @if($patient->consultations->count() > 0)
@@ -138,16 +177,26 @@
                                    title="Ver Detalhes">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
+                                @if(!$patient->ativo && $patient->isTransferida())
+                                    <a href="{{ route('patients.transfer-guide.pdf', $patient) }}"
+                                       target="_blank"
+                                       class="btn-icon-tw text-gold-600 hover:bg-gold-50"
+                                       title="Imprimir Guia de Transferência Oficial">
+                                        <i class="fas fa-file-pdf text-xs"></i>
+                                    </a>
+                                @endif
                                 <a href="{{ route('patients.edit', $patient) }}"
                                    class="btn-icon-tw"
                                    title="Editar">
                                     <i class="fas fa-pen text-xs"></i>
                                 </a>
-                                <a href="{{ route('consultations.create', $patient) }}"
-                                   class="btn-icon-tw text-brand-600 hover:bg-brand-50"
-                                   title="Nova Consulta">
-                                    <i class="fas fa-calendar-plus text-xs"></i>
-                                </a>
+                                @if($patient->ativo)
+                                    <a href="{{ route('consultations.create', $patient) }}"
+                                       class="btn-icon-tw text-brand-600 hover:bg-brand-50"
+                                       title="Nova Consulta">
+                                        <i class="fas fa-calendar-plus text-xs"></i>
+                                    </a>
+                                @endif
                             </div>
                         </td>
                     </tr>

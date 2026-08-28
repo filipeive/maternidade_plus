@@ -53,13 +53,23 @@ class Patient extends Model
         'numero_gestacoes',
         'numero_partos',
         'numero_abortos',
-        'ativo'
+        'ativo',
+        'motivo_inativacao',
+        'data_transferencia',
+        'unidade_sanitaria_destino',
+        'provincia_destino',
+        'distrito_destino',
+        'motivo_transferencia',
+        'guia_transferencia_numero',
+        'resumo_clinico_transferencia',
+        'profissional_transferencia_id'
     ];
 
     protected $casts = [
         'data_nascimento' => 'date',
         'data_ultima_menstruacao' => 'date',
         'data_provavel_parto' => 'date',
+        'data_transferencia' => 'datetime',
         'altura_cm' => 'integer',
         'tem_parceiro' => 'boolean',
         'parceiro_notificar_sms' => 'boolean',
@@ -72,6 +82,33 @@ class Patient extends Model
     ];
 
     // Relacionamentos
+    public function profissionalTransferencia()
+    {
+        return $this->belongsTo(User::class, 'profissional_transferencia_id');
+    }
+
+    public function isTransferida(): bool
+    {
+        return !$this->ativo && in_array($this->motivo_inativacao, ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia']);
+    }
+
+    public function isInativa(): bool
+    {
+        return !$this->ativo;
+    }
+
+    public function getMotivoInativacaoFormatadoAttribute(): string
+    {
+        return match($this->motivo_inativacao) {
+            'transferencia_us' => 'Transferência de Unidade Sanitária',
+            'transferencia_provincia' => 'Transferência Inter-Provincial',
+            'mudanca_residencia' => 'Mudança de Residência',
+            'obito' => 'Óbito Materno/Fetal',
+            'abandono' => 'Abandono de Seguimento',
+            'outro' => 'Outro Motivo',
+            default => 'Inativa'
+        };
+    }
     public function obstetricHistories()
     {
         return $this->hasMany(ObstetricHistory::class)->orderBy('numero_gravidez', 'asc');

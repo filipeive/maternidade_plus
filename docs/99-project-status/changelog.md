@@ -4,6 +4,18 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.6.0] - 2026-08-28
+### Adicionado / Melhorado
+- **Módulo Nacional de Transferência & Inativação de Pacientes (MISAU)**:
+  - Adicionado suporte a transferências inter-hospitalares e inter-provinciais de gestantes e puérperas com persistência na base de dados (`motivo_inativacao`, `data_transferencia`, `unidade_sanitaria_destino`, `provincia_destino`, `distrito_destino`, `motivo_transferencia`, `guia_transferencia_numero`, `resumo_clinico_transferencia`, `profissional_transferencia_id`).
+  - Geração automática de **Guia Oficial de Transferência e Referência Obstétrica MISAU** com numeração rastreável (ex: `GT-202608-0042`).
+  - Emissão de Guia de Transferência em **PDF A4** com checklist de segurança no transporte, resumo clínico de CPN, rastreios laboratoriais, antecedentes obstétricos e campos de assinatura e carimbo institucional.
+  - Filtro em abas na listagem de gestantes (`/patients`): **Ativas**, **Transferidas**, **Inativas** e **Todas**.
+  - Banner informativo proeminente no perfil da paciente transferida com botão direto para reimpressão da guia e ação rápida de **Reativação na US** (caso retorne à unidade).
+  - Cancelamento automático e dispensa de visitas domiciliárias comunitárias de terreno para pacientes transferidas.
+
+---
+
 ## [2.5.0] - 2026-08-28
 ### Adicionado / Melhorado
 - **Módulo de Agentes Comunitários & Activistas de Saúde (APEs)**:

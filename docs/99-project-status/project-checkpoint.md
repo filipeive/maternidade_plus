@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 28 de Agosto de 2026
-- **Versão Atual**: 2.5.0 (Módulo de Visitas & Activistas Comunitários - Produção)
+- **Versão Atual**: 2.6.0 (Transferência & Inativação Nacional de Pacientes - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---
