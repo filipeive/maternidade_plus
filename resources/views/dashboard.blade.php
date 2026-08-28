@@ -16,6 +16,9 @@
     $dataPt = $diasSemana[now()->dayOfWeek] . ', ' . now()->day . ' de ' . $mesesAno[now()->month] . ' de ' . now()->year;
     $usuario = auth()->user();
     $cargoUsuario = $usuario ? ($usuario->getRoleNames()->first() ?? $usuario->especialidade ?? 'Profissional de Saúde') : 'Profissional de Saúde';
+    $unidadeSanitaria = \App\Models\Setting::get('unidade_sanitaria', 'Centro de Saúde Urbano & Maternidade');
+    $provinciaConfig = \App\Models\Setting::get('provincia', 'Maputo Cidade');
+    $distritoConfig = \App\Models\Setting::get('distrito');
 @endphp
 
 {{-- ============================================================
@@ -28,8 +31,8 @@
         </div>
         <div>
             <div class="flex items-center gap-2 mb-1 flex-wrap">
-                <h2 class="text-base font-bold text-surface-900 tracking-tight">Centro de Saúde & Maternidade</h2>
-                <span class="badge-brand text-3xs font-bold uppercase">MISAU SNS</span>
+                <h2 class="text-base font-bold text-surface-900 tracking-tight">{{ $unidadeSanitaria }}</h2>
+                <span class="badge-brand text-3xs font-bold uppercase">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</span>
                 <span class="badge-neutral text-3xs font-medium">{{ $dataPt }}</span>
             </div>
             <p class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">

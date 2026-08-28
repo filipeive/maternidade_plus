@@ -90,23 +90,23 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="label-tw">Nome da Unidade Sanitária</label>
-                    <input type="text" name="unidade_sanitaria" class="input-tw font-semibold" value="Centro de Saúde de Quelimane Urbano">
+                    <label class="label-tw">Nome da Unidade Sanitária <span class="text-crimson-500">*</span></label>
+                    <input type="text" name="unidade_sanitaria" class="input-tw font-semibold" value="{{ $unidadeSanitaria ?? 'Centro de Saúde Urbano & Maternidade' }}" required>
                 </div>
 
                 <div>
-                    <label class="label-tw">Província / Distrito</label>
-                    <input type="text" name="provincia" class="input-tw" value="Zambézia — Quelimane">
+                    <label class="label-tw">Província</label>
+                    <input type="text" name="provincia" class="input-tw" value="{{ $provincia ?? 'Maputo Cidade' }}" placeholder="Ex: Maputo Cidade, Zambézia...">
                 </div>
 
                 <div>
-                    <label class="label-tw">Código SISMA / Módulo de Saúde</label>
-                    <input type="text" class="input-tw bg-surface-100 font-mono" value="MZ-ZMB-QLM-CS01" disabled>
+                    <label class="label-tw">Distrito</label>
+                    <input type="text" name="distrito" class="input-tw" value="{{ $distrito ?? 'Kamubukwana' }}" placeholder="Ex: Kamubukwana, Quelimane...">
                 </div>
 
                 <div>
-                    <label class="label-tw">Telefone de Contacto da Maternidade</label>
-                    <input type="text" class="input-tw font-mono" value="+258 24 212 345">
+                    <label class="label-tw">Código SISMA / MISAU</label>
+                    <input type="text" name="codigo_misau" class="input-tw font-mono" value="{{ $codigoMisau ?? 'US-0421' }}" placeholder="Ex: US-0421">
                 </div>
             </div>
 

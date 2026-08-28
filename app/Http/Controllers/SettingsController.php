@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,11 @@ class SettingsController extends Controller
             'ai_provider' => env('OPENROUTER_API_KEY') ? 'OpenRouter / Gemini Flash' : 'Simulação Local',
         ];
 
+        $unidadeSanitaria = Setting::get('unidade_sanitaria', 'Centro de Saúde Urbano & Maternidade');
+        $provincia = Setting::get('provincia', 'Maputo Cidade');
+        $distrito = Setting::get('distrito', 'Kamubukwana');
+        $codigoMisau = Setting::get('codigo_misau', 'US-0421');
+
         // Leitura dos últimos logs do laravel.log
         $logPath = storage_path('logs/laravel.log');
         $systemLogs = [];
@@ -32,7 +38,7 @@ class SettingsController extends Controller
             $systemLogs = array_reverse($lastLines);
         }
 
-        return view('settings.index', compact('systemInfo', 'systemLogs'));
+        return view('settings.index', compact('systemInfo', 'systemLogs', 'unidadeSanitaria', 'provincia', 'distrito', 'codigoMisau'));
     }
 
     public function updateGeneral(Request $request)
@@ -41,7 +47,21 @@ class SettingsController extends Controller
             'unidade_sanitaria' => 'nullable|string|max:255',
             'provincia' => 'nullable|string|max:255',
             'distrito' => 'nullable|string|max:255',
+            'codigo_misau' => 'nullable|string|max:255',
         ]);
+
+        if ($request->has('unidade_sanitaria')) {
+            Setting::set('unidade_sanitaria', $request->unidade_sanitaria ?? '', 'general');
+        }
+        if ($request->has('provincia')) {
+            Setting::set('provincia', $request->provincia ?? '', 'general');
+        }
+        if ($request->has('distrito')) {
+            Setting::set('distrito', $request->distrito ?? '', 'general');
+        }
+        if ($request->has('codigo_misau')) {
+            Setting::set('codigo_misau', $request->codigo_misau ?? '', 'general');
+        }
 
         return back()->with('success', 'Parâmetros da Unidade Sanitária e MISAU salvos com sucesso!');
     }
