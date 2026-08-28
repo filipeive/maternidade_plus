@@ -123,19 +123,39 @@
                            name="profissional_obstetra"
                            value="{{ old('profissional_obstetra') }}"
                            placeholder="Nome do médico obstetra">
-                    @error('profissional_obstetra')
+                    <label class="label-tw">Apresentação Fetal</label>
+                    <select class="input-tw @error('apresentacao_parto') input-error-tw @enderror" name="apresentacao_parto">
+                        <option value="">Selecionar apresentação...</option>
+                        <option value="cefalica" {{ old('apresentacao_parto') == 'cefalica' ? 'selected' : '' }}>Cefálica</option>
+                        <option value="pelvica" {{ old('apresentacao_parto') == 'pelvica' ? 'selected' : '' }}>Pélvica</option>
+                        <option value="transversa" {{ old('apresentacao_parto') == 'transversa' ? 'selected' : '' }}>Transversa / Espádua</option>
+                    </select>
+                    @error('apresentacao_parto')
                         <p class="text-2xs text-crimson-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="label-tw">Enfermeiro(a) SMI Responsável</label>
+                    <label class="label-tw">Estado do Períneo</label>
+                    <select class="input-tw @error('estado_perineo') input-error-tw @enderror" name="estado_perineo">
+                        <option value="">Selecionar estado...</option>
+                        <option value="integro" {{ old('estado_perineo') == 'integro' ? 'selected' : '' }}>Íntegro</option>
+                        <option value="episiotomia" {{ old('estado_perineo') == 'episiotomia' ? 'selected' : '' }}>Episiotomia Suturada</option>
+                        <option value="laceracao" {{ old('estado_perineo') == 'laceracao' ? 'selected' : '' }}>Laceração Suturada</option>
+                    </select>
+                    @error('estado_perineo')
+                        <p class="text-2xs text-crimson-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="label-tw">Nome da Enfermeira SMI / Parteira (Legível)</label>
                     <input type="text"
-                           class="input-tw @error('profissional_enfermeiro') input-error-tw @enderror"
-                           name="profissional_enfermeiro"
-                           value="{{ old('profissional_enfermeiro', auth()->user()->name) }}"
-                           placeholder="Nome do profissional SMI">
-                    @error('profissional_enfermeiro')
+                           class="input-tw @error('nome_parteira_enfermeira') input-error-tw @enderror"
+                           name="nome_parteira_enfermeira"
+                           value="{{ old('nome_parteira_enfermeira', auth()->user()->name ?? '') }}"
+                           placeholder="Nome do profissional">
+                    @error('nome_parteira_enfermeira')
                         <p class="text-2xs text-crimson-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -210,10 +230,62 @@
                     </div>
                 </div>
 
+                    <div>
+                        <label class="label-tw">Perímetro Cefálico / Craniano (cm)</label>
+                        <input type="number"
+                               class="input-tw @error('perimetro_craniano') input-error-tw @enderror"
+                               name="perimetro_craniano"
+                               value="{{ old('perimetro_craniano') }}"
+                               min="15" max="50" step="0.1"
+                               placeholder="Ex: 34.5 (cm)">
+                        @error('perimetro_craniano')
+                            <p class="text-2xs text-crimson-600 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Protocolos de Cuidados Imediatos ao RN (MISAU Moçambique) --}}
+                <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200/60 space-y-3">
+                    <h6 class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-shield-halved text-emerald-600"></i> Cuidados Imediatos ao Recém-Nascido (Protocolo MISAU)
+                    </h6>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="profilaxia_ocular" value="1" {{ old('profilaxia_ocular', true) ? 'checked' : '' }} class="rounded border-surface-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="font-medium text-surface-800">Profilaxia Ocular (Tetraciclina 1%)</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="vitamina_k" value="1" {{ old('vitamina_k', true) ? 'checked' : '' }} class="rounded border-surface-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="font-medium text-surface-800">Vitamina K1 (Prevenção de DHN)</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="aleitamento_primeira_hora" value="1" {{ old('aleitamento_primeira_hora', true) ? 'checked' : '' }} class="rounded border-surface-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="font-medium text-surface-800">Aleitamento Materno na 1ª Hora</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="vacina_bcg" value="1" {{ old('vacina_bcg') ? 'checked' : '' }} class="rounded border-surface-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="font-medium text-surface-800">Vacinação BCG Administrada</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="vacina_polio_0" value="1" {{ old('vacina_polio_0') ? 'checked' : '' }} class="rounded border-surface-300 text-emerald-600 focus:ring-emerald-500">
+                            <span class="font-medium text-surface-800">Vacinação Pólio Zero (VOP 0)</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-200 cursor-pointer">
+                            <input type="checkbox" name="reanimacao_rn" value="1" {{ old('reanimacao_rn') ? 'checked' : '' }} class="rounded border-surface-300 text-amber-600 focus:ring-amber-500">
+                            <span class="font-medium text-surface-800">Necessitou de Reanimação</span>
+                        </label>
+                    </div>
+                </div>
+
                 {{-- Escala APGAR --}}
                 <div class="p-4 bg-surface-50 rounded-xl border border-surface-200/60 space-y-3">
                     <h6 class="text-xs font-bold text-surface-900 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fas fa-chart-simple text-brand-600"></i> Escala APGAR (0 a 10)
+                        <i class="fas fa-chart-simple text-brand-600"></i> Escala APGAR ao Nascer (0 a 10)
                     </h6>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>

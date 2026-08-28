@@ -208,21 +208,82 @@
                 </div>
             </div>
 
-            {{-- Tabs: Consultas e Partos (Alpine.js) --}}
+            {{-- Card Oficial ARO MISAU & Guia de Transferência --}}
+            @php
+                $aroMisau = $patient->estratificacao_aro_misau;
+            @endphp
+            @if($aroMisau['is_aro'] || $patient->risco_isoimunizacao_rh)
+                <div class="card-tw border-l-4 {{ $aroMisau['nivel'] === 'Nivel_III' ? 'border-l-crimson-500 bg-crimson-50/20' : 'border-l-amber-500 bg-amber-50/20' }}">
+                    <div class="card-header-tw flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="badge-{{ $aroMisau['nivel'] === 'Nivel_III' ? 'danger' : 'warning' }} text-xs font-bold uppercase">
+                                <i class="fas fa-hospital-user mr-1"></i> {{ $aroMisau['label'] }}
+                            </span>
+                        </div>
+                        <span class="text-2xs text-surface-500 font-medium">Protocolo de Referência MISAU Moçambique</span>
+                    </div>
+                    <div class="card-body-tw space-y-3">
+                        @if(!empty($aroMisau['motivos']))
+                            <div>
+                                <span class="text-2xs uppercase tracking-wider font-bold text-surface-600 block mb-1">Critérios de Risco Identificados:</span>
+                                <ul class="list-disc list-inside text-xs text-surface-800 space-y-1">
+                                    @foreach($aroMisau['motivos'] as $motivo)
+                                        <li class="font-medium text-crimson-900">{{ $motivo }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        @if(!empty($aroMisau['checklist_transferencia']))
+                            <div class="pt-2 border-t border-surface-200">
+                                <span class="text-2xs uppercase tracking-wider font-bold text-surface-600 block mb-1.5">
+                                    <i class="fas fa-clipboard-check text-brand-600 mr-1"></i> Checklist de Transferência e Cuidados Obrigatórios:
+                                </span>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    @foreach($aroMisau['checklist_transferencia'] as $item)
+                                        <div class="flex items-start gap-1.5 text-surface-700 bg-white p-2 rounded-lg border border-surface-200">
+                                            <i class="fas fa-check-circle text-emerald-600 text-xs mt-0.5 shrink-0"></i>
+                                            <span>{{ $item }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($patient->risco_isoimunizacao_rh)
+                            <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-lg text-xs flex items-center gap-2">
+                                <i class="fas fa-dna text-indigo-600 shrink-0 text-sm"></i>
+                                <div>
+                                    <strong>Alerta de Incompatibilidade Rh:</strong> Mãe {{ $patient->tipo_sanguineo }} e Parceiro {{ $patient->tipo_sanguineo_parceiro }}. Realizar teste de <strong>Coombs Indireto na 30ª semana</strong> de gestação.
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Tabs: Consultas, Antecedentes Obstétricos e Partos (Alpine.js) --}}
             <div class="card-tw overflow-hidden" x-data="{ activeTab: 'consultas' }">
-                <div class="border-b border-surface-200 bg-surface-50/50 px-4 pt-3 flex gap-2">
+                <div class="border-b border-surface-200 bg-surface-50/50 px-4 pt-3 flex gap-2 overflow-x-auto">
                     <button @click="activeTab = 'consultas'"
                             :class="activeTab === 'consultas' ? 'bg-white border-brand-500 text-brand-700 shadow-sm' : 'text-surface-500 hover:text-surface-800'"
-                            class="px-4 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-all flex items-center gap-2">
+                            class="px-4 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-all flex items-center gap-2 shrink-0">
                         <i class="fas fa-calendar-check text-xs"></i>
-                        <span>Consultas ({{ $patient->consultations->count() }})</span>
+                        <span>Consultas CPN ({{ $patient->consultations->count() }})</span>
+                    </button>
+
+                    <button @click="activeTab = 'antecedentes'"
+                            :class="activeTab === 'antecedentes' ? 'bg-white border-brand-500 text-brand-700 shadow-sm' : 'text-surface-500 hover:text-surface-800'"
+                            class="px-4 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-all flex items-center gap-2 shrink-0">
+                        <i class="fas fa-history text-xs"></i>
+                        <span>Antecedentes Obstétricos ({{ $patient->obstetricHistories->count() }})</span>
                     </button>
 
                     <button @click="activeTab = 'partos'"
                             :class="activeTab === 'partos' ? 'bg-white border-brand-500 text-brand-700 shadow-sm' : 'text-surface-500 hover:text-surface-800'"
-                            class="px-4 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-all flex items-center gap-2">
+                            class="px-4 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-all flex items-center gap-2 shrink-0">
                         <i class="fas fa-baby text-xs"></i>
-                        <span>Partos</span>
+                        <span>Maternidade & Partos</span>
                         @if ($patient->births->count() > 0)
                             <span class="badge-info text-2xs px-1.5 py-0.2">{{ $patient->births->count() }}</span>
                         @endif
@@ -230,6 +291,95 @@
                 </div>
 
                 <div class="p-5">
+                    {{-- Tab: Antecedentes Obstétricos --}}
+                    <div x-show="activeTab === 'antecedentes'" style="display: none;">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h5 class="text-sm font-bold text-surface-900">Histórico de Gestações Anteriores (FPN MISAU)</h5>
+                                <p class="text-xs text-surface-500">Registo das gravidezes anteriores para identificação de risco obstétrico prévio</p>
+                            </div>
+                            <a href="{{ route('patients.edit', $patient) }}" class="btn-secondary-tw btn-sm-tw">
+                                <i class="fas fa-plus text-xs"></i>
+                                <span>Gerir Antecedentes</span>
+                            </a>
+                        </div>
+
+                        @if($patient->obstetricHistories->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="table-tw">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-12 text-center">Nº</th>
+                                            <th>Ano</th>
+                                            <th>Tipo Parto</th>
+                                            <th>Local Parto</th>
+                                            <th class="text-center">Prematuro</th>
+                                            <th class="text-center">Gemelar</th>
+                                            <th class="text-center">Desfecho</th>
+                                            <th>Peso RN</th>
+                                            <th>Comentários</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($patient->obstetricHistories as $hist)
+                                            <tr>
+                                                <td class="text-center font-bold text-xs">{{ $hist->numero_gravidez }}ª</td>
+                                                <td class="font-semibold text-xs">{{ $hist->ano ?? 'N/D' }}</td>
+                                                <td>
+                                                    <span class="badge-{{ $hist->tipo_parto === 'cesariana' ? 'warning' : ($hist->tipo_parto === 'ventosa_forceps' ? 'danger' : 'neutral') }} text-2xs">
+                                                        {{ $hist->tipo_parto_label }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-xs">{{ $hist->local_parto_label }}</td>
+                                                <td class="text-center text-xs">
+                                                    @if($hist->prematuro)
+                                                        <span class="badge-danger text-2xs">Sim</span>
+                                                    @else
+                                                        <span class="text-surface-400">Não</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center text-xs">
+                                                    @if($hist->gemelar)
+                                                        <span class="badge-info text-2xs">Sim</span>
+                                                    @else
+                                                        <span class="text-surface-400">Não</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center text-xs">
+                                                    @if($hist->nado_morto)
+                                                        <span class="badge-danger text-2xs">Natimorto</span>
+                                                    @elseif($hist->tipo_aborto !== 'nenhum')
+                                                        <span class="badge-warning text-2xs">Aborto ({{ ucfirst($hist->tipo_aborto) }})</span>
+                                                    @else
+                                                        <span class="badge-success text-2xs">Nato Vivo</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-xs font-mono">
+                                                    @if($hist->peso_rn_gramas)
+                                                        <span class="{{ $hist->peso_rn_gramas < 2500 ? 'text-crimson-600 font-bold' : ($hist->peso_rn_gramas > 4000 ? 'text-amber-600 font-bold' : 'text-surface-800') }}">
+                                                            {{ number_format($hist->peso_rn_gramas, 0) }} g
+                                                        </span>
+                                                    @else
+                                                        <span class="text-surface-400">—</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-xs text-surface-600">{{ $hist->comentarios ?? '—' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-8 bg-surface-50 rounded-xl border border-dashed border-surface-200">
+                                <i class="fas fa-female text-3xl text-surface-400 mb-2"></i>
+                                <p class="text-xs text-surface-600 font-medium">Primigesta ou nenhum antecedente obstétrico cadastrado.</p>
+                                <a href="{{ route('patients.edit', $patient) }}" class="btn-primary-tw btn-sm-tw mt-3 inline-flex">
+                                    <i class="fas fa-edit text-xs"></i>
+                                    <span>Adicionar Antecedentes na FPN</span>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                     {{-- Tab: Consultas --}}
                     <div x-show="activeTab === 'consultas'">
                         @if ($patient->consultations->count() > 0)

@@ -83,14 +83,29 @@ class PatientController extends Controller
     {
         $validated = $request->validate([
             'nome_completo' => 'required|string|max:255',
+            'filiacao' => 'nullable|string|max:255',
             'data_nascimento' => 'required|date|before:today',
+            'estado_civil' => 'nullable|in:solteira,casada,uniao_de_facto,viuva,divorciada',
+            'local_trabalho' => 'nullable|string|max:255',
             'documento_bi' => 'required|string|unique:patients,documento_bi',
+            'codigo_ptv' => 'nullable|string|max:100',
             'contacto' => 'required|string',
             'email' => 'nullable|email',
             'contacto_emergencia' => 'nullable|string',
+            'pessoa_referencia_nome' => 'nullable|string|max:255',
+            'pessoa_referencia_contacto' => 'nullable|string',
             'endereco' => 'required|string',
+            'distrito' => 'nullable|string|max:100',
+            'bairro' => 'nullable|string|max:100',
+            'ponto_referencia_residencia' => 'nullable|string|max:255',
             'tipo_sanguineo' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'tipo_sanguineo_parceiro' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'altura_cm' => 'nullable|integer|min:100|max:250',
             'alergias' => 'nullable|string',
+            'uso_rede_mosquiteira' => 'nullable|boolean',
+            'alergia_penicilina' => 'nullable|boolean',
+            'alergia_cotrimoxazol' => 'nullable|boolean',
+            'alergia_sp' => 'nullable|boolean',
             'historico_medico' => 'nullable|string',
             'data_ultima_menstruacao' => 'nullable|date|before_or_equal:today',
             'numero_gestacoes' => 'required|integer|min:1',
@@ -98,28 +113,62 @@ class PatientController extends Controller
             'numero_abortos' => 'required|integer|min:0'
         ]);
 
+        $validated['uso_rede_mosquiteira'] = $request->boolean('uso_rede_mosquiteira', true);
+        $validated['alergia_penicilina'] = $request->boolean('alergia_penicilina', false);
+        $validated['alergia_cotrimoxazol'] = $request->boolean('alergia_cotrimoxazol', false);
+        $validated['alergia_sp'] = $request->boolean('alergia_sp', false);
+
         $patient = Patient::create($validated);
         
-        // Calcular data provável do parto se DUM fornecida
+        // Calcular data provável do parto se DUM fornecida (Regra de Naegele)
         if ($patient->data_ultima_menstruacao) {
-            $patient->data_provavel_parto = Carbon::parse($patient->data_ultima_menstruacao)
-                ->addDays(280);
+            $patient->data_provavel_parto = Carbon::parse($patient->data_ultima_menstruacao)->addDays(280);
             $patient->save();
         }
 
-        return redirect()->route('patients.index')
-            ->with('success', 'Gestante cadastrada com sucesso!');
+        // Criar histórico de antecedentes obstétricos se fornecidos
+        if ($request->has('obstetric_histories') && is_array($request->obstetric_histories)) {
+            foreach ($request->obstetric_histories as $idx => $hist) {
+                if (!empty($hist['ano']) || !empty($hist['tipo_parto'])) {
+                    $patient->obstetricHistories()->create([
+                        'numero_gravidez' => $idx + 1,
+                        'ano' => $hist['ano'] ?? null,
+                        'tipo_aborto' => $hist['tipo_aborto'] ?? 'nenhum',
+                        'local_parto' => $hist['local_parto'] ?? 'us_maternidade',
+                        'prematuro' => !empty($hist['prematuro']),
+                        'tipo_parto' => $hist['tipo_parto'] ?? 'eutocico',
+                        'gemelar' => !empty($hist['gemelar']),
+                        'nado_morto' => !empty($hist['nado_morto']),
+                        'nato_vivo' => !empty($hist['nato_vivo']),
+                        'peso_rn_gramas' => !empty($hist['peso_rn_gramas']) ? (int)$hist['peso_rn_gramas'] : null,
+                        'comentarios' => $hist['comentarios'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('patients.show', $patient)
+            ->with('success', 'Ficha Pré-Natal (FPN) da gestante cadastrada com sucesso!');
     }
 
     public function show(Patient $patient)
     {
-        $patient->load(['consultations.exams', 'consultations.user']);
+        $patient->load([
+            'consultations.exams',
+            'consultations.user',
+            'obstetricHistories',
+            'vaccines',
+            'births',
+            'prophylaxis',
+            'alertasAtivos'
+        ]);
         
         return view('patients.show', compact('patient'));
     }
 
     public function card(Patient $patient)
     {
+        $patient->load(['obstetricHistories', 'vaccines', 'prophylaxis']);
         $patientUrl = route('patients.show', $patient->id);
         $qrCode = \App\Services\QrCodeService::generateBase64($patientUrl);
 
@@ -128,17 +177,19 @@ class PatientController extends Controller
 
     public function cardPdf(Patient $patient)
     {
+        $patient->load(['obstetricHistories', 'vaccines', 'prophylaxis', 'consultations.user']);
         $patientUrl = route('patients.show', $patient->id);
         $qrCode = \App\Services\QrCodeService::generateBase64($patientUrl);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('patients.card-pdf', compact('patient', 'qrCode', 'patientUrl'));
-        $pdf->setPaper('a6', 'landscape');
+        $pdf->setPaper('a4', 'portrait');
         
-        return $pdf->download("cartao_gestante_{$patient->id}.pdf");
+        return $pdf->download("cartao_gestante_fpn_{$patient->id}.pdf");
     }
 
     public function edit(Patient $patient)
     {
+        $patient->load('obstetricHistories');
         return view('patients.edit', compact('patient'));
     }
 
@@ -146,14 +197,29 @@ class PatientController extends Controller
     {
         $validated = $request->validate([
             'nome_completo' => 'required|string|max:255',
+            'filiacao' => 'nullable|string|max:255',
             'data_nascimento' => 'required|date|before:today',
+            'estado_civil' => 'nullable|in:solteira,casada,uniao_de_facto,viuva,divorciada',
+            'local_trabalho' => 'nullable|string|max:255',
             'documento_bi' => 'required|string|unique:patients,documento_bi,' . $patient->id,
+            'codigo_ptv' => 'nullable|string|max:100',
             'contacto' => 'required|string',
             'email' => 'nullable|email',
             'contacto_emergencia' => 'nullable|string',
+            'pessoa_referencia_nome' => 'nullable|string|max:255',
+            'pessoa_referencia_contacto' => 'nullable|string',
             'endereco' => 'required|string',
+            'distrito' => 'nullable|string|max:100',
+            'bairro' => 'nullable|string|max:100',
+            'ponto_referencia_residencia' => 'nullable|string|max:255',
             'tipo_sanguineo' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'tipo_sanguineo_parceiro' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'altura_cm' => 'nullable|integer|min:100|max:250',
             'alergias' => 'nullable|string',
+            'uso_rede_mosquiteira' => 'nullable|boolean',
+            'alergia_penicilina' => 'nullable|boolean',
+            'alergia_cotrimoxazol' => 'nullable|boolean',
+            'alergia_sp' => 'nullable|boolean',
             'historico_medico' => 'nullable|string',
             'data_ultima_menstruacao' => 'nullable|date|before_or_equal:today',
             'numero_gestacoes' => 'required|integer|min:1',
@@ -161,18 +227,44 @@ class PatientController extends Controller
             'numero_abortos' => 'required|integer|min:0'
         ]);
 
+        $validated['uso_rede_mosquiteira'] = $request->boolean('uso_rede_mosquiteira', true);
+        $validated['alergia_penicilina'] = $request->boolean('alergia_penicilina', false);
+        $validated['alergia_cotrimoxazol'] = $request->boolean('alergia_cotrimoxazol', false);
+        $validated['alergia_sp'] = $request->boolean('alergia_sp', false);
+
         $patient->update($validated);
         
         // Recalcular data provável do parto se DUM alterada
         if ($request->data_ultima_menstruacao && 
             $request->data_ultima_menstruacao !== $patient->getOriginal('data_ultima_menstruacao')) {
-            $patient->data_provavel_parto = Carbon::parse($request->data_ultima_menstruacao)
-                ->addDays(280);
+            $patient->data_provavel_parto = Carbon::parse($request->data_ultima_menstruacao)->addDays(280);
             $patient->save();
         }
 
+        // Sincronizar histórico obstétrico se enviado
+        if ($request->has('obstetric_histories') && is_array($request->obstetric_histories)) {
+            $patient->obstetricHistories()->delete();
+            foreach ($request->obstetric_histories as $idx => $hist) {
+                if (!empty($hist['ano']) || !empty($hist['tipo_parto'])) {
+                    $patient->obstetricHistories()->create([
+                        'numero_gravidez' => $idx + 1,
+                        'ano' => $hist['ano'] ?? null,
+                        'tipo_aborto' => $hist['tipo_aborto'] ?? 'nenhum',
+                        'local_parto' => $hist['local_parto'] ?? 'us_maternidade',
+                        'prematuro' => !empty($hist['prematuro']),
+                        'tipo_parto' => $hist['tipo_parto'] ?? 'eutocico',
+                        'gemelar' => !empty($hist['gemelar']),
+                        'nado_morto' => !empty($hist['nado_morto']),
+                        'nato_vivo' => !empty($hist['nato_vivo']),
+                        'peso_rn_gramas' => !empty($hist['peso_rn_gramas']) ? (int)$hist['peso_rn_gramas'] : null,
+                        'comentarios' => $hist['comentarios'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('patients.show', $patient)
-            ->with('success', 'Dados da gestante atualizados com sucesso!');
+            ->with('success', 'Dados da Ficha Pré-Natal (FPN) atualizados com sucesso!');
     }
 
     public function destroy(Patient $patient)

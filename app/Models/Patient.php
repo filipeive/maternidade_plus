@@ -15,14 +15,29 @@ class Patient extends Model
 
     protected $fillable = [
         'nome_completo',
+        'filiacao',
         'data_nascimento',
+        'estado_civil',
+        'local_trabalho',
         'documento_bi',
+        'codigo_ptv',
         'contacto',
         'email',
         'contacto_emergencia',
+        'pessoa_referencia_nome',
+        'pessoa_referencia_contacto',
         'endereco',
+        'distrito',
+        'bairro',
+        'ponto_referencia_residencia',
         'tipo_sanguineo',
+        'tipo_sanguineo_parceiro',
+        'altura_cm',
         'alergias',
+        'uso_rede_mosquiteira',
+        'alergia_penicilina',
+        'alergia_cotrimoxazol',
+        'alergia_sp',
         'historico_medico',
         'data_ultima_menstruacao',
         'data_provavel_parto',
@@ -37,10 +52,19 @@ class Patient extends Model
         'data_nascimento' => 'date',
         'data_ultima_menstruacao' => 'date',
         'data_provavel_parto' => 'date',
+        'altura_cm' => 'integer',
+        'uso_rede_mosquiteira' => 'boolean',
+        'alergia_penicilina' => 'boolean',
+        'alergia_cotrimoxazol' => 'boolean',
+        'alergia_sp' => 'boolean',
         'ativo' => 'boolean'
     ];
 
     // Relacionamentos
+    public function obstetricHistories()
+    {
+        return $this->hasMany(ObstetricHistory::class)->orderBy('numero_gravidez', 'asc');
+    }
     public function consultations()
     {
         return $this->hasMany(Consultation::class);
@@ -293,6 +317,125 @@ class Patient extends Model
         if ($fatoresRisco >= 2) return 'Alto';
         if ($fatoresRisco == 1) return 'Moderado';
         return 'Baixo';
+    }
+
+    /**
+     * Estratificação Oficial de Alto Risco Obstétrico (ARO) do MISAU por Nível de Referência Hospitalar
+     */
+    public function getEstratificacaoAroMisauAttribute(): array
+    {
+        $nivel = 'Nivel_I'; // Nível Primário (Centro de Saúde)
+        $nivelLabel = 'Nível I — Cuidados Primários (Centro de Saúde)';
+        $motivos = [];
+        $cuidadosTransferencia = [];
+
+        $idade = $this->idade;
+        $isPrimigesta = ($this->numero_gestacoes <= 1 || $this->numero_partos == 0);
+        $altura = $this->altura_cm;
+
+        // --- Critérios NÍVEL III (Hospital Provincial / Central) ---
+        $criteriosNivel3 = [];
+
+        if ($isPrimigesta && $altura && $altura < 150) {
+            $criteriosNivel3[] = 'Primigesta com baixa estatura (< 1,50 m) — risco de desproporção céfalo-pélvica (DCP)';
+        }
+
+        if ($isPrimigesta && $idade && $idade < 16) {
+            $criteriosNivel3[] = 'Primigesta adolescente (< 16 anos) — bacia óssea imatura';
+        }
+
+        if ($this->obstetricHistories->where('tipo_parto', 'cesariana')->count() > 0) {
+            $criteriosNivel3[] = 'Antecedente de cesariana prévia — risco de rotura uterina';
+        }
+
+        if ($this->obstetricHistories->where('tipo_parto', 'ventosa_forceps')->count() > 0) {
+            $criteriosNivel3[] = 'Antecedente de parto instrumentado (ventosa/fórceps)';
+        }
+
+        // --- Critérios NÍVEL II (Hospital Rural / Geral às 32 semanas) ---
+        $criteriosNivel2 = [];
+
+        if ($idade && $idade >= 35) {
+            $criteriosNivel2[] = 'Idade materna avançada (≥ 35 anos)';
+        }
+
+        if ($this->numero_partos >= 5) {
+            $criteriosNivel2[] = 'Grande multípara (≥ 5 partos anteriores) — risco de atonia uterina e hemorragia pós-parto';
+        }
+
+        if ($this->numero_abortos >= 2) {
+            $criteriosNivel2[] = 'Histórico de abortos recorrentes (≥ 2 abortos)';
+        }
+
+        if ($this->obstetricHistories->where('nado_morto', true)->count() > 0) {
+            $criteriosNivel2[] = 'Histórico de natimorto / óbito fetal em gestação anterior';
+        }
+
+        if ($this->obstetricHistories->where('peso_rn_gramas', '>', 4000)->count() > 0) {
+            $criteriosNivel2[] = 'Antecedente de recém-nascido macrossómico (> 4,0 kg)';
+        }
+
+        // --- Critérios NÍVEL I (Consulta Médica / TM no Centro de Saúde) ---
+        $criteriosNivel1 = [];
+
+        if ($this->historico_medico && (stripos($this->historico_medico, 'diabetes') !== false || stripos($this->historico_medico, 'glicemia') !== false)) {
+            $criteriosNivel1[] = 'Histórico / suspeita de Diabetes Gestacional';
+        }
+
+        if ($this->historico_medico && (stripos($this->historico_medico, 'tuberculose') !== false || stripos($this->historico_medico, 'tosse') !== false)) {
+            $criteriosNivel1[] = 'Sintomática respiratória / Tuberculose em rastreio ou tratamento';
+        }
+
+        // Decisão do nível
+        if (!empty($criteriosNivel3)) {
+            $nivel = 'Nivel_III';
+            $nivelLabel = 'Nível III — Cuidados Terciários (Hospital Provincial / Central)';
+            $motivos = $criteriosNivel3;
+            $cuidadosTransferencia = [
+                'Programar parto para Hospital Provincial/Central',
+                'Acesso venoso calibroso com Soro Ringer Lactato / Fisiológico',
+                'Algaliação se retenção ou emergência',
+                'Acompanhamento por profissional de saúde (ESMI ou servente)',
+                'Acompanhante familiar jovem apto para doação de sangue',
+                'Ficha Pré-Natal (FPN) e todos os exames originais em anexo'
+            ];
+        } elseif (!empty($criteriosNivel2)) {
+            $nivel = 'Nivel_II';
+            $nivelLabel = 'Nível II — Cuidados Secundários (Hospital Rural / Geral às 32 sem)';
+            $motivos = $criteriosNivel2;
+            $cuidadosTransferencia = [
+                'Referir para consulta de Obstetrícia às 32 semanas',
+                'Encaminhar para Casa de Espera da Maternidade',
+                'Ficha Pré-Natal (FPN) com registo de profilaxias atualizado'
+            ];
+        } elseif (!empty($criteriosNivel1)) {
+            $nivel = 'Nivel_I_Especial';
+            $nivelLabel = 'Nível I — Consulta de Médico / Técnico de Medicina no CS';
+            $motivos = $criteriosNivel1;
+            $cuidadosTransferencia = [
+                'Avaliação clínica detalhada na Unidade Sanitária primária',
+                'Requisição de exames laboratoriais complementares'
+            ];
+        }
+
+        return [
+            'nivel' => $nivel,
+            'label' => $nivelLabel,
+            'is_aro' => ($nivel !== 'Nivel_I'),
+            'motivos' => $motivos,
+            'checklist_transferencia' => $cuidadosTransferencia
+        ];
+    }
+
+    /**
+     * Rastreio de Risco de Isoimunização Rh (Mãe Rh- / Parceiro Rh+)
+     */
+    public function getRiscoIsoimunizacaoRhAttribute(): bool
+    {
+        $maeRhNeg = in_array($this->tipo_sanguineo, ['A-', 'B-', 'AB-', 'O-']);
+        $parceiroRhPos = in_array($this->tipo_sanguineo_parceiro, ['A+', 'B+', 'AB+', 'O+']);
+
+        return ($maeRhNeg && $parceiroRhPos);
     }
 
     public function debugIdadeGestacional()

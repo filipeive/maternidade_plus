@@ -19,14 +19,22 @@
             <h2 class="text-xl font-bold text-surface-900">Livro de Registos CPN — MOD-SIS-B01 (MISAU)</h2>
             <p class="text-sm text-surface-500">Instrumento oficial de monitoria continuada da gestação, profilaxias e coortes de saúde materna</p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('mod_sis_b01.resumo_mensal') }}" class="btn-primary-tw">
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('mod_sis_b01.resumo_mensal') }}" class="btn-primary-tw btn-sm-tw">
                 <i class="fas fa-chart-pie text-xs"></i>
-                <span>Resumo Mensal (MOD-SIS-B01-B)</span>
+                <span>US (B01-B)</span>
             </a>
-            <a href="{{ route('consultations.create') }}" class="btn-secondary-tw">
+            <a href="{{ route('mod_sis_b01.resumo_distrital') }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-city text-xs"></i>
+                <span>Distrito (B01-C)</span>
+            </a>
+            <a href="{{ route('mod_sis_b01.resumo_provincial') }}" class="btn-secondary-tw btn-sm-tw">
+                <i class="fas fa-flag text-xs"></i>
+                <span>Província (B01-D)</span>
+            </a>
+            <a href="{{ route('consultations.create') }}" class="btn-secondary-tw btn-sm-tw">
                 <i class="fas fa-plus text-xs"></i>
-                <span>Registar Consulta</span>
+                <span>Nova Consulta</span>
             </a>
         </div>
     </div>

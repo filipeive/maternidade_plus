@@ -145,4 +145,157 @@ class ModSisB01Controller extends Controller
 
         return $pdf->download("MOD-SIS-B01-B_Resumo_Mensal_{$mesAno}.pdf");
     }
+
+    /**
+     * Resumo Mensal do Distrito (MOD-SIS-B01-C)
+     */
+    public function resumoDistrital(Request $request)
+    {
+        $mesAno = $request->input('mes', now()->format('Y-m'));
+        $distrito = $request->input('distrito', 'Quelimane');
+        $dataInicio = Carbon::parse($mesAno . '-01')->startOfMonth();
+        $dataFim = Carbon::parse($mesAno . '-01')->endOfMonth();
+
+        // Agrupamento por bairros/unidades sanitárias do distrito
+        $bairros = Patient::where('distrito', $distrito)
+            ->whereNotNull('bairro')
+            ->distinct()
+            ->pluck('bairro');
+
+        if ($bairros->isEmpty()) {
+            $bairros = collect(['Centro de Saúde Urbano', 'Centro de Saúde Coalane', 'Centro de Saúde 17 de Setembro']);
+        }
+
+        $dadosPorUnidade = [];
+        $totaisDistrito = [
+            'total_primeiras' => 0,
+            'idade_10_14' => 0,
+            'idade_15_19' => 0,
+            'idade_20_24' => 0,
+            'idade_25_plus' => 0,
+            'primeiras_precoces_12sem' => 0,
+            'total_coorte_6meses' => 0,
+            'quatro_ou_mais_consultas' => 0,
+        ];
+
+        foreach ($bairros as $unidade) {
+            $pacientesUnidade = Patient::where('distrito', $distrito)
+                ->where('bairro', $unidade)
+                ->whereBetween('created_at', [$dataInicio, $dataFim])
+                ->get();
+
+            $totalPrim = $pacientesUnidade->count();
+            $id10_14 = $pacientesUnidade->filter(fn($p) => $p->idade >= 10 && $p->idade <= 14)->count();
+            $id15_19 = $pacientesUnidade->filter(fn($p) => $p->idade >= 15 && $p->idade <= 19)->count();
+            $id20_24 = $pacientesUnidade->filter(fn($p) => $p->idade >= 20 && $p->idade <= 24)->count();
+            $id25Plus = $pacientesUnidade->filter(fn($p) => $p->idade >= 25)->count();
+            $precoces = $pacientesUnidade->filter(fn($p) => $p->semanas_gestacao && $p->semanas_gestacao <= 12)->count();
+
+            // Coorte 6 meses
+            $coorteInicio = (clone $dataInicio)->subMonths(6)->startOfMonth();
+            $coorteFim = (clone $dataInicio)->subMonths(6)->endOfMonth();
+            $pacientesCoorte = Patient::where('distrito', $distrito)
+                ->where('bairro', $unidade)
+                ->whereBetween('created_at', [$coorteInicio, $coorteFim])
+                ->get();
+
+            $totCoorte = $pacientesCoorte->count();
+            $quatroConsultas = $pacientesCoorte->filter(fn($p) => $p->consultations()->count() >= 4)->count();
+
+            $dadosPorUnidade[$unidade] = [
+                'total_primeiras' => $totalPrim,
+                'idade_10_14' => $id10_14,
+                'idade_15_19' => $id15_19,
+                'idade_20_24' => $id20_24,
+                'idade_25_plus' => $id25Plus,
+                'primeiras_precoces_12sem' => $precoces,
+                'total_coorte_6meses' => $totCoorte,
+                'quatro_ou_mais_consultas' => $quatroConsultas,
+            ];
+
+            $totaisDistrito['total_primeiras'] += $totalPrim;
+            $totaisDistrito['idade_10_14'] += $id10_14;
+            $totaisDistrito['idade_15_19'] += $id15_19;
+            $totaisDistrito['idade_20_24'] += $id20_24;
+            $totaisDistrito['idade_25_plus'] += $id25Plus;
+            $totaisDistrito['primeiras_precoces_12sem'] += $precoces;
+            $totaisDistrito['total_coorte_6meses'] += $totCoorte;
+            $totaisDistrito['quatro_ou_mais_consultas'] += $quatroConsultas;
+        }
+
+        return view('mod_sis_b01.resumo_distrital', compact('dadosPorUnidade', 'totaisDistrito', 'distrito', 'mesAno'));
+    }
+
+    /**
+     * Resumo Mensal da Província (MOD-SIS-B01-D)
+     */
+    public function resumoProvincial(Request $request)
+    {
+        $mesAno = $request->input('mes', now()->format('Y-m'));
+        $provincia = $request->input('provincia', 'Zambézia');
+        $dataInicio = Carbon::parse($mesAno . '-01')->startOfMonth();
+        $dataFim = Carbon::parse($mesAno . '-01')->endOfMonth();
+
+        $distritos = Patient::distinct()->pluck('distrito')->filter();
+        if ($distritos->isEmpty()) {
+            $distritos = collect(['Quelimane', 'Nicoadala', 'Mocuba', 'Gurúè', 'Milange']);
+        }
+
+        $dadosPorDistrito = [];
+        $totaisProvincia = [
+            'total_primeiras' => 0,
+            'idade_10_14' => 0,
+            'idade_15_19' => 0,
+            'idade_20_24' => 0,
+            'idade_25_plus' => 0,
+            'primeiras_precoces_12sem' => 0,
+            'total_coorte_6meses' => 0,
+            'quatro_ou_mais_consultas' => 0,
+        ];
+
+        foreach ($distritos as $dist) {
+            $pacientesDistrito = Patient::where('distrito', $dist)
+                ->whereBetween('created_at', [$dataInicio, $dataFim])
+                ->get();
+
+            $totalPrim = $pacientesDistrito->count();
+            $id10_14 = $pacientesDistrito->filter(fn($p) => $p->idade >= 10 && $p->idade <= 14)->count();
+            $id15_19 = $pacientesDistrito->filter(fn($p) => $p->idade >= 15 && $p->idade <= 19)->count();
+            $id20_24 = $pacientesDistrito->filter(fn($p) => $p->idade >= 20 && $p->idade <= 24)->count();
+            $id25Plus = $pacientesDistrito->filter(fn($p) => $p->idade >= 25)->count();
+            $precoces = $pacientesDistrito->filter(fn($p) => $p->semanas_gestacao && $p->semanas_gestacao <= 12)->count();
+
+            // Coorte 6 meses
+            $coorteInicio = (clone $dataInicio)->subMonths(6)->startOfMonth();
+            $coorteFim = (clone $dataInicio)->subMonths(6)->endOfMonth();
+            $pacientesCoorte = Patient::where('distrito', $dist)
+                ->whereBetween('created_at', [$coorteInicio, $coorteFim])
+                ->get();
+
+            $totCoorte = $pacientesCoorte->count();
+            $quatroConsultas = $pacientesCoorte->filter(fn($p) => $p->consultations()->count() >= 4)->count();
+
+            $dadosPorDistrito[$dist] = [
+                'total_primeiras' => $totalPrim,
+                'idade_10_14' => $id10_14,
+                'idade_15_19' => $id15_19,
+                'idade_20_24' => $id20_24,
+                'idade_25_plus' => $id25Plus,
+                'primeiras_precoces_12sem' => $precoces,
+                'total_coorte_6meses' => $totCoorte,
+                'quatro_ou_mais_consultas' => $quatroConsultas,
+            ];
+
+            $totaisProvincia['total_primeiras'] += $totalPrim;
+            $totaisProvincia['idade_10_14'] += $id10_14;
+            $totaisProvincia['idade_15_19'] += $id15_19;
+            $totaisProvincia['idade_20_24'] += $id20_24;
+            $totaisProvincia['idade_25_plus'] += $id25Plus;
+            $totaisProvincia['primeiras_precoces_12sem'] += $precoces;
+            $totaisProvincia['total_coorte_6meses'] += $totCoorte;
+            $totaisProvincia['quatro_ou_mais_consultas'] += $quatroConsultas;
+        }
+
+        return view('mod_sis_b01.resumo_provincial', compact('dadosPorDistrito', 'totaisProvincia', 'provincia', 'mesAno'));
+    }
 }

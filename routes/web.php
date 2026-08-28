@@ -86,6 +86,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [\App\Http\Controllers\ModSisB01Controller::class, 'index'])->name('index');
         Route::get('/resumo-mensal', [\App\Http\Controllers\ModSisB01Controller::class, 'resumoMensal'])->name('resumo_mensal');
         Route::get('/resumo-mensal/pdf', [\App\Http\Controllers\ModSisB01Controller::class, 'exportPdf'])->name('resumo_mensal.pdf');
+        Route::get('/resumo-distrital', [\App\Http\Controllers\ModSisB01Controller::class, 'resumoDistrital'])->name('resumo_distrital');
+        Route::get('/resumo-provincial', [\App\Http\Controllers\ModSisB01Controller::class, 'resumoProvincial'])->name('resumo_provincial');
     });
     
     // Exames - Rotas expandidas

@@ -72,7 +72,9 @@ class AlertaPrecoceService
             $this->avaliarExamesCriticos($gestante),
             $this->avaliarGanhoPeso($gestante),
             $this->avaliarPosTermo($gestante),
-            $this->avaliarSangramento($gestante)
+            $this->avaliarSangramento($gestante),
+            $this->avaliarAroMisauReferencia($gestante),
+            $this->avaliarIsoimunizacaoRh($gestante)
         );
 
         $criados = [];
@@ -628,6 +630,76 @@ class AlertaPrecoceService
         }
 
         return false;
+    }
+
+    /**
+     * Regra 10: Estratificação de ARO do MISAU e Encaminhamento Hospitalar Obrigatório.
+     */
+    public function avaliarAroMisauReferencia(Patient $gestante): array
+    {
+        $aro = $gestante->estratificacao_aro_misau;
+        if (!$aro['is_aro']) {
+            return [];
+        }
+
+        if ($aro['nivel'] === 'Nivel_III') {
+            $motivosTexto = implode('; ', $aro['motivos']);
+            return [[
+                'consultation_id' => null,
+                'tipo' => 'aro_nivel_3_referencia',
+                'nivel' => Alerta::NIVEL_ALTO,
+                'mensagem' => "Alto Risco Obstétrico Nível III (MISAU): {$motivosTexto}. Programar transferência/parto para Hospital Provincial ou Central.",
+                'dados' => [
+                    'nivel_misau' => 'Nivel_III',
+                    'motivos' => $aro['motivos'],
+                    'checklist_transferencia' => $aro['checklist_transferencia'],
+                ],
+            ]];
+        }
+
+        if ($aro['nivel'] === 'Nivel_II') {
+            $semanas = $gestante->idade_gestacional ?? 0;
+            $motivosTexto = implode('; ', $aro['motivos']);
+            $nivelSeveridade = ($semanas >= 32) ? Alerta::NIVEL_ALTO : Alerta::NIVEL_MEDIO;
+
+            return [[
+                'consultation_id' => null,
+                'tipo' => 'aro_nivel_2_referencia',
+                'nivel' => $nivelSeveridade,
+                'mensagem' => "Alto Risco Obstétrico Nível II (MISAU): {$motivosTexto}. Encaminhar para consulta de Obstetrícia / Casa de Espera às 32 semanas.",
+                'dados' => [
+                    'nivel_misau' => 'Nivel_II',
+                    'semanas_gestacao' => $semanas,
+                    'motivos' => $aro['motivos'],
+                    'checklist_transferencia' => $aro['checklist_transferencia'],
+                ],
+            ]];
+        }
+
+        return [];
+    }
+
+    /**
+     * Regra 11: Rastreio de Risco de Isoimunização Rh (Mãe Rh- / Parceiro Rh+).
+     */
+    public function avaliarIsoimunizacaoRh(Patient $gestante): array
+    {
+        if ($gestante->risco_isoimunizacao_rh) {
+            $semanas = $gestante->idade_gestacional ?? 0;
+            return [[
+                'consultation_id' => null,
+                'tipo' => 'risco_isoimunizacao_rh',
+                'nivel' => Alerta::NIVEL_MEDIO,
+                'mensagem' => "Incompatibilidade de Factor Rh detectada (Mãe {$gestante->tipo_sanguineo} e Parceiro {$gestante->tipo_sanguineo_parceiro}). Obrigatório teste de Coombs Indireto na 30ª semana (Gestação atual: {$semanas} semanas).",
+                'dados' => [
+                    'mae_rh' => $gestante->tipo_sanguineo,
+                    'parceiro_rh' => $gestante->tipo_sanguineo_parceiro,
+                    'semanas_gestacao' => $semanas,
+                ],
+            ]];
+        }
+
+        return [];
     }
 
     /**

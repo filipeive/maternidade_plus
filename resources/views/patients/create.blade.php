@@ -51,6 +51,21 @@
                     </div>
 
                     <div>
+                        <label for="filiacao" class="label-tw">Filiação (Pais)</label>
+                        <input type="text"
+                               class="input-tw @error('filiacao') input-error-tw @enderror"
+                               id="filiacao"
+                               name="filiacao"
+                               value="{{ old('filiacao') }}"
+                               placeholder="Filha de ... e de ...">
+                        @error('filiacao')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div>
                         <label for="data_nascimento" class="label-tw">Data de Nascimento <span class="text-crimson-500">*</span></label>
                         <input type="date"
                                class="input-tw @error('data_nascimento') input-error-tw @enderror"
@@ -62,11 +77,36 @@
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label for="documento_bi" class="label-tw">Documento BI <span class="text-crimson-500">*</span></label>
+                        <label for="estado_civil" class="label-tw">Estado Civil</label>
+                        <select class="input-tw @error('estado_civil') input-error-tw @enderror" id="estado_civil" name="estado_civil">
+                            <option value="solteira" {{ old('estado_civil') === 'solteira' ? 'selected' : '' }}>Solteira</option>
+                            <option value="casada" {{ old('estado_civil') === 'casada' ? 'selected' : '' }}>Casada</option>
+                            <option value="uniao_de_facto" {{ old('estado_civil') === 'uniao_de_facto' ? 'selected' : '' }}>União de Facto</option>
+                            <option value="viuva" {{ old('estado_civil') === 'viuva' ? 'selected' : '' }}>Viúva</option>
+                            <option value="divorciada" {{ old('estado_civil') === 'divorciada' ? 'selected' : '' }}>Divorciada</option>
+                        </select>
+                        @error('estado_civil')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="local_trabalho" class="label-tw">Profissão / Trabalho</label>
+                        <input type="text"
+                               class="input-tw @error('local_trabalho') input-error-tw @enderror"
+                               id="local_trabalho"
+                               name="local_trabalho"
+                               value="{{ old('local_trabalho') }}"
+                               placeholder="Ex: Camponesa, Comerciante...">
+                        @error('local_trabalho')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="documento_bi" class="label-tw">Documento BI / NID <span class="text-crimson-500">*</span></label>
                         <input type="text"
                                class="input-tw @error('documento_bi') input-error-tw @enderror"
                                id="documento_bi"
@@ -78,7 +118,9 @@
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label for="contacto" class="label-tw">Contacto Telefónico <span class="text-crimson-500">*</span></label>
                         <input type="tel"
@@ -92,38 +134,89 @@
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <label for="email" class="label-tw">Endereço de Email</label>
-                        <input type="email"
-                               class="input-tw @error('email') input-error-tw @enderror"
-                               id="email"
-                               name="email"
-                               value="{{ old('email') }}"
-                               placeholder="email@exemplo.com">
-                        @error('email')
-                            <p class="error-text-tw">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     <div>
-                        <label for="contacto_emergencia" class="label-tw">Contacto de Emergência</label>
+                        <label for="contacto_emergencia" class="label-tw">Contacto Emergência</label>
                         <input type="tel"
                                class="input-tw @error('contacto_emergencia') input-error-tw @enderror"
                                id="contacto_emergencia"
                                name="contacto_emergencia"
                                value="{{ old('contacto_emergencia') }}"
-                               placeholder="Nome e telefone de familiar">
+                               placeholder="Telefone familiar">
                         @error('contacto_emergencia')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="pessoa_referencia_nome" class="label-tw">Pessoa de Referência (Nome)</label>
+                        <input type="text"
+                               class="input-tw @error('pessoa_referencia_nome') input-error-tw @enderror"
+                               id="pessoa_referencia_nome"
+                               name="pessoa_referencia_nome"
+                               value="{{ old('pessoa_referencia_nome') }}"
+                               placeholder="Nome do parceiro / familiar">
+                        @error('pessoa_referencia_nome')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="codigo_ptv" class="label-tw">Código PTV (Se aplicável)</label>
+                        <input type="text"
+                               class="input-tw @error('codigo_ptv') input-error-tw @enderror"
+                               id="codigo_ptv"
+                               name="codigo_ptv"
+                               value="{{ old('codigo_ptv') }}"
+                               placeholder="Ex: PTV-2026-045">
+                        @error('codigo_ptv')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                        <label for="distrito" class="label-tw">Distrito</label>
+                        <input type="text"
+                               class="input-tw @error('distrito') input-error-tw @enderror"
+                               id="distrito"
+                               name="distrito"
+                               value="{{ old('distrito', 'Quelimane') }}">
+                        @error('distrito')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="bairro" class="label-tw">Bairro</label>
+                        <input type="text"
+                               class="input-tw @error('bairro') input-error-tw @enderror"
+                               id="bairro"
+                               name="bairro"
+                               value="{{ old('bairro') }}"
+                               placeholder="Ex: Coalane, Saguar, 17 Setembro...">
+                        @error('bairro')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="ponto_referencia_residencia" class="label-tw">Ponto de Referência da Residência</label>
+                        <input type="text"
+                               class="input-tw @error('ponto_referencia_residencia') input-error-tw @enderror"
+                               id="ponto_referencia_residencia"
+                               name="ponto_referencia_residencia"
+                               value="{{ old('ponto_referencia_residencia') }}"
+                               placeholder="Próximo à Escola, Mercado...">
+                        @error('ponto_referencia_residencia')
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <label for="endereco" class="label-tw">Endereço Completo <span class="text-crimson-500">*</span></label>
+                    <label for="endereco" class="label-tw">Endereço Completo (Rua / Av / Casa) <span class="text-crimson-500">*</span></label>
                     <textarea class="input-tw @error('endereco') input-error-tw @enderror"
                               id="endereco"
                               name="endereco"
@@ -138,26 +231,49 @@
 
             <div class="border-t border-surface-100 pt-6"></div>
 
-            {{-- Histórico Obstétrico --}}
+            {{-- Histórico Obstétrico & Triagem de Risco MISAU --}}
             <div>
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-brand-600 mb-4 flex items-center gap-2">
-                    <i class="fas fa-stethoscope text-brand-500"></i> Histórico Obstétrico & Clínico
+                    <i class="fas fa-stethoscope text-brand-500"></i> Histórico Obstétrico & Triagem de Risco (FPN MISAU)
                 </h4>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                     <div>
-                        <label for="tipo_sanguineo" class="label-tw">Tipo Sanguíneo</label>
-                        <select class="input-tw @error('tipo_sanguineo') input-error-tw @enderror"
-                                id="tipo_sanguineo"
-                                name="tipo_sanguineo">
+                        <label for="tipo_sanguineo" class="label-tw">Sangue Mãe</label>
+                        <select class="input-tw @error('tipo_sanguineo') input-error-tw @enderror" id="tipo_sanguineo" name="tipo_sanguineo">
                             <option value="">Selecione</option>
                             @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
-                                <option value="{{ $tipo }}" {{ old('tipo_sanguineo') === $tipo ? 'selected' : '' }}>
-                                    {{ $tipo }}
-                                </option>
+                                <option value="{{ $tipo }}" {{ old('tipo_sanguineo') === $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
                             @endforeach
                         </select>
                         @error('tipo_sanguineo')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="tipo_sanguineo_parceiro" class="label-tw">Sangue Parceiro</label>
+                        <select class="input-tw @error('tipo_sanguineo_parceiro') input-error-tw @enderror" id="tipo_sanguineo_parceiro" name="tipo_sanguineo_parceiro">
+                            <option value="">Selecione</option>
+                            @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
+                                <option value="{{ $tipo }}" {{ old('tipo_sanguineo_parceiro') === $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                            @endforeach
+                        </select>
+                        @error('tipo_sanguineo_parceiro')
+                            <p class="error-text-tw">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="altura_cm" class="label-tw">Altura (cm)</label>
+                        <input type="number"
+                               min="100" max="220"
+                               class="input-tw @error('altura_cm') input-error-tw @enderror"
+                               id="altura_cm"
+                               name="altura_cm"
+                               value="{{ old('altura_cm') }}"
+                               placeholder="Ex: 155">
+                        @error('altura_cm')
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
                     </div>
@@ -205,6 +321,29 @@
                     </div>
                 </div>
 
+                {{-- Triagem de Alergias & Prevenção --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-xs">
+                    <label class="flex items-center gap-2 p-2.5 bg-surface-50 rounded-lg border border-surface-200 cursor-pointer">
+                        <input type="checkbox" name="uso_rede_mosquiteira" value="1" {{ old('uso_rede_mosquiteira', true) ? 'checked' : '' }} class="rounded text-brand-600 focus:ring-brand-500">
+                        <span class="font-medium text-surface-800">Dorme sob Rede Mosquiteira</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 p-2.5 bg-crimson-50/50 rounded-lg border border-crimson-200 cursor-pointer">
+                        <input type="checkbox" name="alergia_penicilina" value="1" {{ old('alergia_penicilina') ? 'checked' : '' }} class="rounded text-crimson-600 focus:ring-crimson-500">
+                        <span class="font-medium text-crimson-900">Alergia à Penicilina</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 p-2.5 bg-crimson-50/50 rounded-lg border border-crimson-200 cursor-pointer">
+                        <input type="checkbox" name="alergia_cotrimoxazol" value="1" {{ old('alergia_cotrimoxazol') ? 'checked' : '' }} class="rounded text-crimson-600 focus:ring-crimson-500">
+                        <span class="font-medium text-crimson-900">Alergia ao Cotrimoxazol</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 p-2.5 bg-crimson-50/50 rounded-lg border border-crimson-200 cursor-pointer">
+                        <input type="checkbox" name="alergia_sp" value="1" {{ old('alergia_sp') ? 'checked' : '' }} class="rounded text-crimson-600 focus:ring-crimson-500">
+                        <span class="font-medium text-crimson-900">Alergia a SP / Fansidar</span>
+                    </label>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                         <label for="data_ultima_menstruacao" class="label-tw">Data da Última Menstruação (DUM)</label>
@@ -219,13 +358,13 @@
                     </div>
 
                     <div>
-                        <label for="alergias" class="label-tw">Alergias Conhecidas</label>
+                        <label for="alergias" class="label-tw">Outras Alergias / Reações</label>
                         <input type="text"
                                class="input-tw @error('alergias') input-error-tw @enderror"
                                id="alergias"
                                name="alergias"
                                value="{{ old('alergias') }}"
-                               placeholder="Ex: Penicilina, Sulfa...">
+                               placeholder="Ex: Alergia alimentar, dipirona...">
                         @error('alergias')
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
@@ -233,12 +372,12 @@
                 </div>
 
                 <div class="mt-4">
-                    <label for="historico_medico" class="label-tw">Histórico Médico Relevante</label>
+                    <label for="historico_medico" class="label-tw">Histórico Médico / Sintomas de Alarme</label>
                     <textarea class="input-tw @error('historico_medico') input-error-tw @enderror"
                               id="historico_medico"
                               name="historico_medico"
-                              rows="3"
-                              placeholder="Condições prévias, cirurgias, hipertensão, diabetes...">{{ old('historico_medico') }}</textarea>
+                              rows="2"
+                              placeholder="Diabetes, hipertensão crônica, convulsões, tosse > 3 semanas, infecções prévias...">{{ old('historico_medico') }}</textarea>
                     @error('historico_medico')
                         <p class="error-text-tw">{{ $message }}</p>
                     @enderror

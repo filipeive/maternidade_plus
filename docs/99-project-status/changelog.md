@@ -4,6 +4,17 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.4.0] - 2026-08-28
+### Adicionado
+- **Upgrade Nacional MISAU Moçambique Seguro**: Implementação integral dos protocolos clínicos oficiais de Saúde Materno-Infantil baseados nos Manuais Técnicos do Pré-Natal, Ficha Pré-Natal (FPN), Livros de Registos (MOD-SIS-B01, B01-B, B01-C, B01-D) e Normas Nacionais de CPN.
+- **Ficha Pré-Natal Digital (FPN)**: Anamnese completa com registo de antecedentes obstétricos detalhados por gestação anterior (1ª a 6ª+ gravidezes com ano, via de parto, local, prematuridade, macrossomia, gemelaridade e mortalidade perinatal).
+- **Estratificação ARO MISAU & Guia de Transferência Hospitalar**: Algoritmo de risco obstétrico (Nível I - CS, Nível II - HR/HG às 32 sem, Nível III - HP/HC) com checklist de segurança obrigatório (acesso venoso calibroso com Soro Ringer, algaliação, acompanhante jovem para doação e documentação).
+- **Rastreio de Isoimunização Rh**: Deteção precoce de incompatibilidade sanguínea de casal (Mãe Rh- e Parceiro Rh+) com recomendação de teste de Coombs Indireto na 30ª semana.
+- **Protocolos Neonatais & Puerpério no Parto**: Escala APGAR ao 1º, 5º e 10º minuto, perímetro cefálico/craniano, registo de reanimação, aspiração, profilaxia ocular com Tetraciclina oftálmica a 1%, Vitamina K1 injetável, vacinas BCG e Pólio Zero, aleitamento materno na 1ª hora, megadose de Vitamina A materna e profilaxia TARV no parto.
+- **Consolidação Estatística Distrital (MOD-SIS-B01-C)**: Resumo mensal de saúde materna compilando todas as unidades sanitárias do distrito.
+- **Consolidação Estatística Provincial (MOD-SIS-B01-D)**: Resumo mensal provincial de saúde materna para o Serviço Provincial de Saúde (SPS).
+- **Cartão da Gestante & FPN em PDF A4**: Layout oficial para impressão clínica com dados completos, código QR e histórico de consultas.
+
 ## [2.3.0] - 2026-08-28
 ### Adicionado
 - **Central Unificada de Notificações & SMS**: Nova central integrada com 5 abas (Notificações do Sistema, Pacientes Faltosas, SMS Individual, Histórico de Logs de Envio e Modelos MISAU).

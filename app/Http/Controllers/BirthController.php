@@ -41,21 +41,27 @@ class BirthController extends Controller
         $validated = $request->validate([
             'data_hora_parto' => 'required|date|before_or_equal:now',
             'tipo_parto' => 'required|in:normal,cesariana,forceps,vacuum,outros',
+            'apresentacao_parto' => 'nullable|string|max:100',
+            'estado_perineo' => 'nullable|string|max:100',
             'local_parto' => 'nullable|string|max:255',
             'hospital_unidade' => 'nullable|string|max:255',
             'profissional_obstetra' => 'nullable|string|max:255',
             'profissional_enfermeiro' => 'nullable|string|max:255',
+            'nome_parteira_enfermeira' => 'nullable|string|max:255',
             'peso_mae_preparto' => 'nullable|numeric|min:30|max:200',
             'complicacoes_maternas' => 'nullable|string',
+            'mae_tarv_parto' => 'nullable|string|max:255',
             
             // Dados do bebê
             'sexo_bebe' => 'nullable|in:masculino,feminino',
             'peso_nascimento' => 'required|numeric|min:300|max:6000',
             'altura_nascimento' => 'required|numeric|min:25|max:60',
+            'perimetro_craniano' => 'nullable|numeric|min:15|max:50',
             'apgar_1min' => 'required|integer|min:0|max:10',
             'apgar_5min' => 'required|integer|min:0|max:10',
             'apgar_10min' => 'nullable|integer|min:0|max:10',
             'status_bebe' => 'required|in:vivo_saudavel,vivo_complicacoes,obito_fetal,obito_neonatal',
+            'anomalia_descricao' => 'nullable|string|max:255',
             'observacoes_rn' => 'nullable|string',
             
             // Outros dados
@@ -66,6 +72,18 @@ class BirthController extends Controller
             'condicoes_pos_parto' => 'nullable|string',
             'alta_hospitalar' => 'nullable|date|after_or_equal:data_hora_parto'
         ]);
+
+        $validated['reanimacao_rn'] = $request->boolean('reanimacao_rn', false);
+        $validated['aspiracao_rn'] = $request->boolean('aspiracao_rn', false);
+        $validated['profilaxia_ocular'] = $request->boolean('profilaxia_ocular', true);
+        $validated['vitamina_k'] = $request->boolean('vitamina_k', true);
+        $validated['anomalia_congenita'] = $request->boolean('anomalia_congenita', false);
+        $validated['aleitamento_primeira_hora'] = $request->boolean('aleitamento_primeira_hora', true);
+        $validated['vacina_bcg'] = $request->boolean('vacina_bcg', false);
+        $validated['vacina_polio_0'] = $request->boolean('vacina_polio_0', false);
+        $validated['mae_vitamina_a'] = $request->boolean('mae_vitamina_a', true);
+        $validated['puerperio_febre'] = $request->boolean('puerperio_febre', false);
+        $validated['puerperio_hemorragia'] = $request->boolean('puerperio_hemorragia', false);
 
         // Calcular idade gestacional no momento do parto
         if ($patient->data_ultima_menstruacao) {
