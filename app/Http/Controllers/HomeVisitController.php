@@ -71,7 +71,9 @@ class HomeVisitController extends Controller
         $tiposVisita = HomeVisit::getTiposVisita();
 
         // Lista de agentes comunitários e enfermeiras para atribuição
-        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        $communityAgents = \App\Models\User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['Agente Comunitário', 'Enfermeiro', 'Activista']);
+        })->get(['id', 'name']);
         if ($communityAgents->isEmpty()) {
             $communityAgents = \App\Models\User::all(['id', 'name']);
         }
@@ -135,7 +137,9 @@ class HomeVisitController extends Controller
 
         $tiposVisita = HomeVisit::getTiposVisita();
 
-        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        $communityAgents = \App\Models\User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['Agente Comunitário', 'Enfermeiro', 'Activista']);
+        })->get(['id', 'name']);
         if ($communityAgents->isEmpty()) {
             $communityAgents = \App\Models\User::all(['id', 'name']);
         }
@@ -442,7 +446,9 @@ class HomeVisitController extends Controller
                           ->get();
 
         // Agentes comunitários disponíveis para atribuição
-        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        $communityAgents = \App\Models\User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['Agente Comunitário', 'Enfermeiro', 'Activista']);
+        })->get(['id', 'name']);
         if ($communityAgents->isEmpty()) {
             $communityAgents = \App\Models\User::all(['id', 'name']);
         }
