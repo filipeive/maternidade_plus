@@ -38,7 +38,8 @@ class UserSeeder extends Seeder
                 $newUser = User::create([
                     'name' => $user['name'],
                     'email' => $user['email'],
-                    'password' => Hash::make($user['password']),
+                    'password' => $user['password'],
+                    'email_verified_at' => now(),
                 ]);
                 $newUser->assignRole($user['role']);
             }

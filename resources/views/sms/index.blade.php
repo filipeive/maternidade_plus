@@ -241,10 +241,10 @@
                 <div>
                     <label class="label-tw">Tipo de Notificação / Serviço</label>
                     <select x-model="templateType" @change="updateMsg()" class="input-tw text-xs">
-                        <option value="exames">🔬 Resultado de Exame Pronto</option>
-                        <option value="lembrete">📅 Lembrete de Consulta ANC</option>
-                        <option value="vacinacao">💉 Aviso de Vacinação & IPTp-SP</option>
-                        <option value="geral">💬 Notificação Geral de Serviço</option>
+                        <option value="exames">Resultado de Exame Pronto</option>
+                        <option value="lembrete">Lembrete de Consulta ANC</option>
+                        <option value="vacinacao">Aviso de Vacinação & IPTp-SP</option>
+                        <option value="geral">Notificação Geral de Serviço</option>
                     </select>
                 </div>
 

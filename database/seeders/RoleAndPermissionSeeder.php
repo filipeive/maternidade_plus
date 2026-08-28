@@ -80,7 +80,8 @@ class RoleAndPermissionSeeder extends Seeder
             'view_consultations', 'create_consultations', 'edit_consultations',
             'view_exams', 'create_exams', 'edit_exams',
             'view_births', 'create_births', 'edit_births',
-            'view_vaccines', 'view_dashboard', 'manage_alerts', 'view_alerts'
+            'view_vaccines', 'view_dashboard', 'manage_alerts', 'view_alerts',
+            'view_notifications', 'manage_notifications'
         ]);
 
         $enfermeiro->syncPermissions([
@@ -88,7 +89,8 @@ class RoleAndPermissionSeeder extends Seeder
             'view_consultations', 'create_consultations',
             'view_exams', 'view_births', 'create_births',
             'view_vaccines', 'create_vaccines', 'edit_vaccines',
-            'view_dashboard', 'view_alerts'
+            'view_dashboard', 'view_alerts',
+            'view_notifications', 'manage_notifications'
         ]);
 
         $laboratorista->syncPermissions([
@@ -102,7 +104,7 @@ class RoleAndPermissionSeeder extends Seeder
             $adminUser = User::create([
                 'name' => 'Administrador MISAU',
                 'email' => 'admin@maternidade.mz',
-                'password' => bcrypt('admin123'),
+                'password' => 'password',
                 'email_verified_at' => now(),
                 'especialidade' => 'Gestão de Saúde'
             ]);
@@ -114,7 +116,7 @@ class RoleAndPermissionSeeder extends Seeder
             $medicoUser = User::create([
                 'name' => 'Dr. João Machel',
                 'email' => 'medico@maternidade.mz',
-                'password' => bcrypt('medico123'),
+                'password' => 'password',
                 'email_verified_at' => now(),
                 'especialidade' => 'Obstetrícia e Ginecologia'
             ]);
@@ -126,7 +128,7 @@ class RoleAndPermissionSeeder extends Seeder
             $enfermeiraUser = User::create([
                 'name' => 'Enf. Maria Eugenia Simbine',
                 'email' => 'enfermeira@maternidade.mz',
-                'password' => bcrypt('enfermeira123'),
+                'password' => 'password',
                 'email_verified_at' => now(),
                 'especialidade' => 'Enfermagem de Saúde Materno-Infantil'
             ]);

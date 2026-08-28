@@ -28,6 +28,7 @@ class Alerta extends Model
         'mensagem',
         'dados',
         'status',
+        'lido',
         'resolvido_por',
         'nota_resolucao',
         'resolvido_em',
@@ -37,6 +38,7 @@ class Alerta extends Model
 
     protected $casts = [
         'dados' => 'array',
+        'lido' => 'boolean',
         'resolvido_em' => 'datetime',
     ];
 
@@ -70,9 +72,9 @@ class Alerta extends Model
         return $query->whereIn('status', [self::STATUS_ATIVO, self::STATUS_EM_SEGUIMENTO]);
     }
 
-    public function scopeNivel($query, string $nivel)
+    public function scopeNaoLidos($query)
     {
-        return $query->where('nivel', $nivel);
+        return $query->where('lido', false);
     }
 
     public function scopeAlto($query)
@@ -144,6 +146,9 @@ class Alerta extends Model
         $antigoStatus = $this->status;
 
         $updates = ['status' => $novoStatus];
+        if ($novoStatus === self::STATUS_RESOLVIDO || $novoStatus === self::STATUS_IGNORADO) {
+            $updates['lido'] = true;
+        }
         if ($novoStatus === self::STATUS_RESOLVIDO) {
             $updates['resolvido_por'] = $user->id;
             $updates['nota_resolucao'] = $nota;
@@ -160,6 +165,16 @@ class Alerta extends Model
             'status_novo' => $novoStatus,
             'nota' => $nota,
         ]);
+    }
+
+    public function marcarLido(): void
+    {
+        $this->update(['lido' => true]);
+    }
+
+    public function marcarNaoLido(): void
+    {
+        $this->update(['lido' => false]);
     }
 
     public function marcarResolvido(User $user, ?string $nota = null): void

@@ -62,23 +62,28 @@ class SmsNotificationController extends Controller
         // Templates MISAU Expandidos
         $templates = [
             'exames' => [
-                'titulo' => '🔬 Resultado de Exame Pronto',
+                'icon' => 'flask',
+                'titulo' => 'Resultado de Exame Pronto',
                 'texto' => 'Estimada {nome}, informamos que o resultado do seu exame clínico de {servico} já se encontra disponível no Centro de Saúde de Quelimane Urbano. Compareça para levantamento.',
             ],
             'faltosa' => [
-                'titulo' => '🚨 Recuperação de Faltosa',
+                'icon' => 'user-clock',
+                'titulo' => 'Recuperação de Faltosa',
                 'texto' => 'Estimada {nome}, notou-se a sua ausência na consulta pré-natal agendada para {data}. Dirija-se ao Centro de Saúde de Quelimane Urbano para reagendar e manter o seu bebê seguro.',
             ],
             'lembrete' => [
-                'titulo' => '📅 Lembrete de Consulta ANC',
+                'icon' => 'calendar-check',
+                'titulo' => 'Lembrete de Consulta ANC',
                 'texto' => 'Estimada {nome}, lembramos que a sua consulta de acompanhamento pré-natal no Centro de Saúde está agendada para {data}. Cuide de si e do seu bebê.',
             ],
             'vacinacao' => [
-                'titulo' => '💉 Aviso de Vacinação & IPTp-SP',
+                'icon' => 'syringe',
+                'titulo' => 'Aviso de Vacinação & IPTp-SP',
                 'texto' => 'Estimada {nome}, a sua dose de vacina/prevenção contra malária (IPTp) está pronta no Centro de Saúde de Quelimane Urbano. Compareça para proteção.',
             ],
             'geral' => [
-                'titulo' => '💬 Notificação Geral de Serviço',
+                'icon' => 'comment-dots',
+                'titulo' => 'Notificação Geral de Serviço',
                 'texto' => 'Estimada {nome}, solicitamos a sua comparência no Centro de Saúde de Quelimane Urbano para o serviço de {servico}.',
             ]
         ];

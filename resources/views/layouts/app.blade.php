@@ -22,6 +22,10 @@
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
     @stack('styles')
 </head>
 
@@ -162,6 +166,17 @@
                class="sidebar-link {{ request()->routeIs('births.*') ? 'active' : '' }}">
                 <span class="sidebar-link-icon"><i class="fas fa-baby"></i></span>
                 <span class="sidebar-text">Partos</span>
+            </a>
+
+            <a href="{{ route('notifications.index') }}"
+               class="sidebar-link {{ request()->routeIs('notifications.*') || request()->routeIs('sms.*') ? 'active' : '' }} relative">
+                <span class="sidebar-link-icon"><i class="fas fa-bell"></i></span>
+                <span class="sidebar-text flex-1">Notificações & SMS</span>
+                @if(($unreadNotificationsCount ?? 0) > 0)
+                    <span class="ml-auto bg-brand-500 text-white text-2xs font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                        {{ $unreadNotificationsCount }}
+                    </span>
+                @endif
             </a>
 
             <a href="{{ route('reports.index') }}"
@@ -345,40 +360,57 @@
                         </button>
 
                         {{-- Notifications Dropdown --}}
-                        <div x-show="open" x-transition class="dropdown-tw w-80 max-h-96 right-0">
-                            <div class="px-4 py-3 flex items-center justify-between border-b border-surface-100">
-                                <h3 class="text-sm font-semibold text-surface-900">Notificações</h3>
-                                <button @click="markAllRead()" class="text-2xs text-brand-600 hover:text-brand-700 font-medium">
+                        <div x-show="open" x-transition class="dropdown-tw w-80 sm:w-96 max-h-[30rem] right-0 shadow-2xl z-50">
+                            <div class="px-4 py-3 flex items-center justify-between border-b border-surface-100 bg-surface-50/50">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-semibold text-surface-900">Notificações</h3>
+                                    <span x-show="unreadCount > 0" class="text-2xs font-bold px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700" x-text="unreadCount + ' novas'" x-cloak></span>
+                                </div>
+                                <button x-show="unreadCount > 0" @click="markAllRead()" class="text-2xs text-brand-600 hover:text-brand-700 font-medium" x-cloak>
                                     Marcar todas como lidas
                                 </button>
                             </div>
+
                             <div class="overflow-y-auto max-h-72 divide-y divide-surface-100">
                                 <template x-for="n in notifications" :key="n.id">
-                                    <a :href="n.url" @click="markRead(n.id)"
-                                       class="flex items-start gap-3 px-4 py-3 hover:bg-surface-50 transition-colors"
+                                    <a :href="n.url" @click.prevent="handleClick(n)"
+                                       class="flex items-start gap-3 px-4 py-3 hover:bg-surface-50 transition-colors cursor-pointer"
                                        :class="{'bg-brand-50/40': n.unread}">
-                                        <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                                        <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs"
                                              :class="{
                                                  'bg-brand-100 text-brand-600': n.color === 'success',
                                                  'bg-ocean-100 text-ocean-600': n.color === 'info',
                                                  'bg-gold-100 text-gold-600': n.color === 'warning',
                                                  'bg-crimson-100 text-crimson-600': n.color === 'danger'
                                              }">
-                                            <i :class="'fas fa-' + n.icon"></i>
+                                            <i :class="'fas fa-' + (n.icon || 'bell')"></i>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-medium text-surface-900 truncate" x-text="n.title"></p>
-                                            <p class="text-2xs text-surface-500 line-clamp-2" x-text="n.message"></p>
+                                            <p class="text-xs font-semibold text-surface-900 truncate" x-text="n.title"></p>
+                                            <p class="text-2xs text-surface-500 line-clamp-2 mt-0.5" x-text="n.message"></p>
                                             <p class="text-2xs text-surface-400 mt-1" x-text="n.time"></p>
                                         </div>
                                         <span x-show="n.unread"
                                               class="w-2 h-2 rounded-full bg-brand-500 shrink-0 mt-2"></span>
                                     </a>
                                 </template>
-                                <div x-show="notifications.length === 0" class="py-8 text-center text-surface-400">
-                                    <i class="fas fa-bell-slash text-2xl mb-2"></i>
-                                    <p class="text-sm">Sem notificações</p>
+
+                                <div x-show="notifications.length === 0 && !loading" class="py-8 text-center text-surface-400">
+                                    <i class="fas fa-bell-slash text-2xl mb-2 text-surface-300"></i>
+                                    <p class="text-xs">Sem notificações no momento</p>
                                 </div>
+
+                                <div x-show="loading" class="py-6 text-center text-surface-400">
+                                    <i class="fas fa-spinner fa-spin text-sm"></i>
+                                    <p class="text-2xs mt-1">Carregando…</p>
+                                </div>
+                            </div>
+
+                            <div class="p-2.5 border-t border-surface-100 bg-surface-50/50 text-center">
+                                <a href="{{ route('notifications.index') }}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1.5">
+                                    <span>Ver todas as notificações</span>
+                                    <i class="fas fa-arrow-right text-2xs"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -650,7 +682,8 @@
             return {
                 open: false,
                 notifications: [],
-                unreadCount: 0,
+                unreadCount: {{ $unreadNotificationsCount ?? 0 }},
+                loading: false,
 
                 init() {
                     this.load();
@@ -662,32 +695,102 @@
                     if (this.open) this.load();
                 },
 
-                load() {
-                    // Mock data — replace with real API call
-                    this.notifications = [
-                        { id: 1, title: 'Consulta ANC Agendada', message: 'Maria Silva — 8º contacto hoje às 14:30', icon: 'calendar-check', color: 'success', time: '5 min atrás', unread: true, url: '/consultations/1' },
-                        { id: 2, title: 'Resultado HIV Disponível', message: 'Ana Joaquim — Resultado negativo confirmado', icon: 'flask', color: 'info', time: '15 min atrás', unread: true, url: '/exams/2' },
-                        { id: 3, title: 'IPTp Dose Vencida', message: 'Verificar doses de malária — 3 gestantes', icon: 'syringe', color: 'warning', time: '1 hora atrás', unread: false, url: '/vaccines' },
-                    ];
-                    this.unreadCount = this.notifications.filter(n => n.unread).length;
+                async load() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/notifications/api/list', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': APP_CONFIG.csrfToken
+                            }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.notifications = data.notifications || [];
+                            this.unreadCount = data.unreadCount ?? 0;
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao carregar notificações:', e);
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
-                markRead(id) {
+                async handleClick(n) {
+                    if (n.unread) {
+                        n.unread = false;
+                        this.unreadCount = Math.max(0, this.unreadCount - 1);
+                        try {
+                            fetch(`/notifications/${n.id}/mark-read`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': APP_CONFIG.csrfToken,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                    this.open = false;
+                    if (n.url) {
+                        window.location.href = n.url;
+                    }
+                },
+
+                async markRead(id) {
                     const n = this.notifications.find(n => n.id === id);
                     if (n && n.unread) {
                         n.unread = false;
                         this.unreadCount = Math.max(0, this.unreadCount - 1);
+                        try {
+                            await fetch(`/notifications/${id}/mark-read`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': APP_CONFIG.csrfToken
+                                }
+                            });
+                        } catch (e) {
+                            console.error(e);
+                        }
                     }
                 },
 
-                markAllRead() {
+                async markAllRead() {
                     this.notifications.forEach(n => n.unread = false);
                     this.unreadCount = 0;
-                    showToast('Notificações marcadas como lidas', 'success');
+                    try {
+                        await fetch('/notifications/mark-all-read', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': APP_CONFIG.csrfToken
+                            }
+                        });
+                        if (typeof window.showToast === 'function') {
+                            showToast('Notificações marcadas como lidas', 'success');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
                 },
 
-                checkNew() {
-                    // Placeholder for real polling
+                async checkNew() {
+                    try {
+                        const response = await fetch('/notifications/api/count', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.unreadCount = data.count ?? 0;
+                        }
+                    } catch (e) {}
                 }
             };
         }

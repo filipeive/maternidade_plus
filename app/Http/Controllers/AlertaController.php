@@ -105,4 +105,45 @@ class AlertaController extends Controller
     {
         return $this->transitar($request, $alerta);
     }
+
+    /**
+     * Marca um alerta clínico como lido.
+     */
+    public function marcarLido(Request $request, Alerta $alerta)
+    {
+        $alerta->marcarLido();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $alertasAltosCount = Alerta::where('nivel', Alerta::NIVEL_ALTO)
+                ->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])
+                ->where('lido', false)
+                ->count();
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Alerta marcado como lido.',
+                'alertasAltosCount' => $alertasAltosCount,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Alerta marcado como lido.');
+    }
+
+    /**
+     * Marca todos os alertas ativos como lidos.
+     */
+    public function marcarTodosLidos(Request $request)
+    {
+        Alerta::where('lido', false)->update(['lido' => true]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Todos os alertas foram marcados como lidos.',
+                'alertasAltosCount' => 0,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Todos os alertas foram marcados como lidos.');
+    }
 }

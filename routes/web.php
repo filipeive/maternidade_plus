@@ -16,6 +16,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\SmsNotificationController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Módulo de Alerta Precoce (Early Warning Module)
     Route::prefix('alertas')->name('alertas.')->group(function () {
         Route::get('/', [AlertaController::class, 'index'])->name('index');
+        Route::post('/marcar-todos-lidos', [AlertaController::class, 'marcarTodosLidos'])->name('marcar-todos-lidos');
+        Route::post('/{alerta}/marcar-lido', [AlertaController::class, 'marcarLido'])->name('marcar-lido');
         Route::post('/{alerta}/transitar', [AlertaController::class, 'transitar'])->name('transitar');
         Route::post('/{alerta}/resolver', [AlertaController::class, 'resolver'])->name('resolver');
         Route::get('/metricas', [AlertaMetricasController::class, 'index'])->name('metricas');
@@ -247,7 +250,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Central de Notificações SMS & Disparo para Faltosas
     Route::prefix('sms')->name('sms.')->group(function () {
-        Route::get('/center', [SmsNotificationController::class, 'index'])->name('index');
+        Route::get('/center', [NotificationController::class, 'index'])->name('index');
         Route::post('/send-single', [SmsNotificationController::class, 'sendSingle'])->name('send-single');
         Route::post('/send-bulk', [SmsNotificationController::class, 'sendBulk'])->name('send-bulk');
     });
@@ -262,13 +265,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/visits/map-data', [HomeVisitController::class, 'getMapData'])->name('visits-map-data');
     });
 
-    // Notificações do sistema
+    // Notificações do sistema & Central Unificada
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', fn () => response()->json([]))->name('index');
-        Route::patch('/{notification}/mark-read', fn () => response()->json(['status' => 'ok']))->name('mark-read');
-        Route::post('/mark-all-read', fn () => response()->json(['status' => 'ok']))->name('mark-all-read');
-        Route::delete('/{notification}', fn () => response()->json(['status' => 'ok']))->name('destroy');
-        Route::get('/api/count', fn () => response()->json(['count' => 0]))->name('unread-count');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/api/list', [NotificationController::class, 'apiList'])->name('api-list');
+        Route::get('/api/count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::patch('/{notification}/mark-read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
     // Integração com sistemas externos (futuro)

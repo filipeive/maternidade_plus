@@ -4,6 +4,19 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.3.0] - 2026-08-28
+### Adicionado
+- **Central Unificada de Notificações & SMS**: Nova central integrada com 5 abas (Notificações do Sistema, Pacientes Faltosas, SMS Individual, Histórico de Logs de Envio e Modelos MISAU).
+- Nova tabela e modelo `system_notifications` para persistência e gestão de leitura de notificações clínicas e do sistema.
+- Novo serviço `NotificationService` para sincronização em tempo real de eventos clínicos (alertas críticos, faltosas, exames concluídos, vacinas em atraso).
+- Novo `NotificationController` com endpoints de API para dropdown na navbar (`/notifications/api/list`, `/notifications/api/count`) e gestão de leitura (`markRead`, `markAllRead`).
+- Item de menu **"Notificações & SMS"** integrado na barra lateral (`sidebar`) em ambos os layouts (`app-tw.blade.php` e `app.blade.php`) com badge de pendências.
+- Ações no módulo de alertas para marcação de leitura individual e em massa (`/alertas/{alerta}/marcar-lido`, `/alertas/marcar-todos-lidos`).
+
+### Corrigido
+- O contador de notificações (ícone do sino) e de alertas na navbar agora atualiza e persiste em tempo real ao clicar ou resolver alertas/notificações, eliminando o comportamento estático anterior.
+- Padronização visual com recurso exclusivo a ícones profissionais FontAwesome em todas as abas, formulários, selects e templates de notificações, substituindo todos os emojis.
+
 ## [2.2.0] - 2026-08-27
 ### Adicionado
 - Módulo **Livro Eletrónico CPN (MOD-SIS-B01)** alinhado com as normas oficiais do MISAU Moçambique.

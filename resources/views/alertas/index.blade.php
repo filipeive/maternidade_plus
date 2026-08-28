@@ -16,10 +16,17 @@
         <h2 class="text-xl font-bold text-surface-900">Painel de Alertas Clínicos</h2>
         <p class="text-sm text-surface-500">Monitoria e triagem de sinais de risco materno-fetal baseada em evidência</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+        <form method="POST" action="{{ route('alertas.marcar-todos-lidos') }}" class="inline">
+            @csrf
+            <button type="submit" class="btn-secondary-tw text-brand-600 hover:text-brand-700">
+                <i class="fas fa-check-double text-xs"></i>
+                <span>Marcar todos como lidos</span>
+            </button>
+        </form>
         <a href="{{ route('alertas.metricas') }}" class="btn-secondary-tw">
             <i class="fas fa-chart-line text-xs text-brand-600"></i>
-            <span>Métricas de Impacto (M&E)</span>
+            <span>Métricas de Impacto</span>
         </a>
         <a href="{{ route('dashboard') }}" class="btn-secondary-tw">
             <i class="fas fa-arrow-left text-xs"></i>
@@ -228,12 +235,23 @@
                             <span class="{{ $badgeClass }}">{{ ucfirst(str_replace('_', ' ', $alerta->status)) }}</span>
                         </td>
                         <td class="text-right">
-                            <button type="button"
-                                    @click="activeModal = {{ $alerta->id }}"
-                                    class="btn-primary-tw btn-sm-tw">
-                                <i class="fas fa-stethoscope text-xs"></i>
-                                <span>Tratar</span>
-                            </button>
+                            <div class="flex items-center justify-end gap-1.5">
+                                @if(!$alerta->lido && $alerta->status !== 'resolvido')
+                                    <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="btn-ghost-tw btn-xs-tw text-surface-500 hover:text-brand-600" title="Marcar como lido">
+                                            <i class="fas fa-check text-2xs"></i>
+                                            <span>Lido</span>
+                                        </button>
+                                    </form>
+                                @endif
+                                <button type="button"
+                                        @click="activeModal = {{ $alerta->id }}"
+                                        class="btn-primary-tw btn-xs-tw sm:btn-sm-tw">
+                                    <i class="fas fa-stethoscope text-xs"></i>
+                                    <span>Tratar</span>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     @endforeach

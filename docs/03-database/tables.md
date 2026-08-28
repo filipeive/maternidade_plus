@@ -42,3 +42,32 @@ Detalhamento das colunas e tipos das tabelas principais.
 - `hiv_status_entrada`, `sifilis_resultado`: string, nullable
 - `sal_ferroso_folico_3doses`: boolean
 - `mebendazol_administrado`: date, nullable
+
+### Tabela `alertas`
+- `id`: bigint, PK
+- `patient_id`: foreignId -> `patients.id`
+- `consultation_id`: foreignId -> `consultations.id`, nullable
+- `tipo`: string (regra clínica)
+- `nivel`: string (`alto`, `medio`, `baixo`)
+- `mensagem`: text
+- `dados`: json, nullable
+- `status`: string (`ativo`, `em_seguimento`, `resolvido`, `ignorado`)
+- `lido`: boolean, default false
+- `resolvido_por`: foreignId -> `users.id`, nullable
+- `nota_resolucao`: text, nullable
+- `resolvido_em`: datetime, nullable
+
+### Tabela `system_notifications`
+- `id`: bigint, PK
+- `user_id`: foreignId -> `users.id`, nullable (notificação individual ou global)
+- `patient_id`: foreignId -> `patients.id`, nullable
+- `tipo`: string (`alerta_clinico`, `consulta_faltosa`, `exame_pronto`, `vacina_atraso`, `visita_referencia`, `sistema`)
+- `titulo`: string
+- `mensagem`: text
+- `icone`: string
+- `cor`: string (`danger`, `warning`, `info`, `success`)
+- `url`: string, nullable
+- `lido`: boolean, default false
+- `lido_em`: datetime, nullable
+- `lido_por`: foreignId -> `users.id`, nullable
+- `created_at`, `updated_at`: timestamps
