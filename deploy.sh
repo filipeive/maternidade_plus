@@ -67,8 +67,7 @@ ssh -i "${SSH_KEY}" -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" 
     sudo -u ubuntu php artisan route:clear &&
     sudo -u ubuntu php artisan view:clear &&
     sudo -u ubuntu php artisan cache:clear &&
-    sudo -u ubuntu php artisan config:cache &&
-    sudo -u ubuntu php artisan route:cache
+    sudo -u ubuntu php artisan config:cache
 "
 echo -e "${GREEN}  ✓ Servidor de produção atualizado com sucesso${NC}"
 
