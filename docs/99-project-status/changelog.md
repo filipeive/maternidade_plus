@@ -14,7 +14,7 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
     4. *Desfecho do Trabalho Comunitário e Visitas de Terreno* (barras para realizadas, agendadas, não encontradas e dispensadas na US).
   - **6 Stat Cards / KPIs de Gestão Integrada**: Gestantes Ativas (com destaque ARO), Consultas Hoje/Semana, Partos no Mês, Faltosas para Busca Ativa Comunitária, Visitas Domiciliares e Transferências Inter-Hospitalares.
   - **Painéis Operacionais em Tempo Real**: Feed prioritário de Alertas Precoces & Alto Risco com botão "Tratar", Agenda de Consultas dos próximos dias, Painel de Faltosas com atribuição a Activistas Comunitárias (APEs), e Livro de Nascimentos Recentes na Maternidade com APGAR e peso neonatal.
-  - **Barra de Ação Rápida**: Scanner QR Code rápido, formulário de busca de BI/NID em tempo real e atalhos diretos.
+  - **Barra de Ação Rápida & Cabeçalho**: Cabeçalho moderno em tom claro (clean light theme) com nome da Unidade Sanitária, identificação e perfil do utilizador autenticado, data formatada em português e busca rápida/scanner QR Code.
 
 ---
 

@@ -10,29 +10,39 @@
 
 @section('content')
 
-{{-- ============================================================
-     1. BANNER INSTITUCIONAL MISAU & ATENDIMENTO RÁPIDO
-     ============================================================ --}}
-<div class="card-tw p-5 mb-6 bg-gradient-to-r from-brand-900 via-brand-800 to-ocean-900 text-white flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl border-none relative overflow-hidden" x-data="{ quickSearch: '' }">
-    {{-- Decorative Background Glow --}}
-    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-gold-400/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -left-10 -top-10 w-48 h-48 bg-brand-400/10 rounded-full blur-3xl pointer-events-none"></div>
+@php
+    $diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    $mesesAno = [1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril', 5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'];
+    $dataPt = $diasSemana[now()->dayOfWeek] . ', ' . now()->day . ' de ' . $mesesAno[now()->month] . ' de ' . now()->year;
+    $usuario = auth()->user();
+    $cargoUsuario = $usuario ? ($usuario->getRoleNames()->first() ?? $usuario->especialidade ?? 'Profissional de Saúde') : 'Profissional de Saúde';
+@endphp
 
-    <div class="flex items-center gap-4 relative z-10">
-        <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-gold-300 text-2xl font-bold border border-white/20 shrink-0 shadow-inner">
-            <i class="fas fa-hospital"></i>
+{{-- ============================================================
+     1. BANNER INSTITUCIONAL CLARO & ATENDIMENTO RÁPIDO
+     ============================================================ --}}
+<div class="card-tw p-5 mb-6 bg-white border border-surface-200 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 rounded-2xl" x-data="{ quickSearch: '' }">
+    <div class="flex items-center gap-4">
+        <div class="w-13 h-13 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center text-xl font-bold border border-brand-100 shrink-0 shadow-xs">
+            <i class="fas fa-hospital-user"></i>
         </div>
         <div>
             <div class="flex items-center gap-2 mb-1 flex-wrap">
-                <h2 class="text-lg font-bold text-white tracking-tight">Centro de Saúde & Maternidade</h2>
-                <span class="px-2.5 py-0.5 rounded-full bg-gold-400/20 text-gold-300 text-3xs font-bold uppercase tracking-wider border border-gold-400/30">MISAU Moçambique</span>
-                <span class="px-2 py-0.5 rounded-full bg-white/10 text-white/80 text-3xs font-medium">{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
+                <h2 class="text-base font-bold text-surface-900 tracking-tight">Centro de Saúde & Maternidade</h2>
+                <span class="badge-brand text-3xs font-bold uppercase">MISAU SNS</span>
+                <span class="badge-neutral text-3xs font-medium">{{ $dataPt }}</span>
             </div>
-            <p class="text-xs text-white/70">Sistema Integrado de Saúde Materno-Infantil (SMI) · Monitoria Clínica & Atendimento Ativo</p>
+            <p class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">
+                <span>Bem-vindo(a), <strong class="text-surface-900 font-semibold">{{ $usuario->name ?? 'Utilizador' }}</strong></span>
+                <span class="text-surface-300">·</span>
+                <span class="text-brand-700 font-medium bg-brand-50 px-2 py-0.5 rounded-full text-3xs border border-brand-100">
+                    <i class="fas fa-user-doctor text-3xs mr-0.5"></i> {{ $cargoUsuario }}
+                </span>
+            </p>
         </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto relative z-10">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
         {{-- Campo de Pesquisa Rápida --}}
         <form @submit.prevent="
             if (!quickSearch.trim()) return;
@@ -43,18 +53,18 @@
                 window.location.href = '{{ url('/patients') }}?search=' + encodeURIComponent(val);
             }
         " class="relative flex-1 sm:w-64">
-            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50 text-xs"></i>
-            <input type="text" x-model="quickSearch" placeholder="Pesquisar gestante, BI ou NID..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:bg-white focus:text-surface-900 focus:placeholder:text-surface-400 transition-all shadow-xs">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs"></i>
+            <input type="text" x-model="quickSearch" placeholder="Pesquisar gestante, BI ou NID..." class="input-tw pl-9 pr-3 py-2 text-xs w-full">
         </form>
 
         {{-- Scanner QR Code --}}
-        <a href="{{ route('scanner') }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-950 font-bold text-xs py-2 px-3.5 shrink-0 shadow-md">
+        <a href="{{ route('scanner') }}" class="btn-primary-tw btn-sm-tw shrink-0 shadow-xs">
             <i class="fas fa-qrcode text-xs"></i>
             <span>Scanner QR</span>
         </a>
 
         {{-- Nova Gestante --}}
-        <a href="{{ route('patients.create') }}" class="btn-tw bg-white/15 hover:bg-white/25 text-white border border-white/20 font-semibold text-xs py-2 px-3.5 shrink-0">
+        <a href="{{ route('patients.create') }}" class="btn-secondary-tw btn-sm-tw shrink-0">
             <i class="fas fa-user-plus text-xs"></i>
             <span>Nova Gestante</span>
         </a>
