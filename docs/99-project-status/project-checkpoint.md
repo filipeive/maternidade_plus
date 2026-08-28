@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 28 de Agosto de 2026
-- **Versão Atual**: 2.4.0 (MISAU Moçambique Seguro - Produção)
+- **Versão Atual**: 2.4.1 (MISAU Moçambique Seguro - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---

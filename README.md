@@ -1,66 +1,176 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌸 Maternidade+ — Sistema Integrado de Saúde Materno-Infantil
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <strong>Plataforma Digital de Vigilância Obstétrica, Consultas Pré-Natais (CPN), Puerpério e Notificação Clínica</strong><br>
+  <em>Alinhada com as Normas e Instrumentos Oficiais do Ministério da Saúde de Moçambique (MISAU)</em>
 </p>
 
-## About Laravel
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.2+">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=flat-square&logo=alpine.js&logoColor=white" alt="Alpine.js">
+  <img src="https://img.shields.io/badge/MISAU-Moçambique-008080?style=flat-square" alt="MISAU Moçambique">
+  <img src="https://img.shields.io/badge/Status-Produção%20Ativa-success?style=flat-square" alt="Status">
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Sobre o Projeto
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+O **Maternidade+** é um sistema clínico de informação hospitalar e de cuidados primários desenvolvido para operacionalizar e modernizar a gestão de saúde materno-infantil em Moçambique. O sistema digitaliza o fluxo completo de atendimento à gestante — desde a captação pré-natal precoce ($\le$ 12 semanas) até ao puerpério (42 dias pós-parto), integrando vigilância de Alto Risco Obstétrico (ARO), agendamento automatizado, comunicação por SMS e emissão de relatórios oficiais do Sistema de Informação em Saúde (SIS).
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## ✨ Principais Funcionalidades & Módulos
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🩺 1. Ficha Pré-Natal Digital (FPN) & Histórico Obstétrico
+- **Anamnese Completa**: Registo de dados sociodemográficos, NID, BI e morada geolocalizada.
+- **Antecedentes Detalhados**: Histórico de 1ª a 6ª+ gestações (ano, via de parto, prematuridade, macrossomia, gemelaridade, mortalidade perinatal).
+- **Cartão da Gestante em PDF**: Geração de cartão oficial de saúde materna em formato A4 para impressão ou consulta rápida via QR Code.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🚨 2. Triagem ARO & Vigilância Precoce
+- **Estratificação Automática em 3 Níveis**:
+  - **Nível I (Baixo Risco / Centro de Saúde)**: Acompanhamento de rotina pela ESMI.
+  - **Nível II (Médio Risco / Hospital Rural ou Geral)**: Encaminhamento preventivo na 32ª semana.
+  - **Nível III (Alto Risco / Hospital Provincial ou Central)**: Transferência imediata.
+- **Protocolo & Guia de Transferência Hospitalar**: Checklist com validação de via venosa com Soro Ringer, algaliação, acompanhante para doação e documentação clínica.
+- **Rastreio de Isoimunização Rh**: Deteção de risco em casais (Mãe Rh- / Parceiro Rh+) com recomendação de teste de Coombs Indireto às 30 semanas.
 
-## Laravel Sponsors
+### 📖 3. Livro Eletrónico CPN & Relatórios SIS (MOD-SIS-B01)
+- **Grelha Digital MOD-SIS-B01**: 53 colunas de preenchimento oficial do MISAU Moçambique.
+- **Resumo Mensal da Unidade Sanitária (MOD-SIS-B01-B)**: Compilação instantânea dos 44 indicadores oficiais com exportação em PDF oficial.
+- **Resumo Distrital (MOD-SIS-B01-C)** & **Provincial (MOD-SIS-B01-D)**: Consolidação multinível para a Direção Distrital de Saúde (DDS) e Serviço Provincial de Saúde (SPS).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 👶 4. Maternidade, Partos & Cuidados ao Recém-Nascido
+- Registo completo de partos (eutócico, cesariana, fórceps/vácuo, pélvico).
+- Avaliação neonatal com índice **APGAR** ao 1º, 5º e 10º minuto e perímetro cefálico.
+- Profilaxias imediatas: **Vitamina K1**, **Tetraciclina oftálmica a 1%**, **Vacina BCG**, **Pólio Zero** e megadose de Vitamina A materna.
 
-### Premium Partners
+### 🔬 5. Laboratório & Exames Críticos
+- Fila de trabalho laboratorial e lançamento de resultados.
+- Deteção imediata de exames críticos (HIV+, Sífilis/VDRL+, Anemia Grave, Glicemia alterada).
+- Gatilho automático de alertas clínicos de alta prioridade com fluxo para resolução e edição de condutas.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### 💬 6. Central Unificada de Notificações & SMS (httpSMS)
+- Painel integrado com abas para Notificações do Sistema, Busca Ativa de Gestantes Faltosas, Disparo Individual/Massa de SMS e Modelos MISAU.
+- Notificações em tempo real com persistência na base de dados e contadores dinâmicos na navbar.
 
-## Contributing
+### 🤖 7. Assistente Clínico Inteligente (IA)
+- Assistente conversacional clínico alimentado pelo **Google Gemini 2.5 Flash** (com suporte dinâmico a OpenRouter).
+- Apoio à tomada de decisão clínica, esclarecimento de protocolos do MISAU e guias de conduta farmacológica no pré-natal e parto.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🛠️ Arquitetura & Tecnologias
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Backend**: [Laravel 12.x](https://laravel.com) / PHP 8.2+
+- **Frontend**: Blade Templates, [Tailwind CSS 3.x](https://tailwindcss.com), [Alpine.js 3.x](https://alpinejs.dev)
+- **Gráficos & Visualização**: [Chart.js](https://www.chartjs.org/)
+- **Alertas & Feedback**: [SweetAlert2](https://sweetalert2.github.io/)
+- **Geração de PDF**: [Barryvdh Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf)
+- **Leitura de Código**: [Html5-QRCode](https://github.com/mebjas/html5-qrcode)
+- **Integração SMS**: [httpSMS API](https://httpsms.com/) (+258 Moçambique)
+- **Controlo de Acesso (RBAC)**: [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission)
+- **Base de Dados**: MySQL / MariaDB / SQLite
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🚀 Instalação & Configuração Local
 
-## License
+### Pré-requisitos
+- PHP $\ge$ 8.2 com extensões `bcmath`, `ctype`, `fileinfo`, `json`, `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`
+- Composer $\ge$ 2.x
+- Node.js $\ge$ 18.x & NPM
+- Servidor MySQL ou SQLite
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Passo a Passo
+
+1. **Clonar o Repositório**:
+   ```bash
+   git clone https://github.com/filipeive/maternidade_plus.git
+   cd maternidade_plus
+   ```
+
+2. **Instalar Dependências PHP**:
+   ```bash
+   composer install
+   ```
+
+3. **Instalar Dependências Frontend**:
+   ```bash
+   npm install
+   npm run build
+   # ou para desenvolvimento com hot-reload:
+   npm run dev
+   ```
+
+4. **Configurar o Ambiente**:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Ajustar as Variáveis do `.env`**:
+   ```env
+   APP_NAME="Maternidade+"
+   APP_URL=http://localhost:8000
+
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=maternidade_plus
+   DB_USERNAME=seu_usuario
+   DB_PASSWORD=sua_senha
+
+   # Integração SMS (httpSMS)
+   HTTPSMS_API_KEY=sua_chave_aqui
+   HTTPSMS_FROM_NUMBER=+258840000000
+
+   # Inteligência Artificial (Google Gemini)
+   GEMINI_API_KEY=sua_chave_gemini
+   GEMINI_MODEL=gemini-2.5-flash
+   ```
+
+6. **Executar Migrações & Seeders**:
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Iniciar o Servidor de Desenvolvimento**:
+   ```bash
+   php artisan serve
+   ```
+   Aceda a `http://localhost:8000` no seu navegador.
+
+---
+
+## 👥 Perfis de Acesso Padrão (Seeders)
+
+| Papel (Role) | E-mail Padrão | Responsabilidades |
+| :--- | :--- | :--- |
+| **Administrador** | `admin@maternidade.mz` | Gestão de utilizadores, auditoria, configurações e relatórios executivos |
+| **Médico** | `medico@maternidade.mz` | Gestão ARO, conduta clínica avançada e transferências |
+| **Enfermeiro (ESMI)** | `enfermeira@maternidade.mz` | CPN, puerpério, vacinação, profilaxias e livro MOD-SIS-B01 |
+| **Laboratorista** | `lab@maternidade.mz` | Registo e processamento de exames e validação de resultados críticos |
+
+---
+
+## 📚 Documentação do Projeto (`/docs`)
+
+O projeto possui uma documentação técnica viva e detalhada no diretório [`/docs`](docs/):
+
+- [`docs/00-getting-started/`](docs/00-getting-started/project-overview.md) — Visão geral, glossário clínico e guias de início.
+- [`docs/01-architecture/`](docs/01-architecture/system-architecture.md) — Arquitetura, estrutura de pastas e ciclo de vida.
+- [`docs/02-requirements/`](docs/02-requirements/business-rules.md) — Requisitos e regras de negócio oficiais MISAU.
+- [`docs/03-database/`](docs/03-database/database-design.md) — Esquemas de tabelas e diagramas relacionais.
+- [`docs/04-backend/`](docs/04-backend/routes.md) — Controladores, modelos, serviços e rotas.
+- [`docs/05-frontend/`](docs/05-frontend/blade.md) — Estrutura Blade e design system Tailwind.
+- [`docs/06-features/`](docs/06-features/mod-sis-b01.md) — Especificação técnica dos módulos.
+- [`docs/99-project-status/`](docs/99-project-status/project-checkpoint.md) — Checkpoints, changelog e roadmap.
+
+---
+
+## 📄 Licença & Direitos
+
+Projeto desenvolvido com foco na melhoria dos indicadores de saúde materna e neonatal em Moçambique. Todos os direitos reservados.

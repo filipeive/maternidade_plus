@@ -187,6 +187,11 @@
                                    title="Ver Detalhes">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
+                                <a href="{{ route('exams.edit', $exam) }}"
+                                   class="btn-icon-tw text-surface-600 hover:text-brand-600 hover:bg-surface-100"
+                                   title="Editar Exame">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </a>
                                 @if($exam->status !== 'realizado')
                                     <a href="{{ route('exams.result-form', $exam) }}"
                                        class="btn-icon-tw text-brand-600 hover:bg-brand-50"

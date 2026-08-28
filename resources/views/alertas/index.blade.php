@@ -245,12 +245,31 @@
                                         </button>
                                     </form>
                                 @endif
-                                <button type="button"
-                                        @click="activeModal = {{ $alerta->id }}"
-                                        class="btn-primary-tw btn-xs-tw sm:btn-sm-tw">
-                                    <i class="fas fa-stethoscope text-xs"></i>
-                                    <span>Tratar</span>
-                                </button>
+                                <!--Detalhes da Paciente -->
+                                <a href="{{ $alerta->patient ? route('patients.show', $alerta->patient) : '#' }}"
+                                   class="btn-ghost-tw btn-xs-tw text-surface-500 hover:text-brand-600"
+                                   title="Detalhes da Paciente"
+                                   @if(!$alerta->patient) disabled @endif>
+                                    <i class="fas fa-eye text-2xs"></i>
+                                    <span></span>
+                                </a>
+                                @if(in_array($alerta->status, ['resolvido', 'ignorado']))
+                                    <button type="button"
+                                            @click="activeModal = {{ $alerta->id }}"
+                                            class="btn-secondary-tw btn-xs-tw sm:btn-sm-tw"
+                                            title="Editar Conduta / Resolução">
+                                        <i class="fas fa-edit text-xs"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                @else
+                                    <button type="button"
+                                            @click="activeModal = {{ $alerta->id }}"
+                                            class="btn-primary-tw btn-xs-tw sm:btn-sm-tw"
+                                            title="Tratar Alerta Clínico">
+                                        <i class="fas fa-stethoscope text-xs"></i>
+                                        <span>Tratar</span>
+                                    </button>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -259,7 +278,7 @@
             </table>
         </div>
 
-        {{-- Modais Alpine.js para Resolução --}}
+        {{-- Modais Alpine.js para Resolução / Edição --}}
         @foreach($alertas as $alerta)
         <div x-show="activeModal === {{ $alerta->id }}"
              x-transition:enter="transition ease-out duration-200"
@@ -275,10 +294,12 @@
 
                 <form method="POST" action="{{ route('alertas.transitar', $alerta) }}">
                     @csrf
-                    <div class="px-5 py-4 bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between">
+                    <div class="px-5 py-4 bg-gradient-to-r {{ in_array($alerta->status, ['resolvido', 'ignorado']) ? 'from-surface-700 to-surface-800' : 'from-brand-600 to-brand-700' }} text-white flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <i class="fas fa-notes-medical"></i>
-                            <h4 class="font-semibold text-sm">Tratar Alerta Clínico</h4>
+                            <i class="fas {{ in_array($alerta->status, ['resolvido', 'ignorado']) ? 'fa-edit' : 'fa-notes-medical' }}"></i>
+                            <h4 class="font-semibold text-sm">
+                                {{ in_array($alerta->status, ['resolvido', 'ignorado']) ? 'Editar Conduta do Alerta' : 'Tratar Alerta Clínico' }}
+                            </h4>
                         </div>
                         <button type="button" @click="activeModal = null" class="text-white/70 hover:text-white">
                             <i class="fas fa-times"></i>
@@ -341,7 +362,7 @@
                         <button type="button" @click="activeModal = null" class="btn-secondary-tw btn-sm-tw">Cancelar</button>
                         <button type="submit" class="btn-primary-tw btn-sm-tw">
                             <i class="fas fa-save text-xs"></i>
-                            <span>Registar Ação</span>
+                            <span>{{ in_array($alerta->status, ['resolvido', 'ignorado']) ? 'Atualizar Conduta' : 'Registar Ação' }}</span>
                         </button>
                     </div>
                 </form>

@@ -4,6 +4,15 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.4.1] - 2026-08-28
+### Modificado / Melhorado
+- **Painel de Alertas Clínicos (`/alertas`)**: Diferenciação contextual dos botões de ação na tabela de alertas. Alertas já resolvidos ou ignorados exibem agora o botão **"Editar"** (com ícone e tema adaptado), abrindo o modal de edição da conduta e nota clínica em vez do botão "Tratar".
+- **Gestão de Exames Laboratoriais (`/exams`)**: Adicionado botão de atalho rápido para **"Editar Exame"** diretamente na tabela principal de listagem.
+- **Documentação Principal (`README.md`)**: Substituição completa do template inicial pelo README oficial do Maternidade+, cobrindo módulos clínicos MISAU, arquitetura, passos de instalação, seeders, variáveis de ambiente e referências aos manuais técnicos em `/docs`.
+- **Sincronização da Documentação (`/docs`)**: Atualização do mapeamento completo de rotas em `docs/04-backend/routes.md` e checkpoint do projeto.
+
+---
+
 ## [2.4.0] - 2026-08-28
 ### Adicionado
 - **Upgrade Nacional MISAU Moçambique Seguro**: Implementação integral dos protocolos clínicos oficiais de Saúde Materno-Infantil baseados nos Manuais Técnicos do Pré-Natal, Ficha Pré-Natal (FPN), Livros de Registos (MOD-SIS-B01, B01-B, B01-C, B01-D) e Normas Nacionais de CPN.
