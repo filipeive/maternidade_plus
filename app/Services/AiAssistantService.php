@@ -39,21 +39,25 @@ Sua missão é:
 3. Ser conciso, profissional, empático e usar português claro. Se a pergunta for sobre utilização do sistema, dê o caminho dos menus (ex: "Aceda a Clínico -> Gestantes -> Registar Parto").
 EOT;
 
-        // Tentar OpenRouter primeiro
+        // 1. Tentar Gemini Direct primeiro (resposta ultrarrápida e direta)
+        if (!empty($geminiKey)) {
+            $result = $this->queryGeminiDirect($geminiKey, $systemInstruction, $userPrompt);
+            if ($result[0] === true) {
+                return $result;
+            }
+            Log::warning('AiAssistantService: Gemini Direct falhou, tentando fallback OpenRouter...', ['error' => $result[1]]);
+        }
+
+        // 2. Fallback para OpenRouter
         if (!empty($openRouterKey)) {
             $result = $this->queryOpenRouter($openRouterKey, $systemInstruction, $userPrompt, $history);
             if ($result[0] === true) {
                 return $result;
             }
-            Log::warning('AiAssistantService: OpenRouter falhou, tentando fallback Gemini directa...', ['error' => $result[1]]);
+            Log::warning('AiAssistantService: OpenRouter falhou...', ['error' => $result[1]]);
         }
 
-        // Fallback para Gemini API
-        if (!empty($geminiKey)) {
-            return $this->queryGeminiDirect($geminiKey, $systemInstruction, $userPrompt);
-        }
-
-        return [false, 'Não foi possível obter resposta do servidor de IA. Tente novamente mais tarde.'];
+        return [false, 'Não foi possível obter resposta do assistente de IA. Verifique a ligação ou tente novamente.'];
     }
 
     private function queryOpenRouter(string $apiKey, string $systemPrompt, string $userPrompt, array $history): array
@@ -74,16 +78,18 @@ EOT;
 
             $messages[] = ['role' => 'user', 'content' => $userPrompt];
 
+            $model = env('GEMINI_MODEL', 'google/gemini-2.5-flash');
+
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
-                'HTTP-Referer' => env('APP_URL', 'http://localhost:8000'),
+                'HTTP-Referer' => env('APP_URL', 'http://146.235.224.99/maternidade_plus'),
                 'X-Title' => 'Maternidade+ Assistant',
                 'Content-Type' => 'application/json',
             ])->timeout(30)->post('https://openrouter.ai/api/v1/chat/completions', [
-                'model' => env('GEMINI_MODEL', 'google/gemini-2.5-flash'),
+                'model' => $model,
                 'messages' => $messages,
                 'temperature' => 0.4,
-                'max_tokens' => 1000,
+                'max_tokens' => 800,
             ]);
 
             if ($response->successful()) {
@@ -94,7 +100,7 @@ EOT;
                 }
             }
 
-            return [false, 'Erro HTTP OpenRouter: ' . $response->status() . ' — ' . $response->body()];
+            return [false, 'Erro OpenRouter (' . $response->status() . '): ' . $response->body()];
         } catch (\Exception $e) {
             return [false, 'Exceção OpenRouter: ' . $e->getMessage()];
         }
@@ -102,33 +108,45 @@ EOT;
 
     private function queryGeminiDirect(string $apiKey, string $systemPrompt, string $userPrompt): array
     {
-        try {
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
-            
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->post($url, [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            ['text' => $systemPrompt . "\n\nPergunta do Utilizador: " . $userPrompt]
+        $models = [
+            env('GEMINI_DIRECT_MODEL', 'gemini-2.5-flash'),
+            'gemini-2.0-flash',
+            'gemini-1.5-flash'
+        ];
+
+        $lastError = 'Modelo não disponível';
+
+        foreach ($models as $model) {
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+                
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->timeout(30)->post($url, [
+                    'contents' => [
+                        [
+                            'role' => 'user',
+                            'parts' => [
+                                ['text' => $systemPrompt . "\n\nPergunta do Utilizador: " . $userPrompt]
+                            ]
                         ]
                     ]
-                ]
-            ]);
+                ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-                if ($text) {
-                    return [true, trim($text)];
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if ($text) {
+                        return [true, trim($text)];
+                    }
                 }
-            }
 
-            return [false, 'Erro Gemini Direct: ' . $response->status()];
-        } catch (\Exception $e) {
-            return [false, 'Exceção Gemini Direct: ' . $e->getMessage()];
+                $lastError = 'Erro Gemini Direct (' . $model . '): ' . $response->status();
+            } catch (\Exception $e) {
+                $lastError = 'Exceção Gemini Direct (' . $model . '): ' . $e->getMessage();
+            }
         }
+
+        return [false, $lastError];
     }
 }

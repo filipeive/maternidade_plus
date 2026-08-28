@@ -10,14 +10,6 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function home()
-    {
-        if (auth()->check()) {
-            return redirect()->route('dashboard');
-        }
-        return redirect()->route('login');
-    }
-
     public function index()
     {
         // Estatísticas gerais
