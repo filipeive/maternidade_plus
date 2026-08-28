@@ -95,14 +95,20 @@ class DashboardController extends Controller
 
         // 4. Gráfico 3: Cobertura de Profilaxias MISAU (Percentual sobre total de ativas)
         $baseTotal = max($totalGestantes, 1);
-        $iptp1Dose = MaternalProphylaxis::where('iptp_doses_count', '>=', 1)->count();
-        $iptp3Doses = MaternalProphylaxis::where('iptp_doses_count', '>=', 3)->count();
-        $ferroFolato = MaternalProphylaxis::where('ferro_doses_count', '>=', 1)->count();
-        $mebendazol = MaternalProphylaxis::where('mebendazol_administrado', true)->count();
-        $tetano = Vaccine::where('tipo_vacina', 'tetano')->distinct('patient_id')->count('patient_id');
+        $iptp1Dose = MaternalProphylaxis::whereNotNull('sp_1_dose')->count();
+        $iptp3Doses = MaternalProphylaxis::whereNotNull('sp_3_dose')->count();
+        $ferroFolato = MaternalProphylaxis::where(function($q) {
+            $q->where('sal_ferroso_folico_3doses', true)
+              ->orWhere('doses_sal_ferroso_entregues', '>=', 1);
+        })->count();
+        $mebendazol = MaternalProphylaxis::whereNotNull('mebendazol_administrado')->count();
+        $tetano = MaternalProphylaxis::whereNotNull('vat_1_dose')->count();
+        if ($tetano === 0) {
+            $tetano = Vaccine::where('tipo_vacina', 'tetano')->distinct('patient_id')->count('patient_id');
+        }
 
         $profilaxiasData = [
-            'labels' => ['IPTp 1ª Dose', 'IPTp 3ª+ Doses', 'Tétano (TT)', 'Ferro / Folato', 'Mebendazol'],
+            'labels' => ['IPTp 1ª Dose', 'IPTp 3ª+ Doses', 'Tétano (VAT)', 'Ferro / Folato', 'Mebendazol'],
             'counts' => [$iptp1Dose, $iptp3Doses, $tetano, $ferroFolato, $mebendazol],
             'percentuais' => [
                 round(($iptp1Dose / $baseTotal) * 100, 1),
