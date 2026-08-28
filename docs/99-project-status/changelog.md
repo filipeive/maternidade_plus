@@ -16,6 +16,9 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 ### Corrigido
 - O contador de notificações (ícone do sino) e de alertas na navbar agora atualiza e persiste em tempo real ao clicar ou resolver alertas/notificações, eliminando o comportamento estático anterior.
 - Padronização visual com recurso exclusivo a ícones profissionais FontAwesome em todas as abas, formulários, selects e templates de notificações, substituindo todos os emojis.
+- Removido o modal residual global de QR Code que causava efeito visual de flash ao carregar a página `/scanner`, e adicionada regra global `<style>[x-cloak]</style>` nos layouts para evitar qualquer oscilação de componentes AlpineJS.
+- Assistente Virtual com IA integrado e corrigido com suporte oficial ao modelo `gemini-2.5-flash` e fallback dinâmico entre Google Gemini Direct e OpenRouter.
+- Nome da aplicação padronizado para **Maternidade+** em todas as barras de título de página, layouts e configurações `.env` (removendo a referência padrão "Laravel").
 
 ## [2.2.0] - 2026-08-27
 ### Adicionado
