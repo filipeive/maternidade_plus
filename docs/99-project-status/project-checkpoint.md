@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 28 de Agosto de 2026
-- **Versão Atual**: 2.7.0 (Dashboard Clínico Analítico com Chart.js - Produção)
+- **Versão Atual**: 2.8.0 (Painel Global de Configurações & Parâmetros - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---

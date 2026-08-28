@@ -136,7 +136,13 @@ Rotas web e endpoints da aplicação registrados em `routes/web.php`.
 | `POST` | `/users` | `users.store` | `UserController@store` |
 | `GET` | `/settings` | `settings.index` | `SettingsController@index` |
 | `PATCH` | `/settings/general` | `settings.update-general` | `SettingsController@updateGeneral` |
-| `PATCH` | `/settings/notifications` | `settings.update-notifications` | `SettingsController@updateNotifications` |
+| `PATCH` | `/settings/sms` | `settings.update-sms` | `SettingsController@updateSms` |
+| `PATCH` | `/settings/ai` | `settings.update-ai` | `SettingsController@updateAi` |
+| `PATCH` | `/settings/clinical` | `settings.update-clinical` | `SettingsController@updateClinical` |
+| `PATCH` | `/settings/community` | `settings.update-community` | `SettingsController@updateCommunity` |
+| `GET` | `/settings/backup` | `settings.backup` | `SettingsController@backupSettings` |
+| `POST` | `/settings/clear-cache` | `settings.clear-cache` | `SettingsController@clearCache` |
+| `POST` | `/settings/clear-logs` | `settings.clear-logs` | `SettingsController@clearLogs` |
 
 ---
 

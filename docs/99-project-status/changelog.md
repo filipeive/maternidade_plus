@@ -4,6 +4,18 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.8.0] - 2026-08-28
+### Adicionado / Melhorado
+- **Expansão Global do Painel de Configurações (`/settings`)**:
+  - **1. Unidade Sanitária & MISAU**: Gestão do Nome Oficial da US, Província (com seletor das 11 províncias moçambicanas), Distrito, Código SISMA/MISAU, Telefone de Urgência Obstétrica, E-mail Institucional e Médico Chefe/Responsável de SMI.
+  - **2. Gateway SMS & Notificações Automáticas**: Configuração de credenciais httpSMS, remetente, ativação/desativação geral, antecedência de lembretes (1 a 3 dias), notificação de parceiros e templates customizáveis para CPN e busca ativa.
+  - **3. Assistente Clínico IA**: Seleção de provedor (Google Gemini Direct / OpenRouter), modelo (`gemini-2.5-flash`, `claude-3.5-sonnet`, `gpt-4o-mini`), temperatura clínica, ativação de widget flutuante e diretrizes customizadas da unidade sanitária.
+  - **4. Protocolos Clínicos & Parâmetros de Alerta ARO**: Limites de tolerância para gestante faltosa (dias), semanas de alerta de parto (DPP), limites de PA Sistólica e Diastólica para Pré-eclâmpsia, corte de Hemoglobina para Anemia Severa e automação de alertas precoces.
+  - **5. Saúde Comunitária & Visitas de Terreno (APEs)**: Dias para reagendamento automático em caso de "Não Encontrada", dispensa automática de visita quando a paciente é atendida na US e disparo de SMS para activistas.
+  - **6. Backup & Manutenção**: Exportação de backup dos parâmetros em formato JSON (`settings.backup`), leitor de logs com busca em tempo real e limpeza de caches do sistema.
+
+---
+
 ## [2.7.0] - 2026-08-28
 ### Adicionado / Melhorado
 - **Redesign Completo do Dashboard Clínico & Analítico (`/dashboard`)**:

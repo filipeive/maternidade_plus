@@ -236,6 +236,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:Administrador'])->prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::patch('/general', [SettingsController::class, 'updateGeneral'])->name('update-general');
+        Route::patch('/sms', [SettingsController::class, 'updateSms'])->name('update-sms');
+        Route::patch('/ai', [SettingsController::class, 'updateAi'])->name('update-ai');
+        Route::patch('/clinical', [SettingsController::class, 'updateClinical'])->name('update-clinical');
+        Route::patch('/community', [SettingsController::class, 'updateCommunity'])->name('update-community');
         Route::patch('/notifications', [SettingsController::class, 'updateNotifications'])->name('update-notifications');
         Route::patch('/backup', [SettingsController::class, 'backupSettings'])->name('backup');
         Route::get('/system-info', [SettingsController::class, 'systemInfo'])->name('system-info');

@@ -32,7 +32,6 @@
         <div>
             <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <h2 class="text-base font-bold text-surface-900 tracking-tight">{{ $unidadeSanitaria }}</h2>
-                {{--<span class="badge-brand text-3xs font-bold uppercase">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</span>--}}
                 <span class="badge-neutral text-3xs font-medium">{{ $dataPt }}</span>
             </div>
             <p class="text-xs text-surface-600 flex items-center gap-1.5 flex-wrap">
@@ -40,7 +39,8 @@
                 <span class="text-surface-300">·</span>
                 <span class="text-brand-700 font-medium bg-brand-50 px-2 py-0.5 rounded-full text-3xs border border-brand-100">
                     <i class="fas fa-user-doctor text-3xs mr-0.5"></i> {{ $cargoUsuario }}
-                </span>
+                </span><br>
+                <p class="text-brand-700 text-3xs font-bold uppercase" style="display: block">{{ $provinciaConfig }} @if($distritoConfig) · {{ $distritoConfig }} @endif</p>
             </p>
         </div>
     </div>
