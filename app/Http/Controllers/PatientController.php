@@ -94,6 +94,14 @@ class PatientController extends Controller
             'contacto_emergencia' => 'nullable|string',
             'pessoa_referencia_nome' => 'nullable|string|max:255',
             'pessoa_referencia_contacto' => 'nullable|string',
+            'tem_parceiro' => 'nullable|boolean',
+            'parceiro_nome' => 'nullable|string|max:255',
+            'parceiro_contacto' => 'nullable|string|max:100',
+            'parceiro_notificar_sms' => 'nullable|boolean',
+            'acompanhante_nome' => 'nullable|string|max:255',
+            'acompanhante_parentesco' => 'nullable|string|max:100',
+            'acompanhante_contacto' => 'nullable|string|max:100',
+            'acompanhante_notificar_sms' => 'nullable|boolean',
             'endereco' => 'required|string',
             'distrito' => 'nullable|string|max:100',
             'bairro' => 'nullable|string|max:100',
@@ -113,6 +121,9 @@ class PatientController extends Controller
             'numero_abortos' => 'required|integer|min:0'
         ]);
 
+        $validated['tem_parceiro'] = $request->boolean('tem_parceiro', false);
+        $validated['parceiro_notificar_sms'] = $request->boolean('parceiro_notificar_sms', true);
+        $validated['acompanhante_notificar_sms'] = $request->boolean('acompanhante_notificar_sms', true);
         $validated['uso_rede_mosquiteira'] = $request->boolean('uso_rede_mosquiteira', true);
         $validated['alergia_penicilina'] = $request->boolean('alergia_penicilina', false);
         $validated['alergia_cotrimoxazol'] = $request->boolean('alergia_cotrimoxazol', false);
@@ -208,6 +219,14 @@ class PatientController extends Controller
             'contacto_emergencia' => 'nullable|string',
             'pessoa_referencia_nome' => 'nullable|string|max:255',
             'pessoa_referencia_contacto' => 'nullable|string',
+            'tem_parceiro' => 'nullable|boolean',
+            'parceiro_nome' => 'nullable|string|max:255',
+            'parceiro_contacto' => 'nullable|string|max:100',
+            'parceiro_notificar_sms' => 'nullable|boolean',
+            'acompanhante_nome' => 'nullable|string|max:255',
+            'acompanhante_parentesco' => 'nullable|string|max:100',
+            'acompanhante_contacto' => 'nullable|string|max:100',
+            'acompanhante_notificar_sms' => 'nullable|boolean',
             'endereco' => 'required|string',
             'distrito' => 'nullable|string|max:100',
             'bairro' => 'nullable|string|max:100',
@@ -227,6 +246,9 @@ class PatientController extends Controller
             'numero_abortos' => 'required|integer|min:0'
         ]);
 
+        $validated['tem_parceiro'] = $request->boolean('tem_parceiro', false);
+        $validated['parceiro_notificar_sms'] = $request->boolean('parceiro_notificar_sms', true);
+        $validated['acompanhante_notificar_sms'] = $request->boolean('acompanhante_notificar_sms', true);
         $validated['uso_rede_mosquiteira'] = $request->boolean('uso_rede_mosquiteira', true);
         $validated['alergia_penicilina'] = $request->boolean('alergia_penicilina', false);
         $validated['alergia_cotrimoxazol'] = $request->boolean('alergia_cotrimoxazol', false);

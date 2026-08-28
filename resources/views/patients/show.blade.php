@@ -190,6 +190,55 @@
                         </div>
                     </div>
 
+                    {{-- Bloco Rede de Apoio Familiar & SMS --}}
+                    <div class="mt-4 pt-3 border-t border-surface-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-surface-50 p-3 rounded-lg border border-surface-200/80">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="font-bold text-surface-800 flex items-center gap-1.5">
+                                    <i class="fas fa-person-breastfeeding text-brand-600"></i> Parceiro / Pai do Bebê:
+                                </span>
+                                @if($patient->tem_parceiro)
+                                    <span class="badge-success text-2xs">Presente</span>
+                                @else
+                                    <span class="badge-neutral text-2xs">Sem Parceiro / Desconhecido</span>
+                                @endif
+                            </div>
+                            @if($patient->tem_parceiro && $patient->parceiro_nome)
+                                <p class="text-surface-900 font-semibold">{{ $patient->parceiro_nome }}</p>
+                                <p class="text-surface-600 text-2xs mt-0.5">
+                                    <i class="fas fa-phone text-surface-400 mr-1"></i> {{ $patient->parceiro_contacto ?? 'Sem telefone' }}
+                                    @if($patient->parceiro_notificar_sms)
+                                        <span class="text-emerald-700 font-bold ml-1.5"><i class="fas fa-comment-sms"></i> Notifica SMS</span>
+                                    @endif
+                                </p>
+                            @else
+                                <p class="text-surface-500 italic text-2xs">Sem dados do parceiro registados.</p>
+                            @endif
+                        </div>
+
+                        <div class="bg-surface-50 p-3 rounded-lg border border-surface-200/80">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="font-bold text-surface-800 flex items-center gap-1.5">
+                                    <i class="fas fa-hand-holding-heart text-gold-600"></i> Acompanhante / Familiar de Apoio:
+                                </span>
+                                @if($patient->acompanhante_parentesco)
+                                    <span class="badge-info text-2xs">{{ $patient->acompanhante_parentesco }}</span>
+                                @endif
+                            </div>
+                            @if($patient->acompanhante_nome)
+                                <p class="text-surface-900 font-semibold">{{ $patient->acompanhante_nome }}</p>
+                                <p class="text-surface-600 text-2xs mt-0.5">
+                                    <i class="fas fa-phone text-surface-400 mr-1"></i> {{ $patient->acompanhante_contacto ?? 'Sem telefone' }}
+                                    @if($patient->acompanhante_notificar_sms)
+                                        <span class="text-emerald-700 font-bold ml-1.5"><i class="fas fa-comment-sms"></i> Notifica SMS</span>
+                                    @endif
+                                </p>
+                            @else
+                                <p class="text-surface-500 italic text-2xs">Sem acompanhante cadastrado.</p>
+                            @endif
+                        </div>
+                    </div>
+
                     @if ($patient->alergias)
                         <div class="mt-4 bg-gold-50 border border-gold-200 text-gold-900 p-3 rounded-lg flex items-center gap-2 text-xs">
                             <i class="fas fa-exclamation-triangle text-gold-600 text-sm shrink-0"></i>

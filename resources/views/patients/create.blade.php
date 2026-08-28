@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="w-full mx-auto">
     <div class="card-tw">
         <div class="card-header-tw">
             <div class="flex items-center gap-2">
@@ -149,19 +149,6 @@
                     </div>
 
                     <div>
-                        <label for="pessoa_referencia_nome" class="label-tw">Pessoa de Referência (Nome)</label>
-                        <input type="text"
-                               class="input-tw @error('pessoa_referencia_nome') input-error-tw @enderror"
-                               id="pessoa_referencia_nome"
-                               name="pessoa_referencia_nome"
-                               value="{{ old('pessoa_referencia_nome') }}"
-                               placeholder="Nome do parceiro / familiar">
-                        @error('pessoa_referencia_nome')
-                            <p class="error-text-tw">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
                         <label for="codigo_ptv" class="label-tw">Código PTV (Se aplicável)</label>
                         <input type="text"
                                class="input-tw @error('codigo_ptv') input-error-tw @enderror"
@@ -172,6 +159,124 @@
                         @error('codigo_ptv')
                             <p class="error-text-tw">{{ $message }}</p>
                         @enderror
+                    </div>
+                </div>
+
+                {{-- Rede de Apoio Familiar & Notificações SMS de Suporte --}}
+                <div class="mt-5 p-4 bg-surface-50 rounded-xl border border-surface-200/80 space-y-4"
+                     x-data="{ temParceiro: '{{ old('tem_parceiro', '1') }}' }">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-200/60 pb-2">
+                        <div>
+                            <h5 class="text-xs font-bold text-surface-900 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fas fa-users-line text-brand-600"></i> Rede de Apoio Familiar & Notificações de Retenção
+                            </h5>
+                            <p class="text-2xs text-surface-500">Registo do parceiro ou familiar de suporte para reforço e busca ativa comunitária via SMS</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="tem_parceiro" value="1" x-model="temParceiro" class="text-brand-600 focus:ring-brand-500">
+                                <span class="font-medium text-surface-800">Tem Parceiro</span>
+                            </label>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="tem_parceiro" value="0" x-model="temParceiro" class="text-amber-600 focus:ring-amber-500">
+                                <span class="font-medium text-surface-800">Sem Parceiro / Apoio</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- Bloco do Parceiro --}}
+                    <div x-show="temParceiro == '1'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="parceiro_nome" class="label-tw">Nome do Parceiro / Pai do Bebê</label>
+                            <input type="text"
+                                   class="input-tw @error('parceiro_nome') input-error-tw @enderror"
+                                   id="parceiro_nome"
+                                   name="parceiro_nome"
+                                   value="{{ old('parceiro_nome') }}"
+                                   placeholder="Nome completo do parceiro">
+                            @error('parceiro_nome')
+                                <p class="error-text-tw">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="parceiro_contacto" class="label-tw">Contacto Telefónico do Parceiro</label>
+                            <input type="tel"
+                                   class="input-tw @error('parceiro_contacto') input-error-tw @enderror"
+                                   id="parceiro_contacto"
+                                   name="parceiro_contacto"
+                                   value="{{ old('parceiro_contacto') }}"
+                                   placeholder="Ex: +258 84 987 6543">
+                            @error('parceiro_contacto')
+                                <p class="error-text-tw">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="flex items-center pt-5">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                <input type="checkbox" name="parceiro_notificar_sms" value="1" {{ old('parceiro_notificar_sms', true) ? 'checked' : '' }} class="rounded text-brand-600 focus:ring-brand-500">
+                                <span class="font-medium text-surface-800">Enviar SMS ao Parceiro se a gestante faltar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- Bloco do Acompanhante / Familiar de Apoio --}}
+                    <div class="pt-3 border-t border-surface-200/60">
+                        <span class="text-2xs font-bold uppercase text-surface-600 tracking-wider block mb-2">
+                            <i class="fas fa-hand-holding-heart text-gold-600 mr-1"></i> Acompanhante / Familiar de Apoio (Mãe, Tia, Irmã, Sogra ou Vizinha):
+                        </span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="acompanhante_nome" class="label-tw">Nome do Acompanhante</label>
+                                <input type="text"
+                                       class="input-tw @error('acompanhante_nome') input-error-tw @enderror"
+                                       id="acompanhante_nome"
+                                       name="acompanhante_nome"
+                                       value="{{ old('acompanhante_nome') }}"
+                                       placeholder="Nome do familiar">
+                                @error('acompanhante_nome')
+                                    <p class="error-text-tw">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="acompanhante_parentesco" class="label-tw">Grau de Parentesco</label>
+                                <select class="input-tw @error('acompanhante_parentesco') input-error-tw @enderror" id="acompanhante_parentesco" name="acompanhante_parentesco">
+                                    <option value="">Selecione...</option>
+                                    <option value="Mae" {{ old('acompanhante_parentesco') == 'Mae' ? 'selected' : '' }}>Mãe</option>
+                                    <option value="Tia" {{ old('acompanhante_parentesco') == 'Tia' ? 'selected' : '' }}>Tia</option>
+                                    <option value="Irma" {{ old('acompanhante_parentesco') == 'Irma' ? 'selected' : '' }}>Irmã</option>
+                                    <option value="Sogra" {{ old('acompanhante_parentesco') == 'Sogra' ? 'selected' : '' }}>Sogra</option>
+                                    <option value="Avo" {{ old('acompanhante_parentesco') == 'Avo' ? 'selected' : '' }}>Avó</option>
+                                    <option value="Vizinha_APE" {{ old('acompanhante_parentesco') == 'Vizinha_APE' ? 'selected' : '' }}>Vizinha / APE</option>
+                                    <option value="Amiga" {{ old('acompanhante_parentesco') == 'Amiga' ? 'selected' : '' }}>Amiga</option>
+                                    <option value="Outro" {{ old('acompanhante_parentesco') == 'Outro' ? 'selected' : '' }}>Outro</option>
+                                </select>
+                                @error('acompanhante_parentesco')
+                                    <p class="error-text-tw">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="acompanhante_contacto" class="label-tw">Contacto do Acompanhante</label>
+                                <input type="tel"
+                                       class="input-tw @error('acompanhante_contacto') input-error-tw @enderror"
+                                       id="acompanhante_contacto"
+                                       name="acompanhante_contacto"
+                                       value="{{ old('acompanhante_contacto') }}"
+                                       placeholder="Ex: +258 82 123 4567">
+                                @error('acompanhante_contacto')
+                                    <p class="error-text-tw">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="flex items-center pt-5">
+                                <label class="flex items-center gap-2 cursor-pointer text-xs">
+                                    <input type="checkbox" name="acompanhante_notificar_sms" value="1" {{ old('acompanhante_notificar_sms', true) ? 'checked' : '' }} class="rounded text-brand-600 focus:ring-brand-500">
+                                    <span class="font-medium text-surface-800">Enviar SMS de apoio/lembrete ao familiar</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
