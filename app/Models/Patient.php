@@ -97,6 +97,19 @@ class Patient extends Model
         return !$this->ativo;
     }
 
+    public function getIdadeGestacionalSemanas(): ?int
+    {
+        return $this->idade_gestacional;
+    }
+
+    public function isAltoRisco(): bool
+    {
+        return ($this->numero_abortos > 0)
+            || (stripos($this->historico_medico ?? '', 'diabetes') !== false)
+            || (stripos($this->historico_medico ?? '', 'hipertensao') !== false)
+            || !empty($this->alergias);
+    }
+
     public function getMotivoInativacaoFormatadoAttribute(): string
     {
         return match($this->motivo_inativacao) {

@@ -109,10 +109,7 @@
             <tr>
                 <th>Idade Gestacional Atual:</th>
                 <td>
-                    @php
-                        $ig = $patient->getIdadeGestacionalSemanas();
-                    @endphp
-                    <strong>{{ $ig ? $ig . ' Semanas' : 'Não determinada' }}</strong>
+                    <strong>{{ $patient->idade_gestacional_detalhada ?? ($patient->idade_gestacional ? $patient->idade_gestacional . ' Semanas' : 'Não determinada') }}</strong>
                     (DUM: {{ $patient->data_ultima_menstruacao?->format('d/m/Y') ?? 'N/D' }} | DPP: {{ $patient->data_provavel_parto?->format('d/m/Y') ?? 'N/D' }})
                 </td>
                 <th>Classificação de Risco (ARO):</th>
