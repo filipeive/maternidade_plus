@@ -59,10 +59,14 @@
         <h2 class="text-xl font-bold text-surface-900">Acompanhamento no Terreno</h2>
         <p class="text-sm text-surface-500">Agendamento e registo de visitas domiciliárias a gestantes de risco ou faltosas</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
         <a href="{{ route('home_visits.create') }}" class="btn-primary-tw">
             <i class="fas fa-plus text-xs"></i>
             <span>Nova Visita</span>
+        </a>
+        <a href="{{ route('home_visits.active-search') }}" class="btn-secondary-tw text-crimson-700 bg-crimson-50 border-crimson-200 hover:bg-crimson-100">
+            <i class="fas fa-person-walking-arrow-right text-xs text-crimson-600"></i>
+            <span>Busca Ativa Faltosas</span>
         </a>
         <a href="{{ route('home_visits.daily-schedule') }}" class="btn-secondary-tw">
             <i class="fas fa-calendar-day text-xs text-gold-600"></i>
@@ -197,6 +201,16 @@
                                    title="Ver Detalhes">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
+                                @if($visit->status === 'agendada')
+                                    <form method="POST" action="{{ route('home_visits.resolve-at-facility', $visit) }}" onsubmit="return confirm('Marcar esta visita como atendida na US (dispensa deslocação ao terreno)?');" class="inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="motivo_resolucao" value="Paciente compareceu espontaneamente à Unidade Sanitária.">
+                                        <button type="submit" class="btn-icon-tw text-brand-600 hover:text-brand-700 hover:bg-brand-50" title="Paciente Atendida na US (Dispensar Visita)">
+                                            <i class="fas fa-circle-check text-xs"></i>
+                                        </button>
+                                    </form>
+                                @endif
                                 <a href="{{ route('home_visits.edit', $visit) }}"
                                    class="btn-icon-tw"
                                    title="Editar / Actualizar">

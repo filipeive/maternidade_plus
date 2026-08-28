@@ -4,6 +4,24 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.5.0] - 2026-08-28
+### Adicionado / Melhorado
+- **Módulo de Agentes Comunitários & Activistas de Saúde (APEs)**:
+  - Adicionado perfil e permissões de **Agente Comunitário** (`Agente Comunitário`) no Spatie RBAC e seeders do sistema, permitindo que Enfermeiras e Activistas Comunitárias colaborem na busca ativa e seguimento domiciliar.
+  - Criado utilizador comunitário padrão: `activista@maternidade.mz` (*Activista Comunitária Rosa Sitoe*).
+- **Módulo de Busca Ativa de Pacientes Faltosas (`/home_visits/active-search`)**:
+  - Nova interface moderna em Tailwind CSS para acompanhamento de gestantes e puérperas com consultas CPN ou pós-parto em atraso.
+  - Encaminhamento individual ou em lote para a equipa comunitária com atribuição de responsável e instruções de terreno.
+  - Funcionalidade de **"Atendida na US / Resolver Visita"**: permite que médicos e enfermeiras dispensem a visita no terreno quando a gestante comparecer à consulta na unidade sanitária.
+- **Redesign Completo das Vistas de Visitas Domiciliárias (`resources/views/home_visits/`)**:
+  - `show.blade.php`: Redesenhado integralmente no design system Tailwind CSS + Alpine.js com modais de "Completar Visita", "Reagendar", "Marcar Não Encontrada" e "Resolver na US".
+  - `create.blade.php` e `edit.blade.php`: Suporte à seleção e atribuição de activistas/enfermeiros responsáveis.
+  - `index.blade.php`: Ações rápidas de resolução na US, atalhos para busca ativa e estatísticas em tempo real.
+- **Integração na Barra Lateral & Consultas**:
+  - Atalhos diretos para busca ativa comunitária a partir da listagem de consultas CPN.
+
+---
+
 ## [2.4.2] - 2026-08-28
 ### Adicionado / Melhorado
 - **Assistente IA Clínico com Memória Conversacional Persistente**:

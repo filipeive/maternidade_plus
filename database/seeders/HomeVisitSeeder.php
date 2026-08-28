@@ -35,15 +35,15 @@ class HomeVisitSeeder extends Seeder
                 'condicoes_higiene' => 'bom',
                 'apoio_familiar' => 'adequado',
                 'estado_nutricional' => 'Paciente com boa alimentação',
-                'sinais_vitais' => json_encode(['PA' => '120/80', 'peso' => '68kg', 'temperatura' => '36.8']),
+                'sinais_vitais' => ['pressao_arterial' => '120/80', 'peso' => '68kg', 'temperatura' => '36.8'],
                 'queixas_principais' => 'Nenhuma queixa relevante',
-                'orientacoes_dadas' => 'Orientações sobre amamentação',
-                'materiais_entregues' => json_encode(['folheto amamentação']),
+                'orientacoes_dadas' => 'Orientações sobre amamentação e cuidados neonatais',
+                'materiais_entregues' => ['Folheto Amamentação', 'Suplementos de Ferro'],
                 'proxima_visita' => Carbon::now()->addDays(15),
                 'acompanhante_presente' => true,
                 'necessita_referencia' => false,
                 'observacoes_gerais' => 'Paciente motivada e em bom estado',
-                'coordenadas_gps' => json_encode(['lat' => '-25.9652', 'lng' => '32.5892']),
+                'coordenadas_gps' => ['lat' => '-25.9652', 'lng' => '32.5892'],
             ]);
         }
     }

@@ -30,6 +30,12 @@ class UserSeeder extends Seeder
                 'password' => 'password',
                 'role' => 'Enfermeiro'
             ],
+            [
+                'name' => 'Activista Rosa Sitoe',
+                'email' => 'activista@maternidade.mz',
+                'password' => 'password',
+                'role' => 'Agente Comunitário'
+            ],
         ];
 
         foreach ($users as $user) {

@@ -70,7 +70,13 @@ class HomeVisitController extends Controller
 
         $tiposVisita = HomeVisit::getTiposVisita();
 
-        return view('home_visits.create', compact('patient', 'patients', 'tiposVisita'));
+        // Lista de agentes comunitários e enfermeiras para atribuição
+        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        if ($communityAgents->isEmpty()) {
+            $communityAgents = \App\Models\User::all(['id', 'name']);
+        }
+
+        return view('home_visits.create', compact('patient', 'patients', 'tiposVisita', 'communityAgents'));
     }
 
     public function store(Request $request)
@@ -81,7 +87,8 @@ class HomeVisitController extends Controller
             'motivo_visita' => 'required|string',
             'tipo_visita' => 'required|in:rotina,pos_parto,alto_risco,faltosa,emergencia,educacao,seguimento',
             'endereco_visita' => 'nullable|string',
-            'observacoes_gerais' => 'nullable|string'
+            'observacoes_gerais' => 'nullable|string',
+            'user_id' => 'nullable|exists:users,id'
         ]);
 
         // Se não forneceu endereço, usar o endereço da gestante
@@ -90,7 +97,8 @@ class HomeVisitController extends Controller
             $validated['endereco_visita'] = $patient->endereco;
         }
 
-        $validated['user_id'] = auth()->id();
+        // Atribuir ao agente comunitário selecionado ou ao utilizador autenticado
+        $validated['user_id'] = $validated['user_id'] ?? auth()->id();
         $validated['status'] = 'agendada';
 
         HomeVisit::create($validated);
@@ -127,7 +135,12 @@ class HomeVisitController extends Controller
 
         $tiposVisita = HomeVisit::getTiposVisita();
 
-        return view('home_visits.edit', compact('homeVisit', 'patients', 'tiposVisita'));
+        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        if ($communityAgents->isEmpty()) {
+            $communityAgents = \App\Models\User::all(['id', 'name']);
+        }
+
+        return view('home_visits.edit', compact('homeVisit', 'patients', 'tiposVisita', 'communityAgents'));
     }
 
     public function update(Request $request, HomeVisit $homeVisit)
@@ -138,7 +151,8 @@ class HomeVisitController extends Controller
             'motivo_visita' => 'required|string',
             'tipo_visita' => 'required|in:rotina,pos_parto,alto_risco,faltosa,emergencia,educacao,seguimento',
             'endereco_visita' => 'required|string',
-            'observacoes_gerais' => 'nullable|string'
+            'observacoes_gerais' => 'nullable|string',
+            'user_id' => 'nullable|exists:users,id'
         ]);
 
         $homeVisit->update($validated);
@@ -396,25 +410,79 @@ class HomeVisitController extends Controller
         return view('home_visits.weekly-schedule', compact('weekDays', 'startDate', 'endDate'));
     }
 
-    public function activeSearch()
+    public function activeSearch(Request $request)
     {
-        // Buscar gestantes que faltaram às consultas e precisam de visita
-        $faltosas = Patient::whereHas('consultations', function($query) {
-                              $query->where('status', 'agendada')
-                                    ->where('data_consulta', '<', now()->subDays(3));
+        $search = $request->get('search');
+
+        // Buscar pacientes com consultas agendadas atrasadas
+        $query = Patient::where('ativo', true);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nome_completo', 'LIKE', "%{$search}%")
+                  ->orWhere('documento_bi', 'LIKE', "%{$search}%")
+                  ->orWhere('contacto', 'LIKE', "%{$search}%")
+                  ->orWhere('endereco', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $faltosas = $query->whereHas('consultations', function($q) {
+                              $q->where('status', 'agendada')
+                                ->where('data_consulta', '<', now());
                           })
-                          ->whereDoesntHave('homeVisits', function($query) {
-                              $query->where('tipo_visita', 'faltosa')
-                                    ->where('created_at', '>', now()->subDays(7));
-                          })
-                          ->with(['consultations' => function($query) {
-                              $query->where('status', 'agendada')
-                                    ->where('data_consulta', '<', now())
-                                    ->orderBy('data_consulta');
+                          ->with(['consultations' => function($q) {
+                              $q->where('status', 'agendada')
+                                ->where('data_consulta', '<', now())
+                                ->orderBy('data_consulta', 'desc');
+                          }, 'homeVisits' => function($q) {
+                              $q->orderBy('data_visita', 'desc');
+                          }, 'alertas' => function($q) {
+                              $q->where('status', 'ativo')->where('nivel', 'alto');
                           }])
                           ->get();
 
-        return view('home_visits.active-search', compact('faltosas'));
+        // Agentes comunitários disponíveis para atribuição
+        $communityAgents = \App\Models\User::role(['Agente Comunitário', 'Enfermeiro'])->get(['id', 'name']);
+        if ($communityAgents->isEmpty()) {
+            $communityAgents = \App\Models\User::all(['id', 'name']);
+        }
+
+        // Estatísticas de busca ativa
+        $stats = [
+            'total_faltosas' => $faltosas->count(),
+            'visitas_agendadas' => HomeVisit::where('tipo_visita', 'faltosa')->where('status', 'agendada')->count(),
+            'recuperadas_mes' => HomeVisit::where('tipo_visita', 'faltosa')->where('status', 'realizada')->whereMonth('updated_at', now()->month)->count(),
+        ];
+
+        return view('home_visits.active-search', compact('faltosas', 'communityAgents', 'stats', 'search'));
+    }
+
+    public function referPatient(Request $request)
+    {
+        $validated = $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+            'data_visita' => 'required|date|after_or_equal:today',
+            'motivo_visita' => 'required|string',
+            'tipo_visita' => 'required|in:faltosa,pos_parto,alto_risco,rotina,emergencia,educacao,seguimento',
+            'user_id' => 'nullable|exists:users,id',
+            'observacoes_gerais' => 'nullable|string'
+        ]);
+
+        $patient = Patient::findOrFail($validated['patient_id']);
+
+        HomeVisit::create([
+            'patient_id' => $patient->id,
+            'user_id' => $validated['user_id'] ?? auth()->id(),
+            'data_visita' => $validated['data_visita'],
+            'motivo_visita' => $validated['motivo_visita'],
+            'tipo_visita' => $validated['tipo_visita'],
+            'endereco_visita' => $patient->endereco ?? 'A confirmar no bairro',
+            'observacoes_gerais' => $validated['observacoes_gerais'] ?? 'Encaminhamento para acompanhamento comunitário',
+            'status' => 'agendada'
+        ]);
+
+        return redirect()->back()
+                         ->with('success', "Paciente {$patient->nome_completo} encaminhada com sucesso para visita comunitária!");
     }
 
     public function scheduleActiveSearch(Request $request)
@@ -422,13 +490,14 @@ class HomeVisitController extends Controller
         $patientIds = $request->validate([
             'patient_ids' => 'required|array',
             'patient_ids.*' => 'exists:patients,id',
-            'data_visita' => 'required|date|after_or_equal:today'
+            'data_visita' => 'required|date|after_or_equal:today',
+            'user_id' => 'nullable|exists:users,id'
         ])['patient_ids'];
 
+        $assignedUserId = $request->input('user_id') ?: auth()->id();
         $scheduledCount = 0;
 
         foreach ($patientIds as $patientId) {
-            // Verificar se já não tem visita agendada
             $existingVisit = HomeVisit::where('patient_id', $patientId)
                                     ->where('tipo_visita', 'faltosa')
                                     ->where('status', 'agendada')
@@ -439,9 +508,9 @@ class HomeVisitController extends Controller
                 
                 HomeVisit::create([
                     'patient_id' => $patientId,
-                    'user_id' => auth()->id(),
+                    'user_id' => $assignedUserId,
                     'data_visita' => $request->data_visita,
-                    'motivo_visita' => 'Busca ativa - gestante faltosa às consultas',
+                    'motivo_visita' => 'Busca ativa de gestante faltosa às consultas de rotina MISAU',
                     'tipo_visita' => 'faltosa',
                     'endereco_visita' => $patient->endereco,
                     'status' => 'agendada'
@@ -452,7 +521,20 @@ class HomeVisitController extends Controller
         }
 
         return redirect()->route('home_visits.index')
-                        ->with('success', "Agendadas {$scheduledCount} visitas de busca ativa!");
+                        ->with('success', "Agendadas {$scheduledCount} visitas de busca ativa para a equipa comunitária!");
+    }
+
+    public function resolveAtFacility(Request $request, HomeVisit $homeVisit)
+    {
+        $motivo = $request->input('motivo_resolucao', 'Paciente compareceu espontaneamente à consulta na Unidade Sanitária.');
+
+        $homeVisit->update([
+            'status' => 'cancelada',
+            'observacoes_gerais' => trim($homeVisit->observacoes_gerais . "\n\n[Resolvida na US em " . now()->format('d/m/Y H:i') . ' por ' . auth()->user()->name . "]: " . $motivo)
+        ]);
+
+        return redirect()->back()
+                        ->with('success', 'Visita marcada como resolvida na Unidade Sanitária. A equipa de activistas foi informada da dispensa da visita.');
     }
 
     public function mobileSync(Request $request)

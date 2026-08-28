@@ -62,7 +62,14 @@ class RoleAndPermissionSeeder extends Seeder
             'view_alerts'
         ];
 
-        foreach ($permissions as $permission) {
+        $homeVisitPermissions = [
+            'view_home_visits',
+            'create_home_visits',
+            'edit_home_visits',
+            'delete_home_visits',
+        ];
+
+        foreach (array_merge($permissions, $homeVisitPermissions) as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
@@ -71,6 +78,7 @@ class RoleAndPermissionSeeder extends Seeder
         $medico = Role::firstOrCreate(['name' => 'Médico', 'guard_name' => 'web']);
         $enfermeiro = Role::firstOrCreate(['name' => 'Enfermeiro', 'guard_name' => 'web']);
         $laboratorista = Role::firstOrCreate(['name' => 'Laboratorista', 'guard_name' => 'web']);
+        $agenteComunitario = Role::firstOrCreate(['name' => 'Agente Comunitário', 'guard_name' => 'web']);
 
         // Atribuir permissões aos roles
         $admin->syncPermissions(Permission::all());
@@ -81,7 +89,8 @@ class RoleAndPermissionSeeder extends Seeder
             'view_exams', 'create_exams', 'edit_exams',
             'view_births', 'create_births', 'edit_births',
             'view_vaccines', 'view_dashboard', 'manage_alerts', 'view_alerts',
-            'view_notifications', 'manage_notifications'
+            'view_notifications', 'manage_notifications',
+            'view_home_visits', 'create_home_visits', 'edit_home_visits'
         ]);
 
         $enfermeiro->syncPermissions([
@@ -90,13 +99,21 @@ class RoleAndPermissionSeeder extends Seeder
             'view_exams', 'view_births', 'create_births',
             'view_vaccines', 'create_vaccines', 'edit_vaccines',
             'view_dashboard', 'view_alerts',
-            'view_notifications', 'manage_notifications'
+            'view_notifications', 'manage_notifications',
+            'view_home_visits', 'create_home_visits', 'edit_home_visits'
         ]);
 
         $laboratorista->syncPermissions([
             'view_laboratory', 'create_laboratory', 'edit_laboratory',
             'view_exams', 'create_exams', 'edit_exams',
             'view_dashboard'
+        ]);
+
+        $agenteComunitario->syncPermissions([
+            'view_patients',
+            'view_home_visits', 'create_home_visits', 'edit_home_visits',
+            'view_dashboard',
+            'view_notifications'
         ]);
 
         // Criar usuário admin padrão (se não existir)
@@ -133,6 +150,18 @@ class RoleAndPermissionSeeder extends Seeder
                 'especialidade' => 'Enfermagem de Saúde Materno-Infantil'
             ]);
             $enfermeiraUser->assignRole('Enfermeiro');
+        }
+
+        // Criar utilizador activista comunitário exemplo (se não existir)
+        if (!User::where('email', 'activista@maternidade.mz')->exists()) {
+            $activistaUser = User::create([
+                'name' => 'Activista Comunitária Rosa Sitoe',
+                'email' => 'activista@maternidade.mz',
+                'password' => 'password',
+                'email_verified_at' => now(),
+                'especialidade' => 'Saúde Comunitária & Busca Ativa (APE)'
+            ]);
+            $activistaUser->assignRole('Agente Comunitário');
         }
     }
 }

@@ -88,6 +88,10 @@
                 <i class="fas fa-plus text-xs"></i>
                 <span>Nova Consulta</span>
             </a>
+            <a href="{{ route('home_visits.active-search') }}" class="btn-secondary-tw text-crimson-700 bg-crimson-50 border-crimson-200 hover:bg-crimson-100">
+                <i class="fas fa-person-walking-arrow-right text-xs text-crimson-600"></i>
+                <span>Busca Ativa Faltosas</span>
+            </a>
             <a href="{{ route('exams.pending-results') }}" class="btn-secondary-tw">
                 <i class="fas fa-flask text-xs text-gold-600"></i>
                 <span>Exames Pendentes</span>

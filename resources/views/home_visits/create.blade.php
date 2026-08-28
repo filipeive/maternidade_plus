@@ -102,17 +102,34 @@
                     @enderror
                 </div>
 
-                {{-- ENDEREÇO DA VISITA --}}
-                <div>
-                    <label class="label-tw">Endereço da Visita (Opcional se igual ao cadastro)</label>
-                    <input type="text" name="endereco_visita" value="{{ old('endereco_visita', $patient->endereco ?? '') }}" placeholder="Deixe em branco para utilizar o endereço cadastrado da gestante..." class="input-tw text-xs">
-                    <p class="text-3xs text-surface-400 mt-1">Se não preenchido, será utilizado o endereço registado no cartão da gestante.</p>
+                {{-- AGENTE COMUNITÁRIO / PROFISSIONAL RESPONSÁVEL --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label-tw">Agente Comunitário / Responsável</label>
+                        <select name="user_id" class="input-tw text-xs">
+                            <option value="">Atribuir a mim ({{ auth()->user()->name }})</option>
+                            @if(isset($communityAgents))
+                                @foreach ($communityAgents as $agent)
+                                    <option value="{{ $agent->id }}" {{ old('user_id') == $agent->id ? 'selected' : '' }}>
+                                        {{ $agent->name }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <p class="text-3xs text-surface-400 mt-1">Selecione o activista ou enfermeiro que realizará a visita.</p>
+                    </div>
+
+                    <div>
+                        <label class="label-tw">Endereço da Visita (Opcional se igual ao cadastro)</label>
+                        <input type="text" name="endereco_visita" value="{{ old('endereco_visita', $patient->endereco ?? '') }}" placeholder="Deixe em branco para usar endereço da gestante..." class="input-tw text-xs">
+                        <p class="text-3xs text-surface-400 mt-1">Se não preenchido, será utilizado o endereço da ficha da gestante.</p>
+                    </div>
                 </div>
 
                 {{-- OBSERVAÇÕES GERAIS --}}
                 <div>
-                    <label class="label-tw">Observações Gerais</label>
-                    <textarea name="observacoes_gerais" rows="3" placeholder="Informações adicionais para o agente sanitário..." class="input-tw text-xs leading-relaxed">{{ old('observacoes_gerais') }}</textarea>
+                    <label class="label-tw">Observações / Instruções Clínicas</label>
+                    <textarea name="observacoes_gerais" rows="3" placeholder="Informações e orientações específicas para o activista no terreno..." class="input-tw text-xs leading-relaxed">{{ old('observacoes_gerais') }}</textarea>
                 </div>
 
                 {{-- BOTÕES DE SUBMISSÃO --}}

@@ -177,6 +177,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Rotas estáticas específicas (DEVEM vir ANTES de {homeVisit})
         Route::get('daily-schedule', [HomeVisitController::class, 'dailySchedule'])->name('daily-schedule');
         Route::get('active-search', [HomeVisitController::class, 'activeSearch'])->name('active-search');
+        Route::post('schedule-active-search', [HomeVisitController::class, 'scheduleActiveSearch'])->name('schedule-active-search');
+        Route::post('refer-patient', [HomeVisitController::class, 'referPatient'])->name('refer-patient');
         Route::get('route-planning', [HomeVisitController::class, 'routePlanning'])->name('route-planning');
         Route::get('report', [HomeVisitController::class, 'generateReport'])->name('generate-report');
         Route::get('by-patient/{patient}', [HomeVisitController::class, 'byPatient'])->name('by-patient');
@@ -189,6 +191,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('{homeVisit}/mark-not-found', [HomeVisitController::class, 'markAsNotFound'])->name('mark-not-found');
         Route::put('{homeVisit}/complete', [HomeVisitController::class, 'complete'])->name('complete');
         Route::put('{homeVisit}/reschedule', [HomeVisitController::class, 'reschedule'])->name('reschedule');
+        Route::put('{homeVisit}/resolve-at-facility', [HomeVisitController::class, 'resolveAtFacility'])->name('resolve-at-facility');
     });
 
     // Relatórios MISAU - NOVO

@@ -124,8 +124,6 @@ Rotas web e endpoints da aplicação registrados em `routes/web.php`.
 | `GET` | `/help/manual` | `help.manual` | `HelpController@manual` |
 | `POST` | `/help/ai/ask` | `help.ai.ask` | `HelpController@askAi` |
 
----
-
 ## 👥 9. Administração & Configurações (`/users`, `/settings` [Admin Only])
 
 | Método | URI | Nome da Rota | Ação / Controller |
@@ -136,4 +134,29 @@ Rotas web e endpoints da aplicação registrados em `routes/web.php`.
 | `GET` | `/settings` | `settings.index` | `SettingsController@index` |
 | `PATCH` | `/settings/general` | `settings.update-general` | `SettingsController@updateGeneral` |
 | `PATCH` | `/settings/notifications` | `settings.update-notifications` | `SettingsController@updateNotifications` |
+
+---
+
+## 🏡 10. Visitas Domiciliárias & Busca Ativa Comunitária / APEs (`/home_visits`)
+
+| Método | URI | Nome da Rota | Ação / Controller |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/home_visits` | `home_visits.index` | `HomeVisitController@index` |
+| `GET` | `/home_visits/create` | `home_visits.create` | `HomeVisitController@create` |
+| `POST` | `/home_visits` | `home_visits.store` | `HomeVisitController@store` |
+| `GET` | `/home_visits/daily-schedule` | `home_visits.daily-schedule` | `HomeVisitController@dailySchedule` |
+| `GET` | `/home_visits/active-search` | `home_visits.active-search` | `HomeVisitController@activeSearch` |
+| `POST` | `/home_visits/schedule-active-search` | `home_visits.schedule-active-search` | `HomeVisitController@scheduleActiveSearch` |
+| `POST` | `/home_visits/refer-patient` | `home_visits.refer-patient` | `HomeVisitController@referPatient` |
+| `GET` | `/home_visits/route-planning` | `home_visits.route-planning` | `HomeVisitController@routePlanning` |
+| `GET` | `/home_visits/report` | `home_visits.generate-report` | `HomeVisitController@generateReport` |
+| `GET` | `/home_visits/by-patient/{patient}` | `home_visits.by-patient` | `HomeVisitController@byPatient` |
+| `GET` | `/home_visits/{homeVisit}` | `home_visits.show` | `HomeVisitController@show` |
+| `GET` | `/home_visits/{homeVisit}/edit` | `home_visits.edit` | `HomeVisitController@edit` |
+| `PUT` | `/home_visits/{homeVisit}` | `home_visits.update` | `HomeVisitController@update` |
+| `DELETE` | `/home_visits/{homeVisit}` | `home_visits.destroy` | `HomeVisitController@destroy` |
+| `PUT` | `/home_visits/{homeVisit}/mark-not-found` | `home_visits.mark-not-found` | `HomeVisitController@markAsNotFound` |
+| `PUT` | `/home_visits/{homeVisit}/complete` | `home_visits.complete` | `HomeVisitController@complete` |
+| `PUT` | `/home_visits/{homeVisit}/reschedule` | `home_visits.reschedule` | `HomeVisitController@reschedule` |
+| `PUT` | `/home_visits/{homeVisit}/resolve-at-facility` | `home_visits.resolve-at-facility` | `HomeVisitController@resolveAtFacility` |
 
