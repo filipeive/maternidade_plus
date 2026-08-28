@@ -4,6 +4,20 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.7.0] - 2026-08-28
+### Adicionado / Melhorado
+- **Redesign Completo do Dashboard Clínico & Analítico (`/dashboard`)**:
+  - **4 Gráficos Interativos em Chart.js**:
+    1. *Evolução Mensal de Consultas CPN & Partos na Maternidade* (gráfico de linhas/área com gradientes).
+    2. *Distribuição Gestacional por Trimestre & Pós-Parto* (gráfico de rosca/doughnut).
+    3. *Taxa de Cobertura de Profilaxias MISAU* (barras horizontais para IPTp-SP Malária, Tétano, Ferro/Ácido Fólico, Mebendazol).
+    4. *Desfecho do Trabalho Comunitário e Visitas de Terreno* (barras para realizadas, agendadas, não encontradas e dispensadas na US).
+  - **6 Stat Cards / KPIs de Gestão Integrada**: Gestantes Ativas (com destaque ARO), Consultas Hoje/Semana, Partos no Mês, Faltosas para Busca Ativa Comunitária, Visitas Domiciliares e Transferências Inter-Hospitalares.
+  - **Painéis Operacionais em Tempo Real**: Feed prioritário de Alertas Precoces & Alto Risco com botão "Tratar", Agenda de Consultas dos próximos dias, Painel de Faltosas com atribuição a Activistas Comunitárias (APEs), e Livro de Nascimentos Recentes na Maternidade com APGAR e peso neonatal.
+  - **Barra de Ação Rápida**: Scanner QR Code rápido, formulário de busca de BI/NID em tempo real e atalhos diretos.
+
+---
+
 ## [2.6.0] - 2026-08-28
 ### Adicionado / Melhorado
 - **Módulo Nacional de Transferência & Inativação de Pacientes (MISAU)**:

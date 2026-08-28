@@ -1,29 +1,38 @@
 @extends('layouts.app-tw')
 
-@section('title', 'Dashboard')
-@section('page-title', 'Painel de Controle')
-@section('title-icon', 'fa-grid-2')
+@section('title', 'Dashboard Clínico')
+@section('page-title', 'Painel Geral de Controlo & Gestão Materno-Infantil')
+@section('title-icon', 'fa-chart-pie')
+
+@section('breadcrumbs')
+    <span class="active">Dashboard Clínico</span>
+@endsection
 
 @section('content')
 
 {{-- ============================================================
-     ATENDIMENTO RÁPIDO & SCANNER DE QR CODE
+     1. BANNER INSTITUCIONAL MISAU & ATENDIMENTO RÁPIDO
      ============================================================ --}}
-<div class="card-tw p-5 mb-6 bg-gradient-to-r from-brand-800 via-brand-700 to-ocean-800 text-white flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-lg" x-data="{ quickSearch: '' }">
-    <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-gold-300 text-xl font-bold border border-white/20 shrink-0">
-            <i class="fas fa-qrcode"></i>
+<div class="card-tw p-5 mb-6 bg-gradient-to-r from-brand-900 via-brand-800 to-ocean-900 text-white flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl border-none relative overflow-hidden" x-data="{ quickSearch: '' }">
+    {{-- Decorative Background Glow --}}
+    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-gold-400/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-10 -top-10 w-48 h-48 bg-brand-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex items-center gap-4 relative z-10">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-gold-300 text-2xl font-bold border border-white/20 shrink-0 shadow-inner">
+            <i class="fas fa-hospital"></i>
         </div>
         <div>
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-                <span>Atendimento Rápido da Paciente</span>
-                <span class="px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-300 text-3xs font-semibold uppercase tracking-wider">MISAU CS</span>
-            </h2>
-            <p class="text-xs text-white/70">Pesquise por nome/BI ou escaneie o Cartão QR Code para acesso à Ficha Clínica</p>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <h2 class="text-lg font-bold text-white tracking-tight">Centro de Saúde & Maternidade</h2>
+                <span class="px-2.5 py-0.5 rounded-full bg-gold-400/20 text-gold-300 text-3xs font-bold uppercase tracking-wider border border-gold-400/30">MISAU Moçambique</span>
+                <span class="px-2 py-0.5 rounded-full bg-white/10 text-white/80 text-3xs font-medium">{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
+            </div>
+            <p class="text-xs text-white/70">Sistema Integrado de Saúde Materno-Infantil (SMI) · Monitoria Clínica & Atendimento Ativo</p>
         </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto relative z-10">
         {{-- Campo de Pesquisa Rápida --}}
         <form @submit.prevent="
             if (!quickSearch.trim()) return;
@@ -34,18 +43,18 @@
                 window.location.href = '{{ url('/patients') }}?search=' + encodeURIComponent(val);
             }
         " class="relative flex-1 sm:w-64">
-            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"></i>
-            <input type="text" x-model="quickSearch" placeholder="Nome, BI ou NID da gestante..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:bg-white focus:text-surface-900 focus:placeholder:text-surface-400 transition-all">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50 text-xs"></i>
+            <input type="text" x-model="quickSearch" placeholder="Pesquisar gestante, BI ou NID..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:bg-white focus:text-surface-900 focus:placeholder:text-surface-400 transition-all shadow-xs">
         </form>
 
-        {{-- Botão Leitor QR Code --}}
-        <a href="{{ route('scanner') }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-900 font-bold text-xs py-2 px-3.5 shrink-0 shadow-sm">
+        {{-- Scanner QR Code --}}
+        <a href="{{ route('scanner') }}" class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-950 font-bold text-xs py-2 px-3.5 shrink-0 shadow-md">
             <i class="fas fa-qrcode text-xs"></i>
-            <span>Scanner QR Code</span>
+            <span>Scanner QR</span>
         </a>
 
-        {{-- Novo Registar --}}
-        <a href="{{ route('patients.create') }}" class="btn-tw bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs py-2 px-3.5 shrink-0">
+        {{-- Nova Gestante --}}
+        <a href="{{ route('patients.create') }}" class="btn-tw bg-white/15 hover:bg-white/25 text-white border border-white/20 font-semibold text-xs py-2 px-3.5 shrink-0">
             <i class="fas fa-user-plus text-xs"></i>
             <span>Nova Gestante</span>
         </a>
@@ -53,317 +62,606 @@
 </div>
 
 {{-- ============================================================
-     STAT CARDS
+     2. GRID DE KPIS & ESTATÍSTICAS PRINCIPAIS (6 CARDS)
      ============================================================ --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
 
-    {{-- Total Gestantes --}}
-    <div class="stat-card">
-        <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600">
-            <i class="fas fa-person-pregnant"></i>
+    {{-- Total Gestantes Ativas --}}
+    <a href="{{ route('patients.index') }}" class="stat-card hover:border-brand-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-brand-500 to-brand-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-person-pregnant text-lg"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $totalGestantes ?? 0 }}</p>
-            <p class="stat-card-label">Total de Gestantes</p>
+            <p class="stat-card-value text-xl font-bold">{{ $totalGestantes }}</p>
+            <p class="stat-card-label text-2xs">Gestantes Ativas</p>
+            <span class="inline-block mt-1 text-3xs font-semibold text-crimson-600 bg-crimson-50 px-1.5 py-0.5 rounded">
+                {{ $totalGestantesARO }} ARO (Alto Risco)
+            </span>
         </div>
-    </div>
+    </a>
 
-    {{-- Consultas Esta Semana --}}
-    <div class="stat-card">
-        <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600">
-            <i class="fas fa-calendar-week"></i>
+    {{-- Consultas Hoje / Semana --}}
+    <a href="{{ route('consultations.index') }}" class="stat-card hover:border-ocean-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-calendar-check text-lg"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $consultasEstaSemana ?? 0 }}</p>
-            <p class="stat-card-label">Consultas Esta Semana</p>
+            <p class="stat-card-value text-xl font-bold">{{ $consultasHoje }}</p>
+            <p class="stat-card-label text-2xs">Consultas Hoje</p>
+            <span class="inline-block mt-1 text-3xs font-medium text-ocean-700 bg-ocean-50 px-1.5 py-0.5 rounded">
+                {{ $consultasEstaSemana }} esta semana
+            </span>
         </div>
-    </div>
+    </a>
 
-    {{-- Consultas Pendentes --}}
-    <div class="stat-card">
-        <div class="stat-card-icon bg-gradient-to-br from-crimson-500 to-crimson-600">
-            <i class="fas fa-clock"></i>
+    {{-- Partos no Mês --}}
+    <a href="{{ route('births.index') }}" class="stat-card hover:border-gold-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-gold-500 to-gold-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-baby text-lg"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $consultasPendentes ?? 0 }}</p>
-            <p class="stat-card-label">Consultas Pendentes</p>
+            <p class="stat-card-value text-xl font-bold">{{ $partosMes }}</p>
+            <p class="stat-card-label text-2xs">Partos no Mês</p>
+            <span class="inline-block mt-1 text-3xs font-semibold text-gold-800 bg-gold-50 px-1.5 py-0.5 rounded">
+                Maternidade SNS
+            </span>
         </div>
-    </div>
+    </a>
 
-    {{-- Exames Pendentes --}}
-    <div class="stat-card">
-        <div class="stat-card-icon bg-gradient-to-br from-ocean-500 to-ocean-600">
-            <i class="fas fa-flask-vial"></i>
+    {{-- Busca Ativa Comunitária (Faltosas) --}}
+    <a href="{{ route('home_visits.active-search') }}" class="stat-card hover:border-crimson-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-crimson-500 to-crimson-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-person-walking text-lg"></i>
         </div>
         <div class="min-w-0">
-            <p class="stat-card-value">{{ $examesPendentes ?? 0 }}</p>
-            <p class="stat-card-label">Exames Pendentes</p>
+            <p class="stat-card-value text-xl font-bold text-crimson-600">{{ $faltosasCount }}</p>
+            <p class="stat-card-label text-2xs">Faltosas CPN</p>
+            <span class="inline-block mt-1 text-3xs font-semibold text-crimson-700 bg-crimson-50 px-1.5 py-0.5 rounded">
+                Busca Ativa (APEs)
+            </span>
         </div>
-    </div>
+    </a>
+
+    {{-- Visitas Domiciliárias --}}
+    <a href="{{ route('home_visits.index') }}" class="stat-card hover:border-emerald-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-emerald-500 to-emerald-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-house-medical text-lg"></i>
+        </div>
+        <div class="min-w-0">
+            <p class="stat-card-value text-xl font-bold">{{ $visitasMes }}</p>
+            <p class="stat-card-label text-2xs">Visitas Domiciliares</p>
+            <span class="inline-block mt-1 text-3xs font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                {{ $visitasRealizadas }} realizadas
+            </span>
+        </div>
+    </a>
+
+    {{-- Transferências Realizadas --}}
+    <a href="{{ route('patients.index', ['status' => 'transferidas']) }}" class="stat-card hover:border-purple-300 transition-all group">
+        <div class="stat-card-icon bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-105 transition-transform">
+            <i class="fas fa-arrow-right-from-bracket text-lg"></i>
+        </div>
+        <div class="min-w-0">
+            <p class="stat-card-value text-xl font-bold">{{ $totalTransferidas }}</p>
+            <p class="stat-card-label text-2xs">Transferidas</p>
+            <span class="inline-block mt-1 text-3xs font-medium text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">
+                Outras US / Províncias
+            </span>
+        </div>
+    </a>
 
 </div>
 
 {{-- ============================================================
-     QUICK ACTIONS
+     3. SEÇÃO DE GRÁFICOS ANALÍTICOS (CHART.JS)
      ============================================================ --}}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-    <a href="{{ route('patients.create') }}"
-       class="card-tw p-4 flex flex-col items-center gap-2 text-center group hover:border-brand-300 transition-all duration-200">
-        <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i class="fas fa-user-plus"></i>
-        </div>
-        <span class="text-xs font-medium text-surface-600 group-hover:text-brand-700">Nova Gestante</span>
-    </a>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-    <a href="{{ route('consultations.create') }}"
-       class="card-tw p-4 flex flex-col items-center gap-2 text-center group hover:border-gold-300 transition-all duration-200">
-        <div class="w-10 h-10 rounded-xl bg-gold-100 text-gold-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i class="fas fa-calendar-plus"></i>
-        </div>
-        <span class="text-xs font-medium text-surface-600 group-hover:text-gold-700">Nova Consulta</span>
-    </a>
-
-    <a href="{{ route('exams.create') }}"
-       class="card-tw p-4 flex flex-col items-center gap-2 text-center group hover:border-ocean-300 transition-all duration-200">
-        <div class="w-10 h-10 rounded-xl bg-ocean-100 text-ocean-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i class="fas fa-microscope"></i>
-        </div>
-        <span class="text-xs font-medium text-surface-600 group-hover:text-ocean-700">Novo Exame</span>
-    </a>
-
-    <a href="{{ route('alertas.index') }}"
-       class="card-tw p-4 flex flex-col items-center gap-2 text-center group hover:border-crimson-300 transition-all duration-200">
-        <div class="w-10 h-10 rounded-xl bg-crimson-100 text-crimson-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <i class="fas fa-triangle-exclamation"></i>
-        </div>
-        <span class="text-xs font-medium text-surface-600 group-hover:text-crimson-700">Ver Alertas</span>
-    </a>
-</div>
-
-{{-- ============================================================
-     MAIN CONTENT: Consultas + Alertas
-     ============================================================ --}}
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-    {{-- Próximas Consultas (col-span-2) --}}
-    <div class="xl:col-span-2 card-tw">
-        <div class="card-header-tw">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center text-sm">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <h3 class="text-sm font-semibold text-surface-900">Próximas Consultas</h3>
+    {{-- GRÁFICO 1: Tendência de Consultas CPN & Partos (2 Colunas) --}}
+    <div class="card-tw lg:col-span-2">
+        <div class="card-header-tw flex-wrap gap-2">
+            <div>
+                <h3 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-chart-line text-brand-600"></i>
+                    <span>Evolução de Consultas CPN & Partos na Maternidade</span>
+                </h3>
+                <p class="text-2xs text-surface-400 mt-0.5">Atendimentos clínicos realizados nos últimos 6 meses</p>
             </div>
-            <a href="{{ route('consultations.create') }}" class="btn-primary-tw btn-sm-tw">
-                <i class="fas fa-plus text-xs"></i>
-                <span>Nova Consulta</span>
-            </a>
+            <div class="flex items-center gap-3 text-2xs">
+                <span class="flex items-center gap-1.5 font-medium text-surface-600">
+                    <span class="w-3 h-3 rounded-full bg-brand-500 inline-block"></span> Consultas CPN
+                </span>
+                <span class="flex items-center gap-1.5 font-medium text-surface-600">
+                    <span class="w-3 h-3 rounded-full bg-gold-500 inline-block"></span> Partos Realizados
+                </span>
+            </div>
         </div>
-
-        <div class="overflow-x-auto">
-            @if(isset($proximasConsultas) && $proximasConsultas->count() > 0)
-                <table class="table-tw">
-                    <thead>
-                        <tr>
-                            <th>Gestante</th>
-                            <th>Data/Hora</th>
-                            <th>Tipo</th>
-                            <th>Semanas</th>
-                            <th>Status</th>
-                            <th class="text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($proximasConsultas as $consulta)
-                        <tr>
-                            <td>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-semibold shrink-0">
-                                        {{ strtoupper(substr($consulta->patient->nome_completo ?? 'N', 0, 1)) }}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="font-medium text-surface-900 truncate">{{ $consulta->patient->nome_completo }}</p>
-                                        <p class="text-2xs text-surface-400">BI: {{ $consulta->patient->documento_bi }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="font-medium">{{ $consulta->data_consulta->format('d/m/Y') }}</p>
-                                <p class="text-2xs text-surface-400">{{ $consulta->data_consulta->format('H:i') }}</p>
-                            </td>
-                            <td>
-                                <span class="badge-info">{{ $consulta->tipo_consulta_label }}</span>
-                            </td>
-                            <td>
-                                <span class="font-medium">{{ $consulta->semanas_gestacao ?? 'N/A' }}ª</span>
-                            </td>
-                            <td>
-                                @if($consulta->status === 'confirmada')
-                                    <span class="badge-success">
-                                        <i class="fas fa-check-circle mr-1 text-2xs"></i>Confirmada
-                                    </span>
-                                @else
-                                    <span class="badge-warning">
-                                        <i class="fas fa-clock mr-1 text-2xs"></i>{{ ucfirst($consulta->status) }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <a href="{{ route('consultations.show', $consulta) }}"
-                                       class="btn-icon-tw w-8 h-8" title="Ver">
-                                        <i class="fas fa-eye text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('consultations.edit', $consulta) }}"
-                                       class="btn-icon-tw w-8 h-8" title="Editar">
-                                        <i class="fas fa-pen text-xs"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <div class="py-12 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-100 flex items-center justify-center">
-                        <i class="fas fa-calendar-xmark text-2xl text-surface-400"></i>
-                    </div>
-                    <p class="text-surface-500 mb-3">Nenhuma consulta agendada para os próximos dias.</p>
-                    <a href="{{ route('consultations.create') }}" class="btn-primary-tw">
-                        <i class="fas fa-plus text-xs"></i>
-                        <span>Agendar Consulta</span>
-                    </a>
-                </div>
-            @endif
+        <div class="card-body-tw">
+            <div class="h-64 relative">
+                <canvas id="chartEvolucaoMensal"></canvas>
+            </div>
         </div>
     </div>
 
-    {{-- Sidebar: Alertas Precoces --}}
+    {{-- GRÁFICO 2: Distribuição por Trimestre Gestacional (1 Coluna) --}}
     <div class="card-tw">
         <div class="card-header-tw">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-crimson-100 text-crimson-600 flex items-center justify-center text-sm">
-                    <i class="fas fa-bell"></i>
-                </div>
-                <h3 class="text-sm font-semibold text-surface-900">Alertas Precoces</h3>
+            <div>
+                <h3 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-ocean-600"></i>
+                    <span>Distribuição Gestacional</span>
+                </h3>
+                <p class="text-2xs text-surface-400 mt-0.5">Idade gestacional das pacientes ativas</p>
             </div>
-            <a href="{{ route('alertas.index') }}" class="text-xs text-brand-600 hover:text-brand-700 font-medium">
-                Ver todos →
+        </div>
+        <div class="card-body-tw flex flex-col items-center justify-center">
+            <div class="h-48 w-48 relative">
+                <canvas id="chartTrimestres"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-4 w-full text-2xs">
+                <div class="p-2 rounded-lg bg-surface-50 border border-surface-100 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-surface-600">
+                        <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span> 1º Trimestre
+                    </span>
+                    <strong class="text-surface-900">{{ $trimestre1 }}</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-surface-50 border border-surface-100 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-surface-600">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> 2º Trimestre
+                    </span>
+                    <strong class="text-surface-900">{{ $trimestre2 }}</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-surface-50 border border-surface-100 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-surface-600">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gold-500"></span> 3º Trimestre
+                    </span>
+                    <strong class="text-surface-900">{{ $trimestre3 }}</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-surface-50 border border-surface-100 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 text-surface-600">
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Pós-Parto
+                    </span>
+                    <strong class="text-surface-900">{{ $posParto }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- SEGUNDA LINHA DE GRÁFICOS: Cobertura de Profilaxias & Visitas Domiciliares --}}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+    {{-- GRÁFICO 3: Cobertura de Profilaxias MISAU --}}
+    <div class="card-tw">
+        <div class="card-header-tw flex-wrap gap-2">
+            <div>
+                <h3 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-shield-virus text-emerald-600"></i>
+                    <span>Cobertura de Profilaxias MISAU</span>
+                </h3>
+                <p class="text-2xs text-surface-400 mt-0.5">Adesão aos protocolos de prevenção (Malária, Tétano, Anemia)</p>
+            </div>
+            <a href="{{ route('mod_sis_b01.resumo_mensal') }}" class="btn-secondary-tw btn-xs-tw">
+                <span>Livro SIS B01</span>
+                <i class="fas fa-arrow-right text-3xs"></i>
             </a>
         </div>
-
-        <div class="divide-y divide-surface-100 max-h-96 overflow-y-auto">
-            @if(isset($alertasPrecoces) && $alertasPrecoces->count() > 0)
-                @foreach($alertasPrecoces as $alerta)
-                <div class="px-5 py-3.5 hover:bg-surface-50/80 transition-colors">
-                    <div class="flex items-start gap-3">
-                        {{-- Severity Indicator --}}
-                        <div class="shrink-0 mt-0.5">
-                            @if($alerta->nivel === 'alto')
-                                <span class="w-2.5 h-2.5 rounded-full bg-crimson-500 inline-block animate-pulse"></span>
-                            @elseif($alerta->nivel === 'medio')
-                                <span class="w-2.5 h-2.5 rounded-full bg-gold-500 inline-block"></span>
-                            @else
-                                <span class="w-2.5 h-2.5 rounded-full bg-ocean-500 inline-block"></span>
-                            @endif
-                        </div>
-
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                @if($alerta->nivel === 'alto')
-                                    <span class="badge-danger text-2xs">Alto</span>
-                                @elseif($alerta->nivel === 'medio')
-                                    <span class="badge-warning text-2xs">Médio</span>
-                                @else
-                                    <span class="badge-info text-2xs">Baixo</span>
-                                @endif
-                                <span class="text-2xs text-surface-400">{{ $alerta->tipo_label }}</span>
-                            </div>
-
-                            @if($alerta->patient)
-                                <a href="{{ route('patients.show', $alerta->patient) }}"
-                                   class="text-sm font-medium text-surface-900 hover:text-brand-600 transition-colors">
-                                    {{ $alerta->patient->nome_completo }}
-                                </a>
-                            @endif
-
-                            <p class="text-xs text-surface-500 mt-0.5 line-clamp-2">{{ $alerta->mensagem }}</p>
-
-                            <div class="flex items-center justify-between mt-2">
-                                <span class="text-2xs text-surface-400">
-                                    <i class="fas fa-clock mr-0.5"></i>
-                                    {{ $alerta->created_at->format('d/m H:i') }}
-                                </span>
-                                <a href="{{ route('alertas.index', ['search' => $alerta->patient?->nome_completo]) }}"
-                                   class="text-2xs font-medium text-brand-600 hover:text-brand-700">
-                                    Tratar →
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            @else
-                <div class="py-12 text-center">
-                    <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-brand-50 flex items-center justify-center">
-                        <i class="fas fa-shield-check text-xl text-brand-400"></i>
-                    </div>
-                    <p class="text-sm text-surface-500">Nenhum alerta ativo</p>
-                    <p class="text-2xs text-surface-400 mt-1">Todas as gestantes estão em bom estado</p>
-                </div>
-            @endif
+        <div class="card-body-tw">
+            <div class="h-56 relative">
+                <canvas id="chartProfilaxias"></canvas>
+            </div>
         </div>
+    </div>
 
-        {{-- Quick Links --}}
-        <div class="card-footer-tw flex items-center gap-2">
-            <a href="{{ route('alertas.metricas') }}" class="btn-ghost-tw btn-sm-tw flex-1 justify-center">
-                <i class="fas fa-chart-line text-xs"></i>
-                <span>Métricas</span>
+    {{-- GRÁFICO 4: Desfecho das Visitas Domiciliárias & Terreno (APEs) --}}
+    <div class="card-tw">
+        <div class="card-header-tw flex-wrap gap-2">
+            <div>
+                <h3 class="font-bold text-surface-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-users-viewfinder text-purple-600"></i>
+                    <span>Desfecho do Trabalho Comunitário (APEs)</span>
+                </h3>
+                <p class="text-2xs text-surface-400 mt-0.5">Status das visitas domiciliárias e busca ativa</p>
+            </div>
+            <a href="{{ route('home_visits.index') }}" class="btn-secondary-tw btn-xs-tw">
+                <span>Ver Visitas</span>
+                <i class="fas fa-arrow-right text-3xs"></i>
             </a>
-            <a href="{{ route('alertas.index') }}" class="btn-primary-tw btn-sm-tw flex-1 justify-center">
-                <i class="fas fa-list text-xs"></i>
-                <span>Todos os Alertas</span>
-            </a>
+        </div>
+        <div class="card-body-tw">
+            <div class="h-56 relative">
+                <canvas id="chartVisitas"></canvas>
+            </div>
         </div>
     </div>
 
 </div>
 
 {{-- ============================================================
-     FOLLOW-UP ALERTS
+     4. PAINÉIS CLÍNICOS OPERACIONAIS (FEEDS EM TEMPO REAL)
      ============================================================ --}}
-@if(isset($alertas) && $alertas->count() > 0)
-<div class="mt-6">
-    <div class="card-tw">
-        <div class="card-header-tw">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-gold-100 text-gold-600 flex items-center justify-center text-sm">
-                    <i class="fas fa-triangle-exclamation"></i>
-                </div>
-                <h3 class="text-sm font-semibold text-surface-900">Alertas de Acompanhamento</h3>
-                <span class="badge-warning ml-1">{{ $alertas->count() }}</span>
-            </div>
-        </div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-        <div class="divide-y divide-surface-100">
-            @foreach($alertas as $alerta)
-            <div class="px-5 py-3.5 flex items-center gap-4 hover:bg-gold-50/30 transition-colors">
-                <i class="fas fa-exclamation-triangle text-gold-500 shrink-0"></i>
-                <div class="flex-1 min-w-0">
-                    <span class="font-medium text-surface-900">{{ $alerta['gestante'] }}</span>
-                    <span class="text-surface-500 mx-1">·</span>
-                    <span class="text-surface-600">{{ $alerta['mensagem'] }}</span>
+    {{-- COLUNA 1: Alertas Clínicos & Próximas Consultas --}}
+    <div class="space-y-6">
+
+        {{-- Alertas Clínicos Críticos --}}
+        <div class="card-tw border-l-4 border-l-crimson-500">
+            <div class="card-header-tw">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-crimson-100 text-crimson-700 flex items-center justify-center text-xs font-bold">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-surface-900 text-sm">Alertas Precoces & Alto Risco</h4>
+                        <p class="text-3xs text-surface-400">Casos que requerem intervenção clínica prioritária</p>
+                    </div>
                 </div>
-                <a href="{{ $alerta['link'] }}" class="btn-secondary-tw btn-sm-tw shrink-0">
-                    <i class="fas fa-eye text-xs"></i>
-                    <span>Detalhes</span>
+                <a href="{{ route('alertas.index') }}" class="btn-secondary-tw btn-xs-tw">
+                    <span>Todos os Alertas</span>
+                    <i class="fas fa-arrow-right text-3xs"></i>
                 </a>
             </div>
-            @endforeach
+            <div class="divide-y divide-surface-100">
+                @forelse($alertasPrecoces as $alerta)
+                    <div class="p-3.5 flex items-start justify-between gap-3 hover:bg-surface-50/70 transition-colors">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="badge-{{ $alerta->nivel === 'alto' ? 'danger' : ($alerta->nivel === 'medio' ? 'warning' : 'info') }} text-3xs font-bold uppercase">
+                                    {{ $alerta->nivel }}
+                                </span>
+                                <a href="{{ route('patients.show', $alerta->patient) }}" class="font-bold text-surface-900 text-xs hover:text-brand-600 transition-colors">
+                                    {{ $alerta->patient->nome_completo }}
+                                </a>
+                                <span class="text-3xs text-surface-400">({{ $alerta->created_at->diffForHumans() }})</span>
+                            </div>
+                            <p class="text-xs text-surface-600 leading-snug">{{ $alerta->mensagem }}</p>
+                        </div>
+                        <a href="{{ route('alertas.index', ['search' => $alerta->patient->nome_completo]) }}" class="btn-danger-tw btn-xs-tw shrink-0">
+                            <span>Tratar</span>
+                        </a>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-surface-400">
+                        <i class="fas fa-check-circle text-emerald-500 text-2xl mb-2"></i>
+                        <p class="text-xs font-medium text-surface-600">Nenhum alerta crítico ativo no momento.</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
+
+        {{-- Próximas Consultas Agendadas --}}
+        <div class="card-tw">
+            <div class="card-header-tw">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-surface-900 text-sm">Consultas Agendadas (Próximos Dias)</h4>
+                        <p class="text-3xs text-surface-400">Fluxo diário de atendimentos CPN e puerpério</p>
+                    </div>
+                </div>
+                <a href="{{ route('consultations.index') }}" class="btn-secondary-tw btn-xs-tw">
+                    <span>Ver Agenda</span>
+                    <i class="fas fa-arrow-right text-3xs"></i>
+                </a>
+            </div>
+            <div class="divide-y divide-surface-100">
+                @forelse($proximasConsultas as $c)
+                    <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-surface-50/70 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 font-bold text-xs flex flex-col items-center justify-center shrink-0 border border-brand-200">
+                                <span class="leading-none text-2xs uppercase">{{ $c->data_consulta->translatedFormat('M') }}</span>
+                                <span class="leading-none text-sm">{{ $c->data_consulta->format('d') }}</span>
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{{ route('patients.show', $c->patient) }}" class="font-bold text-surface-900 text-xs hover:text-brand-600 transition-colors block truncate">
+                                    {{ $c->patient->nome_completo }}
+                                </a>
+                                <p class="text-3xs text-surface-500">
+                                    {{ $c->tipo_consulta_formatado ?? 'CPN de Seguimento' }} · {{ $c->data_consulta->format('H:i') }}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ route('consultations.show', $c) }}" class="btn-secondary-tw btn-xs-tw shrink-0">
+                            <span>Atender</span>
+                        </a>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-surface-400 text-xs">
+                        Nenhuma consulta agendada para os próximos dias.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
     </div>
+
+    {{-- COLUNA 2: Busca Ativa Comunitária & Nascimentos Recentes --}}
+    <div class="space-y-6">
+
+        {{-- Busca Ativa: Gestantes Faltosas --}}
+        <div class="card-tw border-l-4 border-l-gold-500">
+            <div class="card-header-tw">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-gold-100 text-gold-800 flex items-center justify-center text-xs font-bold">
+                        <i class="fas fa-person-walking-arrow-right"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-surface-900 text-sm">Busca Ativa: Faltosas à CPN</h4>
+                        <p class="text-3xs text-surface-400">Gestantes com consultas em atraso para contacto de terreno</p>
+                    </div>
+                </div>
+                <a href="{{ route('home_visits.active-search') }}" class="btn-tw bg-gold-500 hover:bg-gold-600 text-white btn-xs-tw font-bold shadow-xs">
+                    <i class="fas fa-plus text-3xs"></i>
+                    <span>Encaminhar em Lote</span>
+                </a>
+            </div>
+            <div class="divide-y divide-surface-100">
+                @forelse($pacientesFaltosas as $f)
+                    @php
+                        $ultConsultaFalta = $f->consultations->first();
+                        $diasAtraso = $ultConsultaFalta ? (int)now()->diffInDays($ultConsultaFalta->data_consulta) : 0;
+                    @endphp
+                    <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-surface-50/70 transition-colors">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <a href="{{ route('patients.show', $f) }}" class="font-bold text-surface-900 text-xs hover:text-brand-600 transition-colors">
+                                    {{ $f->nome_completo }}
+                                </a>
+                                <span class="badge-danger text-3xs font-bold">
+                                    {{ $diasAtraso }}d em falta
+                                </span>
+                            </div>
+                            <p class="text-3xs text-surface-500 truncate">
+                                Tel: {{ $f->contacto ?? 'Sem contacto' }} · Bairro: {{ $f->bairro ?? 'N/D' }}
+                            </p>
+                        </div>
+                        <a href="{{ route('home_visits.active-search') }}" class="btn-secondary-tw btn-xs-tw shrink-0">
+                            <i class="fas fa-user-nurse text-3xs text-gold-600"></i>
+                            <span>Atribuir APE</span>
+                        </a>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-surface-400 text-xs">
+                        <i class="fas fa-check-double text-emerald-500 mb-1"></i>
+                        <p>Nenhuma gestante com consulta em atraso.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Nascimentos Recentes na Maternidade --}}
+        <div class="card-tw">
+            <div class="card-header-tw">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center text-xs font-bold">
+                        <i class="fas fa-baby-carriage"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-surface-900 text-sm">Partos Recentes na Maternidade</h4>
+                        <p class="text-3xs text-surface-400">Registo obstétrico e estado neonatal</p>
+                    </div>
+                </div>
+                <a href="{{ route('births.index') }}" class="btn-secondary-tw btn-xs-tw">
+                    <span>Ver Livro</span>
+                    <i class="fas fa-arrow-right text-3xs"></i>
+                </a>
+            </div>
+            <div class="divide-y divide-surface-100">
+                @forelse($ultimosPartos as $p)
+                    <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-surface-50/70 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-full bg-pink-50 text-pink-600 font-bold text-xs flex items-center justify-center shrink-0 border border-pink-200">
+                                <i class="fas fa-baby"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{{ route('births.show', $p) }}" class="font-bold text-surface-900 text-xs hover:text-brand-600 transition-colors block truncate">
+                                    Mãe: {{ $p->patient->nome_completo ?? 'N/D' }}
+                                </a>
+                                <p class="text-3xs text-surface-500">
+                                    {{ $p->data_hora_parto?->format('d/m/Y H:i') }} · {{ ucfirst(str_replace('_', ' ', $p->tipo_parto ?? 'Eutócico')) }} · Peso: <strong>{{ $p->peso_nascimento ? $p->peso_nascimento . 'g' : 'N/D' }}</strong> · APGAR: {{ $p->apgar_1min ?? '-' }}/{{ $p->apgar_5min ?? '-' }}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ route('births.show', $p) }}" class="btn-icon-tw">
+                            <i class="fas fa-eye text-xs"></i>
+                        </a>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-surface-400 text-xs">
+                        Nenhum parto registado recentemente.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+    </div>
+
 </div>
-@endif
+
+{{-- ============================================================
+     5. SCRIPTS DOS GRÁFICOS (CHART.JS)
+     ============================================================ --}}
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurações globais Chart.js para combinar com o design system
+    Chart.defaults.font.family = "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.borderRadius = 10;
+
+    // 1. Gráfico de Evolução Mensal (Consultas & Partos)
+    const ctxEvolucao = document.getElementById('chartEvolucaoMensal');
+    if (ctxEvolucao) {
+        new Chart(ctxEvolucao.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($mesesLabels) !!},
+                datasets: [
+                    {
+                        label: 'Consultas CPN Realizadas',
+                        data: {!! json_encode($consultasMensais) !!},
+                        borderColor: '#0f766e',
+                        backgroundColor: 'rgba(15, 118, 110, 0.08)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#0f766e',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Partos na Maternidade',
+                        data: {!! json_encode($partosMensais) !!},
+                        borderColor: '#d97706',
+                        backgroundColor: 'rgba(217, 119, 6, 0.08)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#d97706',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Gráfico de Trimestres Gestacionais (Doughnut)
+    const ctxTrimestres = document.getElementById('chartTrimestres');
+    if (ctxTrimestres) {
+        new Chart(ctxTrimestres.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['1º Trimestre', '2º Trimestre', '3º Trimestre', 'Pós-Parto'],
+                datasets: [{
+                    data: [{{ $trimestre1 }}, {{ $trimestre2 }}, {{ $trimestre3 }}, {{ $posParto }}],
+                    backgroundColor: ['#14b8a6', '#0ea5e9', '#f59e0b', '#a855f7'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // 3. Gráfico de Profilaxias MISAU (Horizontal Bar)
+    const ctxProfilaxias = document.getElementById('chartProfilaxias');
+    if (ctxProfilaxias) {
+        new Chart(ctxProfilaxias.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($profilaxiasData['labels']) !!},
+                datasets: [{
+                    label: 'Taxa de Cobertura (%)',
+                    data: {!! json_encode($profilaxiasData['percentuais']) !!},
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.85)',
+                        'rgba(14, 165, 233, 0.85)',
+                        'rgba(245, 158, 11, 0.85)',
+                        'rgba(168, 85, 247, 0.85)',
+                        'rgba(239, 68, 68, 0.85)'
+                    ],
+                    borderRadius: 8,
+                    barThickness: 16
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw + '% das gestantes ativas';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            callback: function(value) { return value + '%'; }
+                        }
+                    },
+                    y: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Gráfico de Visitas Domiciliárias (Bar)
+    const ctxVisitas = document.getElementById('chartVisitas');
+    if (ctxVisitas) {
+        new Chart(ctxVisitas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Realizadas', 'Agendadas', 'Não Encontradas', 'Canceladas / US'],
+                datasets: [{
+                    label: 'Total de Visitas',
+                    data: [{{ $visitasRealizadas }}, {{ $visitasAgendadas }}, {{ $visitasNaoEncontrada }}, {{ $visitasCanceladas }}],
+                    backgroundColor: ['#10b981', '#0ea5e9', '#f59e0b', '#94a3b8'],
+                    borderRadius: 8,
+                    barThickness: 28
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush
 
 @endsection

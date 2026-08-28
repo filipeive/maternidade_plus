@@ -3,85 +3,186 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alerta;
-use App\Models\Patient;
+use App\Models\Birth;
 use App\Models\Consultation;
 use App\Models\Exam;
+use App\Models\HomeVisit;
+use App\Models\MaternalProphylaxis;
+use App\Models\Patient;
+use App\Models\Vaccine;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Estatísticas gerais
+        // 1. Estatísticas Gerais / KPIs Principais
         $totalGestantes = Patient::where('ativo', true)->count();
-        
+        $totalGestantesARO = Patient::where('ativo', true)
+            ->where(function($q) {
+                $q->where('numero_abortos', '>', 0)
+                  ->orWhere('historico_medico', 'like', '%diabetes%')
+                  ->orWhere('historico_medico', 'like', '%hipertensao%')
+                  ->orWhere('alergias', '!=', null);
+            })->count();
+
+        $consultasHoje = Consultation::whereDate('data_consulta', today())->count();
         $consultasEstaSemana = Consultation::whereBetween('data_consulta', [
             Carbon::now()->startOfWeek(),
             Carbon::now()->endOfWeek()
         ])->count();
-        
         $consultasPendentes = Consultation::where('status', 'agendada')->count();
         $examesPendentes = Exam::where('status', 'solicitado')->count();
-        
-        // Próximas consultas (próximos 7 dias)
-        $proximasConsultas = Consultation::with('patient')
-            ->whereBetween('data_consulta', [now(), now()->addDays(7)])
-            ->orderBy('data_consulta')
-            ->limit(10)
-            ->get();
-        
-        // Módulo de Alerta Precoce: Top 15 alertas ativos ordenados por severidade (Alto -> Médio -> Baixo)
+
+        $partosMes = Birth::whereMonth('data_hora_parto', now()->month)
+            ->whereYear('data_hora_parto', now()->year)
+            ->count();
+
+        $visitasMes = HomeVisit::whereMonth('data_visita', now()->month)
+            ->whereYear('data_visita', now()->year)
+            ->count();
+
+        $totalTransferidas = Patient::where('ativo', false)
+            ->whereIn('motivo_inativacao', ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia'])
+            ->count();
+
+        $faltosasCount = Patient::where('ativo', true)
+            ->whereHas('consultations', function($q) {
+                $q->where('status', 'agendada')->where('data_consulta', '<', now());
+            })->count();
+
+        // 2. Gráfico 1: Evolução de Consultas CPN & Partos (Últimos 6 Meses)
+        $mesesLabels = [];
+        $consultasMensais = [];
+        $partosMensais = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $mes = Carbon::now()->subMonths($i);
+            $mesesLabels[] = ucfirst($mes->translatedFormat('M/Y'));
+
+            $consultasMensais[] = Consultation::whereMonth('data_consulta', $mes->month)
+                ->whereYear('data_consulta', $mes->year)
+                ->where('status', 'realizada')
+                ->count();
+
+            $partosMensais[] = Birth::whereMonth('data_hora_parto', $mes->month)
+                ->whereYear('data_hora_parto', $mes->year)
+                ->count();
+        }
+
+        // 3. Gráfico 2: Distribuição por Trimestre & Status Gestacional
+        $pacientesAtivas = Patient::where('ativo', true)->get();
+        $trimestre1 = 0;
+        $trimestre2 = 0;
+        $trimestre3 = 0;
+        $posParto = 0;
+
+        foreach ($pacientesAtivas as $p) {
+            if ($p->status_atual === 'pos_parto') {
+                $posParto++;
+            } else {
+                $sem = $p->idade_gestacional;
+                if ($sem !== null && $sem <= 13) {
+                    $trimestre1++;
+                } elseif ($sem !== null && $sem <= 27) {
+                    $trimestre2++;
+                } else {
+                    $trimestre3++;
+                }
+            }
+        }
+
+        // 4. Gráfico 3: Cobertura de Profilaxias MISAU (Percentual sobre total de ativas)
+        $baseTotal = max($totalGestantes, 1);
+        $iptp1Dose = MaternalProphylaxis::where('iptp_doses_count', '>=', 1)->count();
+        $iptp3Doses = MaternalProphylaxis::where('iptp_doses_count', '>=', 3)->count();
+        $ferroFolato = MaternalProphylaxis::where('ferro_doses_count', '>=', 1)->count();
+        $mebendazol = MaternalProphylaxis::where('mebendazol_administrado', true)->count();
+        $tetano = Vaccine::where('tipo_vacina', 'tetano')->distinct('patient_id')->count('patient_id');
+
+        $profilaxiasData = [
+            'labels' => ['IPTp 1ª Dose', 'IPTp 3ª+ Doses', 'Tétano (TT)', 'Ferro / Folato', 'Mebendazol'],
+            'counts' => [$iptp1Dose, $iptp3Doses, $tetano, $ferroFolato, $mebendazol],
+            'percentuais' => [
+                round(($iptp1Dose / $baseTotal) * 100, 1),
+                round(($iptp3Doses / $baseTotal) * 100, 1),
+                round(($tetano / $baseTotal) * 100, 1),
+                round(($ferroFolato / $baseTotal) * 100, 1),
+                round(($mebendazol / $baseTotal) * 100, 1),
+            ]
+        ];
+
+        // 5. Gráfico 4: Status das Visitas Domiciliárias
+        $visitasRealizadas = HomeVisit::where('status', 'realizada')->count();
+        $visitasAgendadas = HomeVisit::where('status', 'agendada')->count();
+        $visitasNaoEncontrada = HomeVisit::where('status', 'nao_encontrada')->count();
+        $visitasCanceladas = HomeVisit::where('status', 'cancelada')->count();
+
+        // 6. Feeds & Listagens Operacionais
         $alertasPrecoces = Alerta::with('patient')
             ->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])
             ->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")
             ->orderByDesc('created_at')
-            ->limit(15)
+            ->limit(6)
             ->get();
 
-        // Alertas de acompanhamento legado
-        $alertas = collect();
-        
-        // Gestantes sem consulta há mais de 30 dias
-        $gestantesSemConsulta = Patient::with('consultations')
-            ->where('ativo', true)
-            ->get()
-            ->filter(function ($patient) {
-                $ultimaConsulta = $patient->consultations()->latest('data_consulta')->first();
-                return !$ultimaConsulta || $ultimaConsulta->data_consulta->lt(now()->subDays(30));
-            });
-        
-        foreach ($gestantesSemConsulta as $gestante) {
-            $alertas->push([
-                'gestante' => $gestante->nome_completo,
-                'mensagem' => 'Sem consulta há mais de 30 dias',
-                'link' => route('patients.show', $gestante)
-            ]);
-        }
-        
-        // Gestantes próximas ao parto (< 4 semanas)
-        $gestantesProximasParto = Patient::where('ativo', true)
-            ->whereNotNull('data_provavel_parto')
-            ->where('data_provavel_parto', '<=', now()->addWeeks(4))
-            ->where('data_provavel_parto', '>=', now())
+        $proximasConsultas = Consultation::with('patient')
+            ->where('data_consulta', '>=', now()->startOfDay())
+            ->where('data_consulta', '<=', now()->addDays(7)->endOfDay())
+            ->orderBy('data_consulta')
+            ->limit(6)
             ->get();
-        
-        foreach ($gestantesProximasParto as $gestante) {
-            $diasRestantes = now()->diffInDays($gestante->data_provavel_parto);
-            $alertas->push([
-                'gestante' => $gestante->nome_completo,
-                'mensagem' => "Parto previsto em {$diasRestantes} dias",
-                'link' => route('patients.show', $gestante)
-            ]);
-        }
-        
+
+        $ultimosPartos = Birth::with('patient')
+            ->orderBy('data_hora_parto', 'desc')
+            ->limit(5)
+            ->get();
+
+        $pacientesFaltosas = Patient::where('ativo', true)
+            ->whereHas('consultations', function($q) {
+                $q->where('status', 'agendada')->where('data_consulta', '<', now());
+            })
+            ->with(['consultations' => function($q) {
+                $q->where('status', 'agendada')->where('data_consulta', '<', now())->orderBy('data_consulta', 'desc');
+            }])
+            ->limit(5)
+            ->get();
+
+        $ultimasTransferencias = Patient::where('ativo', false)
+            ->whereNotNull('data_transferencia')
+            ->orderBy('data_transferencia', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('dashboard', compact(
             'totalGestantes',
-            'consultasEstaSemana', 
+            'totalGestantesARO',
+            'consultasHoje',
+            'consultasEstaSemana',
             'consultasPendentes',
             'examesPendentes',
+            'partosMes',
+            'visitasMes',
+            'totalTransferidas',
+            'faltosasCount',
+            'mesesLabels',
+            'consultasMensais',
+            'partosMensais',
+            'trimestre1',
+            'trimestre2',
+            'trimestre3',
+            'posParto',
+            'profilaxiasData',
+            'visitasRealizadas',
+            'visitasAgendadas',
+            'visitasNaoEncontrada',
+            'visitasCanceladas',
+            'alertasPrecoces',
             'proximasConsultas',
-            'alertas',
-            'alertasPrecoces'
+            'ultimosPartos',
+            'pacientesFaltosas',
+            'ultimasTransferencias'
         ));
     }
 }
