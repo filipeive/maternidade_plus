@@ -28,7 +28,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Módulo de Alerta Precoce (Early Warning Module)
     Route::prefix('alertas')->name('alertas.')->group(function () {
         Route::get('/', [AlertaController::class, 'index'])->name('index');
-        Route::post('/avaliar-todos', [AlertaController::class, 'avaliarTodos'])->name('avaliar-todos');
         Route::post('/marcar-todos-lidos', [AlertaController::class, 'marcarTodosLidos'])->name('marcar-todos-lidos');
         Route::post('/{alerta}/marcar-lido', [AlertaController::class, 'marcarLido'])->name('marcar-lido');
         Route::post('/{alerta}/transitar', [AlertaController::class, 'transitar'])->name('transitar');

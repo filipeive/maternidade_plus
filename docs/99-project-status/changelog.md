@@ -4,16 +4,6 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
-## [2.9.0] - 2026-08-29
-### Adicionado / Melhorado
-- **Automação Contínua & Motor Proativo de Alertas Clínicos Precoces**:
-  - **Disparo Automático Global**: Implementado agendamento contínuo em background a cada 15 minutos (`Schedule::command('alertas:avaliar')`) e avaliação automática proativa (com cache lock throttle de 10 minutos) ao aceder ao **Dashboard** ou à **Central de Alertas**.
-  - **Novos Model Observers**: Criados e registados `PatientObserver`, `ExamObserver` e `VaccineObserver` no `AppServiceProvider`, garantindo que qualquer cadastro ou alteração de paciente, registo de novos exames laboratoriais (HIV, Sífilis, Hb) ou vacinas dispare imediatamente a avaliação clínica sem necessidade de intervenção manual.
-  - **Ação Rápida de Avaliação em Massa (`/alertas/avaliar-todos`)**: Adicionado botão proeminente **"🔄 Avaliar Todas as Gestantes"** no painel de alertas clínicos para reprocessar todo o histórico instantaneamente a qualquer momento.
-  - **Pipeline de Deploy Atualizado**: O script de deploy em produção (`deploy.sh`) agora executa automaticamente `php artisan alertas:avaliar` após as migrações, garantindo que todas as gestantes já cadastradas na base de dados de produção tenham os seus alertas (faltosas, pós-termo, etc.) gerados de imediato.
-
----
-
 ## [2.8.0] - 2026-08-28
 ### Adicionado / Melhorado
 - **Expansão Global do Painel de Configurações (`/settings`)**:

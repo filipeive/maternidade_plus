@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('alertas:avaliar')->dailyAt('06:00');
+        $schedule->command('alertas:avaliar')->everyFifteenMinutes()->runInBackground();
     }
 
     /**
