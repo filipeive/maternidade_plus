@@ -17,6 +17,15 @@ class AlertaController extends Controller
      */
     public function index(Request $request): View
     {
+        // Auto-avaliação throttled a cada 10 min ao aceder à central de alertas
+        if (cache()->add('alertas_auto_avaliar_lock', true, now()->addMinutes(10))) {
+            try {
+                app(\App\Services\AlertaPrecoceService::class)->avaliarTodas();
+            } catch (\Throwable $e) {
+                // Continue
+            }
+        }
+
         $query = Alerta::with(['patient', 'consultation', 'resolvidoPor', 'acoes.user']);
 
         // Filtro por Nível
@@ -132,18 +141,34 @@ class AlertaController extends Controller
     /**
      * Marca todos os alertas ativos como lidos.
      */
-    public function marcarTodosLidos(Request $request)
+     public function marcarTodosLidos(Request $request)
+     {
+         Alerta::where('lido', false)->update(['lido' => true]);
+
+         if ($request->wantsJson() || $request->ajax()) {
+             return response()->json([
+                 'status' => 'ok',
+                 'message' => 'Todos os alertas foram marcados como lidos.',
+                 'alertasAltosCount' => 0,
+             ]);
+         }
+
+         return redirect()->back()->with('success', 'Todos os alertas foram marcados como lidos.');
+     }
+
+    /**
+     * Avalia todas as gestantes ativas e gera alertas clínicos precoces imediatamente.
+     */
+    public function avaliarTodos(Request $request): RedirectResponse
     {
-        Alerta::where('lido', false)->update(['lido' => true]);
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'Todos os alertas foram marcados como lidos.',
-                'alertasAltosCount' => 0,
-            ]);
+        try {
+            $resultado = app(\App\Services\AlertaPrecoceService::class)->avaliarTodas();
+            return redirect()->route('alertas.index')->with(
+                'success',
+                "Avaliação clínica concluída com sucesso: {$resultado['avaliadas']} gestantes analisadas, {$resultado['novos_alertas']} novos alertas gerados."
+            );
+        } catch (\Throwable $e) {
+            return redirect()->route('alertas.index')->with('error', 'Erro ao avaliar alertas: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('success', 'Todos os alertas foram marcados como lidos.');
     }
 }

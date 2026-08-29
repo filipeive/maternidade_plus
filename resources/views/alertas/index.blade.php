@@ -17,9 +17,17 @@
         <p class="text-sm text-surface-500">Monitoria e triagem de sinais de risco materno-fetal baseada em evidência</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap">
+        <form method="POST" action="{{ route('alertas.avaliar-todos') }}" class="inline">
+            @csrf
+            <button type="submit" class="btn-primary-tw btn-sm-tw">
+                <i class="fas fa-rotate text-xs"></i>
+                <span>Avaliar Todas as Gestantes</span>
+            </button>
+        </form>
+
         <form method="POST" action="{{ route('alertas.marcar-todos-lidos') }}" class="inline">
             @csrf
-            <button type="submit" class="btn-secondary-tw text-brand-600 hover:text-brand-700">
+            <button type="submit" class="btn-secondary-tw btn-sm-tw text-brand-600 hover:text-brand-700">
                 <i class="fas fa-check-double text-xs"></i>
                 <span>Marcar todos como lidos</span>
             </button>

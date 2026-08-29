@@ -17,6 +17,15 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Avaliação proativa e automática de alertas precoces (throttled a cada 10 min)
+        if (cache()->add('alertas_auto_avaliar_lock', true, now()->addMinutes(10))) {
+            try {
+                app(\App\Services\AlertaPrecoceService::class)->avaliarTodas();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Erro ao auto-avaliar alertas no dashboard: ' . $e->getMessage());
+            }
+        }
+
         // 1. Estatísticas Gerais / KPIs Principais
         $totalGestantes = Patient::where('ativo', true)->count();
         $totalGestantesARO = Patient::where('ativo', true)
