@@ -4,6 +4,15 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.12.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Aprimoramento do Ciclo de Vida dos Alertas Clínicos & Transição Gestação-Parto**:
+  - **Botão Dinâmico de Seguimento**: Alertas com status *Em Seguimento* agora exibem dinamicamente a ação **"🔄 Atualizar Conduta"** com estilização diferenciada, permitindo revisão ou encerramento progressivo da conduta clínica.
+  - **Atalho Integrado de Registo de Parto**: Adicionado atalho contextual **"👶 Registar Parto"** tanto no cabeçalho do bloco de alertas quanto no interior do modal de conduta, integrando o encerramento automático de alertas da gestação e geração imediata das 3 consultas de puerpério MISAU (48h, 7d, 28d).
+  - **Histórico Retrátil de Resoluções**: Criado accordion colapsável na ficha da paciente exibindo os alertas concluídos anteriormente com as respetivas condutas e datas de resolução.
+
+---
+
 ## [2.11.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Tratamento e Resolução Direta de Alertas no Prontuário da Gestante (`/patients/{id}`)**:

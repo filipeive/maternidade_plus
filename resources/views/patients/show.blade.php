@@ -53,91 +53,143 @@
     @endif
 
     {{-- Bloco de Gestão e Resolução Direta de Alertas Clínicos --}}
-    @if($alertasAtivosPaciente->count() > 0)
+    @if($alertasAtivosPaciente->count() > 0 || $alertasResolvidosPaciente->count() > 0)
         <div x-data="{
                 openTratarModal: false,
+                mostrarHistorico: false,
                 alertaId: null,
                 alertaTitulo: '',
                 alertaNivel: '',
                 alertaMensagem: '',
                 novoStatus: 'resolvido',
                 notaConduta: '',
-                abrirTratamento(id, titulo, nivel, mensagem) {
+                abrirTratamento(id, titulo, nivel, mensagem, statusAtual = 'resolvido') {
                     this.alertaId = id;
                     this.alertaTitulo = titulo;
                     this.alertaNivel = nivel;
                     this.alertaMensagem = mensagem;
-                    this.novoStatus = 'resolvido';
+                    this.novoStatus = statusAtual === 'em_seguimento' ? 'em_seguimento' : 'resolvido';
                     this.notaConduta = '';
                     this.openTratarModal = true;
                 }
             }"
-            class="card-tw mb-6 border-l-4 {{ $temAlertaAlto ? 'border-l-crimson-500' : 'border-l-gold-500' }} shadow-sm">
+            class="card-tw mb-6 border-l-4 {{ $temAlertaAlto ? 'border-l-crimson-500' : ($alertasAtivosPaciente->count() > 0 ? 'border-l-gold-500' : 'border-l-emerald-500') }} shadow-sm">
             
             <div class="card-header-tw flex-wrap gap-2">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg {{ $temAlertaAlto ? 'bg-crimson-100 text-crimson-700' : 'bg-gold-100 text-gold-800' }} flex items-center justify-center text-sm font-bold">
+                    <div class="w-8 h-8 rounded-lg {{ $temAlertaAlto ? 'bg-crimson-100 text-crimson-700' : ($alertasAtivosPaciente->count() > 0 ? 'bg-gold-100 text-gold-800' : 'bg-emerald-100 text-emerald-700') }} flex items-center justify-center text-sm font-bold">
                         <i class="fas fa-triangle-exclamation"></i>
                     </div>
                     <div>
                         <h6 class="font-bold text-surface-900 text-sm">
-                            Alertas Clínicos Ativos da Gestante ({{ $alertasAtivosPaciente->count() }})
+                            @if($alertasAtivosPaciente->count() > 0)
+                                Alertas Clínicos em Aberto ({{ $alertasAtivosPaciente->count() }})
+                            @else
+                                Alertas Clínicos (Histórico de Resoluções)
+                            @endif
                         </h6>
-                        <p class="text-3xs text-surface-500">Tratamento e resolução clínica imediata integrada ao prontuário</p>
+                        <p class="text-3xs text-surface-500">Monitoria e condutas de triagem obstétrica em tempo real</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    @if($patient->podeRegistrarParto())
+                        <a href="{{ route('births.create', $patient) }}" class="btn-tw bg-crimson-600 hover:bg-crimson-700 text-white btn-xs-tw font-bold shadow-2xs" title="Registar parto e concluir alertas da gestação">
+                            <i class="fas fa-baby text-3xs"></i>
+                            <span>Registar Parto</span>
+                        </a>
+                    @endif
+
                     <a href="{{ route('alertas.avaliacoes') }}" class="btn-secondary-tw btn-xs-tw">
                         <i class="fas fa-clipboard-check text-3xs"></i>
                         <span>Painel de Avaliações</span>
                     </a>
-                    <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn-secondary-tw btn-xs-tw">
-                        <i class="fas fa-list text-3xs"></i>
-                        <span>Histórico Central</span>
-                    </a>
                 </div>
             </div>
 
-            <div class="divide-y divide-surface-100">
-                @foreach($alertasAtivosPaciente as $alerta)
-                    <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-surface-50/60 transition-colors">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="badge-{{ $alerta->nivel === 'alto' ? 'danger' : ($alerta->nivel === 'medio' ? 'warning' : 'info') }} font-bold text-3xs uppercase">
-                                    {{ ucfirst($alerta->nivel) }}
-                                </span>
-                                <strong class="text-surface-900 text-xs">{{ $alerta->tipo_label }}</strong>
-                                <span class="text-3xs text-surface-400 font-mono">
-                                    <i class="far fa-clock mr-0.5"></i>{{ $alerta->created_at->format('d/m/Y H:i') }}
-                                </span>
+            @if($alertasAtivosPaciente->count() > 0)
+                <div class="divide-y divide-surface-100">
+                    @foreach($alertasAtivosPaciente as $alerta)
+                        <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-surface-50/60 transition-colors">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="badge-{{ $alerta->nivel === 'alto' ? 'danger' : ($alerta->nivel === 'medio' ? 'warning' : 'info') }} font-bold text-3xs uppercase">
+                                        {{ ucfirst($alerta->nivel) }}
+                                    </span>
+
+                                    @if($alerta->status === 'em_seguimento')
+                                        <span class="badge-warning text-3xs font-bold bg-gold-100 text-gold-900 border border-gold-300">
+                                            <i class="fas fa-clock mr-0.5"></i> Em Seguimento
+                                        </span>
+                                    @endif
+
+                                    <strong class="text-surface-900 text-xs">{{ $alerta->tipo_label }}</strong>
+                                    <span class="text-3xs text-surface-400 font-mono">
+                                        <i class="far fa-clock mr-0.5"></i>{{ $alerta->created_at->format('d/m/Y H:i') }}
+                                    </span>
+                                    @if(!$alerta->lido)
+                                        <span class="badge-neutral text-3xs bg-brand-50 text-brand-700 border border-brand-200">Não Lido</span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-surface-700 leading-relaxed">{{ $alerta->mensagem }}</p>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0 self-end md:self-center">
                                 @if(!$alerta->lido)
-                                    <span class="badge-neutral text-3xs bg-brand-50 text-brand-700 border border-brand-200">Não Lido</span>
+                                    <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="btn-secondary-tw btn-xs-tw text-surface-600 hover:text-brand-700" title="Marcar como lido">
+                                            <i class="fas fa-check text-3xs"></i>
+                                            <span>Lido</span>
+                                        </button>
+                                    </form>
+                                @endif
+
+                                @if($alerta->status === 'em_seguimento')
+                                    <button type="button"
+                                            @click="abrirTratamento({{ $alerta->id }}, '{{ addslashes($alerta->tipo_label) }}', '{{ $alerta->nivel }}', '{{ addslashes($alerta->mensagem) }}', 'em_seguimento')"
+                                            class="btn-tw bg-gold-400 hover:bg-gold-500 text-surface-950 btn-xs-tw font-bold shadow-2xs">
+                                        <i class="fas fa-arrows-rotate text-3xs"></i>
+                                        <span>Atualizar Conduta</span>
+                                    </button>
+                                @else
+                                    <button type="button"
+                                            @click="abrirTratamento({{ $alerta->id }}, '{{ addslashes($alerta->tipo_label) }}', '{{ $alerta->nivel }}', '{{ addslashes($alerta->mensagem) }}', 'resolvido')"
+                                            class="btn-tw bg-brand-600 hover:bg-brand-700 text-white btn-xs-tw font-bold shadow-2xs">
+                                        <i class="fas fa-stethoscope text-3xs"></i>
+                                        <span>Tratar / Resolver</span>
+                                    </button>
                                 @endif
                             </div>
-                            <p class="text-xs text-surface-700 leading-relaxed">{{ $alerta->mensagem }}</p>
                         </div>
+                    @endforeach
+                </div>
+            @endif
 
-                        <div class="flex items-center gap-2 shrink-0 self-end md:self-center">
-                            @if(!$alerta->lido)
-                                <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
-                                    @csrf
-                                    <button type="submit" class="btn-secondary-tw btn-xs-tw text-surface-600 hover:text-brand-700" title="Marcar como lido">
-                                        <i class="fas fa-check text-3xs"></i>
-                                        <span>Lido</span>
-                                    </button>
-                                </form>
-                            @endif
+            {{-- Histórico de Alertas Resolvidos / Concluídos --}}
+            @if($alertasResolvidosPaciente->count() > 0)
+                <div class="border-t border-surface-100 p-3 bg-surface-50/50">
+                    <button type="button" @click="mostrarHistorico = !mostrarHistorico" class="w-full flex items-center justify-between text-xs font-semibold text-surface-600 hover:text-surface-900 transition-colors">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fas fa-history text-3xs text-brand-600"></i>
+                            <span>Histórico de Alertas Resolvidos / Partos Concluídos ({{ $alertasResolvidosPaciente->count() }})</span>
+                        </span>
+                        <i class="fas fa-chevron-down text-3xs transition-transform duration-200" :class="{'rotate-180': mostrarHistorico}"></i>
+                    </button>
 
-                            <button type="button"
-                                    @click="abrirTratamento({{ $alerta->id }}, '{{ addslashes($alerta->tipo_label) }}', '{{ $alerta->nivel }}', '{{ addslashes($alerta->mensagem) }}')"
-                                    class="btn-tw bg-brand-600 hover:bg-brand-700 text-white btn-xs-tw font-bold shadow-2xs">
-                                <i class="fas fa-stethoscope text-3xs"></i>
-                                <span>Tratar / Resolver</span>
-                            </button>
-                        </div>
+                    <div x-show="mostrarHistorico" x-cloak class="mt-3 space-y-2 divide-y divide-surface-100 pt-2 border-t border-surface-200">
+                        @foreach($alertasResolvidosPaciente as $alertaRes)
+                            <div class="pt-2 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-surface-800 text-3xs">{{ $alertaRes->tipo_label }}</span>
+                                    <span class="badge-success text-3xs">Resolvido em {{ $alertaRes->resolvido_em?->format('d/m/Y H:i') ?? $alertaRes->updated_at->format('d/m/Y') }}</span>
+                                </div>
+                                <p class="text-3xs text-surface-600 mt-0.5">{{ $alertaRes->nota_resolucao ?? 'Resolvido pelo profissional de saúde.' }}</p>
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endif
 
             {{-- Modal de Tratamento / Resolução Clínica Direta --}}
             <div x-show="openTratarModal"
@@ -170,9 +222,23 @@
 
                     {{-- Alerta Info Box --}}
                     <div class="p-3 bg-surface-50 rounded-xl border border-surface-200 text-xs text-surface-700">
-                        <span class="font-semibold block text-surface-900 mb-1">Motivo do Alerta:</span>
+                        <span class="font-semibold block text-surface-900 mb-1">Motivo Clínico do Alerta:</span>
                         <p x-text="alertaMensagem" class="text-xs"></p>
                     </div>
+
+                    {{-- Atalho para Parto caso aplicável --}}
+                    @if($patient->podeRegistrarParto())
+                        <div class="p-3 bg-crimson-50/70 rounded-xl border border-crimson-200 flex items-center justify-between gap-3 text-xs">
+                            <div>
+                                <span class="font-bold text-crimson-900 block text-3xs uppercase">O parto já ocorreu?</span>
+                                <span class="text-3xs text-crimson-700">Ao registar o parto, todos os alertas da gravidez são automaticamente concluídos.</span>
+                            </div>
+                            <a href="{{ route('births.create', $patient) }}" class="btn-tw bg-crimson-600 hover:bg-crimson-700 text-white btn-xs-tw font-bold shrink-0">
+                                <i class="fas fa-baby text-3xs"></i>
+                                <span>Registar Parto</span>
+                            </a>
+                        </div>
+                    @endif
 
                     {{-- Formulário de Resolução --}}
                     <form :action="'{{ url('/alertas') }}/' + alertaId + '/transitar'" method="POST" class="space-y-4">
@@ -210,7 +276,7 @@
                                       x-model="notaConduta"
                                       rows="3"
                                       required
-                                      placeholder="Descreva a conduta tomada (ex: administrada medicação anti-hipertensiva, solicitada ecografia obstétrica, agendada consulta de retorno em 48h)..."
+                                      placeholder="Descreva a conduta tomada (ex: administrada medicação, solicitada ecografia obstétrica, agendada consulta de retorno em 48h)..."
                                       class="input-tw text-xs w-full mt-1"></textarea>
                             <span class="text-3xs text-surface-400 mt-1 block">Registo obrigatório segundo protocolos de auditoria clínica do MISAU.</span>
                         </div>

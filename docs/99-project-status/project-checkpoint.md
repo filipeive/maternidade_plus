@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 30 de Agosto de 2026
-- **Versão Atual**: 2.11.0 (Tratamento Integrado de Alertas na Ficha da Gestante & Refatoração Clean Code - Produção)
+- **Versão Atual**: 2.12.0 (Ciclo de Vida de Alertas, Transição de Parto & Histórico Clínico - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---
