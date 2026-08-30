@@ -146,4 +146,213 @@ class AlertaController extends Controller
 
         return redirect()->back()->with('success', 'Todos os alertas foram marcados como lidos.');
     }
+
+    /**
+     * Avalia todas as gestantes ativas e gera alertas clínicos precoces imediatamente.
+     */
+    public function avaliarTodos(Request $request): RedirectResponse
+    {
+        try {
+            $resultado = app(\App\Services\AlertaPrecoceService::class)->avaliarTodas();
+            return redirect()->back()->with(
+                'success',
+                "Avaliação clínica concluída com sucesso: {$resultado['avaliadas']} gestantes analisadas, {$resultado['novos_alertas']} novos alertas gerados."
+            );
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Erro ao avaliar alertas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Painel de Auditoria e Avaliações Clínicas Precoces de todas as gestantes.
+     */
+    public function avaliacoes(Request $request): View
+    {
+        $filtro = $request->input('filtro', 'todos');
+        $busca = $request->input('search');
+
+        $gestantes = Patient::where('ativo', true)
+            ->where('status_atual', Patient::STATUS_GESTANTE)
+            ->with([
+                'consultations' => function ($consultaQuery) {
+                    $consultaQuery->orderByDesc('data_consulta');
+                },
+                'exams',
+                'vaccines',
+                'alertas' => function ($alertaQuery) {
+                    $alertaQuery->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO]);
+                },
+            ])
+            ->get();
+
+        $avaliacoes = $gestantes->map(function (Patient $paciente) {
+            $ultimaConsulta = $paciente->consultations->first();
+            $diasSemConsulta = $ultimaConsulta 
+                ? Carbon::parse($ultimaConsulta->data_consulta)->diffInDays(now())
+                : Carbon::parse($paciente->created_at)->diffInDays(now());
+
+            $idadeGestacional = $paciente->getIdadeGestacionalSemanas() ?? ($paciente->semanas_gestacao ?? 0);
+
+            // Sinais Vitais
+            $paStr = $ultimaConsulta->pressao_arterial ?? null;
+            $paSistolica = null;
+            $paDiastolica = null;
+            $isPaAlta = false;
+            $isPaGrave = false;
+
+            if ($paStr && preg_match('/(\d{2,3})\s*(?:[\/xX\-:]|\s+)\s*(\d{2,3})/', $paStr, $matches)) {
+                $paSistolica = (int)$matches[1];
+                $paDiastolica = (int)$matches[2];
+                if ($paSistolica >= 160 || $paDiastolica >= 110) {
+                    $isPaGrave = true;
+                } elseif ($paSistolica >= 140 || $paDiastolica >= 90) {
+                    $isPaAlta = true;
+                }
+            }
+
+            $bcf = $ultimaConsulta->batimentos_fetais ?? null;
+            $isBcfAnormal = $bcf && ($bcf < 110 || $bcf > 160);
+
+            // Faltosa
+            $isFaltosa = false;
+            $motivoFaltosa = null;
+            $agendadas = $paciente->consultations->where('status', 'agendada');
+            foreach ($agendadas as $agendada) {
+                $dataAlvo = $agendada->proxima_consulta ?? $agendada->data_consulta;
+                if ($dataAlvo && Carbon::parse($dataAlvo)->lte(now()->subDays(3))) {
+                    $isFaltosa = true;
+                    $motivoFaltosa = Carbon::parse($dataAlvo)->diffInDays(now()) . ' dias de atraso na consulta';
+                    break;
+                }
+            }
+            if (!$isFaltosa && $diasSemConsulta > 30) {
+                $isFaltosa = true;
+                $motivoFaltosa = $diasSemConsulta . ' dias sem consulta';
+            }
+
+            // Pós-termo
+            $isPosTermo = ($idadeGestacional > 41);
+
+            // Exames Críticos
+            $examesCriticos = [];
+            foreach ($paciente->exams as $exame) {
+                $res = mb_strtolower($exame->resultado ?? '', 'UTF-8');
+                if (($exame->tipo_exame === 'teste_hiv' || str_contains($res, 'hiv')) && preg_match('/(?:reagente|positivo)/i', $res) && !preg_match('/(?:n[aã]o\s+reagente|negativo)/i', $res)) {
+                    $examesCriticos[] = 'HIV+ (' . ($exame->resultado) . ')';
+                }
+                if (($exame->tipo_exame === 'teste_sifilis' || str_contains($res, 'vdrl') || str_contains($res, 'sifilis')) && preg_match('/(?:reagente|positivo)/i', $res) && !preg_match('/(?:n[aã]o\s+reagente|negativo)/i', $res)) {
+                    $examesCriticos[] = 'Sífilis+ (' . ($exame->resultado) . ')';
+                }
+                if (preg_match('/(?:hb|hemoglobina)[\s\:\=]*(\d+(?:[\.,]\d+)?)/i', $res, $matchHb)) {
+                    $hb = (float)str_replace(',', '.', $matchHb[1]);
+                    if ($hb > 0 && $hb < 7.0) {
+                        $examesCriticos[] = "Hb {$hb} g/dL (Anemia Grave)";
+                    }
+                }
+            }
+
+            // Vacinas em atraso
+            $vacinasAtrasadas = $paciente->vaccines->filter(function ($vacina) {
+                return $vacina->status === 'pendente' && $vacina->proxima_dose && Carbon::parse($vacina->proxima_dose)->lt(now());
+            })->count();
+
+            // Status Geral
+            $alertasAtivos = $paciente->alertas;
+            $temAlertaAlto = $alertasAtivos->where('nivel', 'alto')->count() > 0;
+            $temAlertaMedio = $alertasAtivos->where('nivel', 'medio')->count() > 0;
+
+            $statusClass = 'normal';
+            if ($temAlertaAlto || $isPaGrave || $isPosTermo || count($examesCriticos) > 0) {
+                $statusClass = 'critico';
+            } elseif ($temAlertaMedio || $isPaAlta || $isFaltosa || $vacinasAtrasadas > 0 || $paciente->risco_gestacional === 'Alto') {
+                $statusClass = 'atencao';
+            }
+
+            return (object) [
+                'patient' => $paciente,
+                'idade_gestacional' => $idadeGestacional,
+                'dias_sem_consulta' => $diasSemConsulta,
+                'ultima_consulta' => $ultimaConsulta,
+                'pressao_arterial' => $paStr,
+                'pa_sistolica' => $paSistolica,
+                'pa_diastolica' => $paDiastolica,
+                'is_pa_alta' => $isPaAlta,
+                'is_pa_grave' => $isPaGrave,
+                'bcf' => $bcf,
+                'is_bcf_anormal' => $isBcfAnormal,
+                'is_faltosa' => $isFaltosa,
+                'motivo_faltosa' => $motivoFaltosa,
+                'is_pos_termo' => $isPosTermo,
+                'is_alto_risco' => ($paciente->risco_gestacional === 'Alto' || $paciente->isAltoRisco()),
+                'exames_criticos' => $examesCriticos,
+                'vacinas_atrasadas' => $vacinasAtrasadas,
+                'alertas_ativos' => $alertasAtivos,
+                'status_class' => $statusClass,
+            ];
+        });
+
+        // Estatísticas para os cards
+        $stats = [
+            'total_avaliadas' => $avaliacoes->count(),
+            'normais' => $avaliacoes->where('status_class', 'normal')->count(),
+            'atencao' => $avaliacoes->where('status_class', 'atencao')->count(),
+            'criticos' => $avaliacoes->where('status_class', 'critico')->count(),
+            'faltosas' => $avaliacoes->where('is_faltosa', true)->count(),
+            'pos_termo' => $avaliacoes->where('is_pos_termo', true)->count(),
+            'alto_risco' => $avaliacoes->where('is_alto_risco', true)->count(),
+        ];
+
+        // Filtro de Busca por Texto
+        if ($busca) {
+            $avaliacoes = $avaliacoes->filter(function ($item) use ($busca) {
+                return str_contains(mb_strtolower($item->patient->nome_completo), mb_strtolower($busca))
+                    || str_contains(mb_strtolower($item->patient->documento_bi ?? ''), mb_strtolower($busca))
+                    || str_contains(mb_strtolower($item->patient->contacto ?? ''), mb_strtolower($busca));
+            });
+        }
+
+        // Filtro por Tab
+        if ($filtro === 'criticos') {
+            $avaliacoes = $avaliacoes->where('status_class', 'critico');
+        } elseif ($filtro === 'atencao') {
+            $avaliacoes = $avaliacoes->where('status_class', 'atencao');
+        } elseif ($filtro === 'normais') {
+            $avaliacoes = $avaliacoes->where('status_class', 'normal');
+        } elseif ($filtro === 'faltosas') {
+            $avaliacoes = $avaliacoes->where('is_faltosa', true);
+        } elseif ($filtro === 'pos_termo') {
+            $avaliacoes = $avaliacoes->where('is_pos_termo', true);
+        } elseif ($filtro === 'aro') {
+            $avaliacoes = $avaliacoes->where('is_alto_risco', true);
+        }
+
+        return view('alertas.avaliacoes', compact('avaliacoes', 'stats', 'filtro', 'busca'));
+    }
+
+    /**
+     * Exporta a lista de auditoria clínica em PDF formatado MISAU.
+     */
+    public function avaliacoesPdf(Request $request)
+    {
+        $gestantes = Patient::where('ativo', true)
+            ->where('status_atual', Patient::STATUS_GESTANTE)
+            ->with([
+                'consultations' => function ($consultaQuery) {
+                    $consultaQuery->orderByDesc('data_consulta');
+                },
+                'exams',
+                'vaccines',
+                'alertas' => function ($alertaQuery) {
+                    $alertaQuery->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO]);
+                },
+            ])
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('alertas.avaliacoes-pdf', [
+            'gestantes' => $gestantes,
+            'dataGeracao' => now()->format('d/m/Y H:i'),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('Auditoria_Clinica_Alertas_' . date('Ymd_His') . '.pdf');
+    }
 }
