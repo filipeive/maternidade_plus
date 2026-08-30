@@ -9,6 +9,9 @@ Rotas web e endpoints da aplicação registrados em `routes/web.php`.
 | Método | URI | Nome da Rota | Ação / Controller |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/alertas` | `alertas.index` | `AlertaController@index` |
+| `GET` | `/alertas/avaliacoes` | `alertas.avaliacoes` | `AlertaController@avaliacoes` |
+| `GET` | `/alertas/avaliacoes/pdf` | `alertas.avaliacoes.pdf` | `AlertaController@avaliacoesPdf` |
+| `POST` | `/alertas/avaliar-todos` | `alertas.avaliar-todos` | `AlertaController@avaliarTodos` |
 | `POST` | `/alertas/marcar-todos-lidos` | `alertas.marcar-todos-lidos` | `AlertaController@marcarTodosLidos` |
 | `POST` | `/alertas/{alerta}/marcar-lido` | `alertas.marcar-lido` | `AlertaController@marcarLido` |
 | `POST` | `/alertas/{alerta}/transitar` | `alertas.transitar` | `AlertaController@transitar` |

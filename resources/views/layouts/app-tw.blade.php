@@ -116,6 +116,12 @@
                 @endif
             </a>
 
+            <a href="{{ route('alertas.avaliacoes') }}"
+               class="sidebar-link {{ request()->routeIs('alertas.avaliacoes*') ? 'active' : '' }}">
+                <span class="sidebar-link-icon"><i class="fas fa-clipboard-check"></i></span>
+                <span class="sidebar-text">Avaliações Clínicas</span>
+            </a>
+
             <a href="{{ route('alertas.metricas') }}"
                class="sidebar-link {{ request()->routeIs('alertas.metricas*') ? 'active' : '' }}">
                 <span class="sidebar-link-icon"><i class="fas fa-chart-line"></i></span>
