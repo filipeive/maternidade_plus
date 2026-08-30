@@ -4,6 +4,13 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.14.1] - 2026-08-30
+### Corrigido
+- **Import do Modelo `Alerta` no `HomeVisitController`**:
+  - Adicionado o namespace `use App\Models\Alerta;` e `use App\Models\Consultation;` em `HomeVisitController.php`, resolvendo erro `Class App\Http\Controllers\Alerta not found` na Busca Ativa de Pacientes Faltosas (`/home_visits/active-search`).
+
+---
+
 ## [2.14.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Unificação dos Critérios de Faltosas & Busca Ativa (`/home_visits/active-search`)**:

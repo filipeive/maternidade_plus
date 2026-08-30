@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\HomeVisit;
 use App\Models\Patient;
+use App\Models\Alerta;
+use App\Models\Consultation;
 use Illuminate\Http\Request;
 use App\Helpers\VisitTypes;
 use Carbon\Carbon;
