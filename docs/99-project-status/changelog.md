@@ -4,6 +4,15 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.15.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Padronização da Central de Alertas Clínicos (`/alertas`)**:
+  - Removido o botão ambíguo "Lido" da tabela principal de alertas.
+  - Implementada abertura inteligente do modal com auto-leitura em background (`lido = true`).
+  - Dinamização dos botões de ação na tabela: **"🔄 Atualizar Conduta"** (dourado) para alertas em seguimento, **"🩺 Tratar / Resolver"** (verde-petróleo) para alertas ativos e **"✏️ Editar"** para alertas já resolvidos.
+
+---
+
 ## [2.14.1] - 2026-08-30
 ### Corrigido
 - **Import do Modelo `Alerta` no `HomeVisitController`**:

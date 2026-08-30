@@ -156,7 +156,19 @@
 </div>
 
 {{-- Alerts Table Card --}}
-<div class="card-tw overflow-hidden" x-data="{activeModal: null}">
+<div class="card-tw overflow-hidden" x-data="{
+    activeModal: null,
+    abrirModal(id) {
+        this.activeModal = id;
+        fetch('{{ url('/alertas') }}/' + id + '/marcar-lido', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        }).catch(() => {});
+    }
+}">
     <div class="card-header-tw">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-crimson-100 text-crimson-700 flex items-center justify-center text-sm">
@@ -244,38 +256,38 @@
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1.5">
-                                @if(!$alerta->lido && $alerta->status !== 'resolvido')
-                                    <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="btn-ghost-tw btn-xs-tw text-surface-500 hover:text-brand-600" title="Marcar como lido">
-                                            <i class="fas fa-check text-2xs"></i>
-                                            <span>Lido</span>
-                                        </button>
-                                    </form>
-                                @endif
-                                <!--Detalhes da Paciente -->
+                                <!-- Detalhes da Paciente -->
                                 <a href="{{ $alerta->patient ? route('patients.show', $alerta->patient) : '#' }}"
                                    class="btn-ghost-tw btn-xs-tw text-surface-500 hover:text-brand-600"
-                                   title="Detalhes da Paciente"
+                                   title="Abrir Ficha da Gestante"
                                    @if(!$alerta->patient) disabled @endif>
-                                    <i class="fas fa-eye text-2xs"></i>
-                                    <span></span>
+                                    <i class="fas fa-folder-open text-2xs"></i>
+                                    <span>Ficha</span>
                                 </a>
-                                @if(in_array($alerta->status, ['resolvido', 'ignorado']))
+
+                                @if($alerta->status === 'em_seguimento')
                                     <button type="button"
-                                            @click="activeModal = {{ $alerta->id }}"
-                                            class="btn-secondary-tw btn-xs-tw sm:btn-sm-tw"
+                                            @click="abrirModal({{ $alerta->id }})"
+                                            class="btn-tw bg-gold-400 hover:bg-gold-500 text-surface-950 btn-xs-tw font-bold shadow-2xs"
+                                            title="Atualizar Conduta / Seguimento">
+                                        <i class="fas fa-arrows-rotate text-3xs"></i>
+                                        <span>Atualizar Conduta</span>
+                                    </button>
+                                @elseif(in_array($alerta->status, ['resolvido', 'ignorado']))
+                                    <button type="button"
+                                            @click="abrirModal({{ $alerta->id }})"
+                                            class="btn-secondary-tw btn-xs-tw"
                                             title="Editar Conduta / Resolução">
-                                        <i class="fas fa-edit text-xs"></i>
+                                        <i class="fas fa-edit text-3xs"></i>
                                         <span>Editar</span>
                                     </button>
                                 @else
                                     <button type="button"
-                                            @click="activeModal = {{ $alerta->id }}"
-                                            class="btn-primary-tw btn-xs-tw sm:btn-sm-tw"
-                                            title="Tratar Alerta Clínico">
-                                        <i class="fas fa-stethoscope text-xs"></i>
-                                        <span>Tratar</span>
+                                            @click="abrirModal({{ $alerta->id }})"
+                                            class="btn-primary-tw btn-xs-tw font-bold shadow-2xs"
+                                            title="Tratar / Resolver Alerta Clínico">
+                                        <i class="fas fa-stethoscope text-3xs"></i>
+                                        <span>Tratar / Resolver</span>
                                     </button>
                                 @endif
                             </div>
