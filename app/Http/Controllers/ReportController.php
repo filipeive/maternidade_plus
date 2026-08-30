@@ -35,14 +35,27 @@ class ReportController extends Controller
         $totalAtivas = Patient::where('ativo', true)->count();
         
         $inscricoesPrecoces = (clone $novasGestantesQuery)
-            ->where(fn($q) => $q->where('semanas_gestacao', '<=', 12)->orWhereNotNull('data_ultima_menstruacao'))
             ->get()
-            ->filter(fn($p) => ($p->getIdadeGestacionalSemanas() ?? $p->semanas_gestacao ?? 0) <= 12)
+            ->filter(function (Patient $paciente) {
+                $idadeGestacional = $paciente->getIdadeGestacionalSemanas();
+                return $idadeGestacional !== null && $idadeGestacional <= 12;
+            })
             ->count();
 
-        $adolescentesSMI = (clone $novasGestantesQuery)->whereBetween('idade', [10, 19])->count();
+        $adolescentesSMI = (clone $novasGestantesQuery)
+            ->get()
+            ->filter(function (Patient $paciente) {
+                $idade = $paciente->idade ?? ($paciente->data_nascimento ? Carbon::parse($paciente->data_nascimento)->age : null);
+                return $idade !== null && $idade >= 10 && $idade <= 19;
+            })
+            ->count();
+
         $altoRiscoCount = Patient::where('ativo', true)
-            ->where(fn($q) => $q->where('risco_gestacional', 'Alto')->orWhere('numero_abortos', '>', 0)->orWhereNotNull('historico_medico'))
+            ->where(function ($subQuery) {
+                $subQuery->where('risco_gestacional', 'Alto')
+                         ->orWhere('numero_abortos', '>', 0)
+                         ->orWhereNotNull('historico_medico');
+            })
             ->count();
 
         $transferenciasPeriodo = Patient::where('ativo', false)
@@ -71,7 +84,10 @@ class ReportController extends Controller
         $iptp2Dose = (clone $profilaxiaQuery)->whereNotNull('sp_2_dose')->count();
         $iptp3MaisDoses = (clone $profilaxiaQuery)->whereNotNull('sp_3_dose')->count();
         $remtilEntregues = (clone $profilaxiaQuery)->where('remtil_entregue', true)->count();
-        $ferroFolatoEntregues = (clone $profilaxiaQuery)->where(fn($q) => $q->where('sal_ferroso_folico_3doses', true)->orWhere('doses_sal_ferroso_entregues', '>=', 1))->count();
+        $ferroFolatoEntregues = (clone $profilaxiaQuery)->where(function ($subQuery) {
+            $subQuery->where('sal_ferroso_folico_3doses', true)
+                     ->orWhere('doses_sal_ferroso_entregues', '>=', 1);
+        })->count();
         $mebendazolEntregues = (clone $profilaxiaQuery)->whereNotNull('mebendazol_administrado')->count();
         $vatVacinas = Vaccine::whereBetween('data_administracao', [$dataInicio, $dataFim])->where('status', 'administrada')->count();
         $misoprostolEntregues = (clone $profilaxiaQuery)->where('misoprostol_entregue', true)->count();

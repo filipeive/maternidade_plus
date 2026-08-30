@@ -4,24 +4,15 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
-## [2.10.0] - 2026-08-30
+## [2.11.0] - 2026-08-30
 ### Adicionado / Melhorado
-- **Novo Painel de Auditoria & Avaliações Clínicas Precoces (`/alertas/avaliacoes`)**:
-  - Nova interface dedicada para triagem e auditoria nominal de todas as gestantes em acompanhamento no SMI.
-  - Tabela com indicadores completos: Idade Gestacional, Assiduidade (dias sem consulta), Sinais Vitais (Pressão Arterial e BCF com destaques de gravidade), Rastreios Críticos (HIV, Sífilis, Hemoglobina/Anemia), Vacinas pendentes, Risco Obstétrico (Habitual vs ARO), Regras clínicas disparadas e Alertas Ativos.
-  - Botão de execução sob demanda com 1 clique: **"⚡ Executar Avaliação Imediata"** e Exportação da Ficha de Auditoria em **PDF A4 Paisagem** (`/alertas/avaliacoes/pdf`).
-  - Filtros instantâneos por abas: *Todas*, *Críticas/Alto Risco*, *Atenção/Médio*, *Normais*, *Faltosas (Busca Ativa)*, *Pós-Termo (>41 semanas)* e *Alto Risco ARO*.
-- **Modernização e Expansão Completa da Central de Relatórios (`/reports`)**:
-  - Reestruturação completa com indicadores agregados por período (Ano / Mês / Todo o Ano) para **Saúde Materna & CPN**, **Maternidade & Nascimentos**, **Profilaxias MISAU (IPTp-SP, REMTIL, Nutrição, Misoprostol)**, **Triagem PTV (HIV/Sífilis)** e **Saúde Comunitária (APEs)**.
-  - Hub integrado de Mapas & Livros de Registo Oficiais do MISAU com atalhos diretos para o **Livro de CPN (MOD-SIS-B01)**, **Resumo Mensal Distrital (MOD-SIS-B01-B)**, **Auditoria de Avaliações Clínicas** e **Métricas de Impacto M&E**.
-
----
-
-## [2.9.0] - 2026-08-29
-### Adicionado / Melhorado
-- **Automação Contínua & Motor Proativo de Alertas Clínicos Precoces**:
-  - **Disparo Automático Global**: Implementado agendamento contínuo em background a cada 15 minutos e avaliação automática proativa ao aceder ao **Dashboard** ou à **Central de Alertas**.
-  - **Novos Model Observers**: Registados `PatientObserver`, `ExamObserver` e `VaccineObserver` no `AppServiceProvider`.
+- **Tratamento e Resolução Direta de Alertas no Prontuário da Gestante (`/patients/{id}`)**:
+  - Implementado modal interativo em Alpine.js no topo do perfil da paciente para transitar e resolver alertas clínicos (Resolvido / Em Seguimento / Ignorado) com registo obrigatório de conduta médica e notas de auditoria clínica.
+  - Sincronização automática em tempo real entre a ficha individual da gestante, a Central de Alertas Precoces (`/alertas`) e o Painel de Avaliações (`/alertas/avaliacoes`).
+  - Ampliadas as permissões de gestão clínica de alertas para Médicos, Enfermeiras de SMI e Parteiras.
+- **Correção de Query e Refatoração Clean Code**:
+  - Corrigido erro SQL no `ReportController` relacionado à contagem de inscrições precoces e idades de gestantes (utilizando métodos de domínio do modelo `Patient`).
+  - Refatoração de variáveis genéricas de fecho (`$q`) para nomes semânticos e descritivos (`$subQuery`, `$consultaQuery`, `$profilaxiaSubQuery`), aprimorando a manutenibilidade do código.
 
 ---
 

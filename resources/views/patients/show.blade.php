@@ -52,60 +52,183 @@
         </div>
     @endif
 
-    {{-- Alerta Clínico Crítico Banner --}}
-    @if($temAlertaAlto)
-        <div class="mb-6 bg-crimson-50 border-l-4 border-crimson-500 rounded-r-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-crimson-500 text-white flex items-center justify-center shrink-0">
-                    <i class="fas fa-exclamation-triangle text-lg"></i>
-                </div>
-                <div>
-                    <h5 class="text-sm font-bold text-crimson-900 flex items-center gap-2">
-                        <span class="badge-danger">Alto Risco</span> Alerta Clínico Crítico Detectado
-                    </h5>
-                    <p class="text-xs text-crimson-700 mt-0.5">
-                        Esta gestante possui sinais de alerta de nível <strong>Alto</strong> ativos que exigem conduta médica imediata.
-                    </p>
-                </div>
-            </div>
-            <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn-danger-tw btn-sm-tw shrink-0">
-                <i class="fas fa-stethoscope text-xs"></i>
-                <span>Ver e Tratar Alertas</span>
-            </a>
-        </div>
-    @endif
-
-    {{-- Alertas Ativos Secundários --}}
+    {{-- Bloco de Gestão e Resolução Direta de Alertas Clínicos --}}
     @if($alertasAtivosPaciente->count() > 0)
-        <div class="card-tw mb-6 border-l-4 {{ $temAlertaAlto ? 'border-l-crimson-500' : 'border-l-gold-500' }}">
-            <div class="card-header-tw">
-                <h6 class="font-bold text-surface-900 flex items-center gap-2">
-                    <i class="fas fa-bell text-xs {{ $temAlertaAlto ? 'text-crimson-500' : 'text-gold-500' }}"></i>
-                    Alertas Clínicos Ativos ({{ $alertasAtivosPaciente->count() }})
-                </h6>
-                <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn-secondary-tw btn-sm-tw">
-                    Histórico Completo
-                </a>
+        <div x-data="{
+                openTratarModal: false,
+                alertaId: null,
+                alertaTitulo: '',
+                alertaNivel: '',
+                alertaMensagem: '',
+                novoStatus: 'resolvido',
+                notaConduta: '',
+                abrirTratamento(id, titulo, nivel, mensagem) {
+                    this.alertaId = id;
+                    this.alertaTitulo = titulo;
+                    this.alertaNivel = nivel;
+                    this.alertaMensagem = mensagem;
+                    this.novoStatus = 'resolvido';
+                    this.notaConduta = '';
+                    this.openTratarModal = true;
+                }
+            }"
+            class="card-tw mb-6 border-l-4 {{ $temAlertaAlto ? 'border-l-crimson-500' : 'border-l-gold-500' }} shadow-sm">
+            
+            <div class="card-header-tw flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg {{ $temAlertaAlto ? 'bg-crimson-100 text-crimson-700' : 'bg-gold-100 text-gold-800' }} flex items-center justify-center text-sm font-bold">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h6 class="font-bold text-surface-900 text-sm">
+                            Alertas Clínicos Ativos da Gestante ({{ $alertasAtivosPaciente->count() }})
+                        </h6>
+                        <p class="text-3xs text-surface-500">Tratamento e resolução clínica imediata integrada ao prontuário</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('alertas.avaliacoes') }}" class="btn-secondary-tw btn-xs-tw">
+                        <i class="fas fa-clipboard-check text-3xs"></i>
+                        <span>Painel de Avaliações</span>
+                    </a>
+                    <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn-secondary-tw btn-xs-tw">
+                        <i class="fas fa-list text-3xs"></i>
+                        <span>Histórico Central</span>
+                    </a>
+                </div>
             </div>
+
             <div class="divide-y divide-surface-100">
                 @foreach($alertasAtivosPaciente as $alerta)
-                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface-50/50 transition-colors">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="badge-{{ $alerta->nivel === 'alto' ? 'danger' : ($alerta->nivel === 'medio' ? 'warning' : 'info') }}">
+                    <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-surface-50/60 transition-colors">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="badge-{{ $alerta->nivel === 'alto' ? 'danger' : ($alerta->nivel === 'medio' ? 'warning' : 'info') }} font-bold text-3xs uppercase">
                                     {{ ucfirst($alerta->nivel) }}
                                 </span>
-                                <strong class="text-surface-900 text-sm">{{ $alerta->tipo_label }}</strong>
-                                <span class="text-2xs text-surface-400">({{ $alerta->created_at->format('d/m/Y H:i') }})</span>
+                                <strong class="text-surface-900 text-xs">{{ $alerta->tipo_label }}</strong>
+                                <span class="text-3xs text-surface-400 font-mono">
+                                    <i class="far fa-clock mr-0.5"></i>{{ $alerta->created_at->format('d/m/Y H:i') }}
+                                </span>
+                                @if(!$alerta->lido)
+                                    <span class="badge-neutral text-3xs bg-brand-50 text-brand-700 border border-brand-200">Não Lido</span>
+                                @endif
                             </div>
-                            <p class="text-xs text-surface-600">{{ $alerta->mensagem }}</p>
+                            <p class="text-xs text-surface-700 leading-relaxed">{{ $alerta->mensagem }}</p>
                         </div>
-                        <a href="{{ route('alertas.index', ['search' => $patient->nome_completo]) }}" class="btn-secondary-tw btn-sm-tw shrink-0">
-                            Tratar Alerta
-                        </a>
+
+                        <div class="flex items-center gap-2 shrink-0 self-end md:self-center">
+                            @if(!$alerta->lido)
+                                <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="btn-secondary-tw btn-xs-tw text-surface-600 hover:text-brand-700" title="Marcar como lido">
+                                        <i class="fas fa-check text-3xs"></i>
+                                        <span>Lido</span>
+                                    </button>
+                                </form>
+                            @endif
+
+                            <button type="button"
+                                    @click="abrirTratamento({{ $alerta->id }}, '{{ addslashes($alerta->tipo_label) }}', '{{ $alerta->nivel }}', '{{ addslashes($alerta->mensagem) }}')"
+                                    class="btn-tw bg-brand-600 hover:bg-brand-700 text-white btn-xs-tw font-bold shadow-2xs">
+                                <i class="fas fa-stethoscope text-3xs"></i>
+                                <span>Tratar / Resolver</span>
+                            </button>
+                        </div>
                     </div>
                 @endforeach
             </div>
+
+            {{-- Modal de Tratamento / Resolução Clínica Direta --}}
+            <div x-show="openTratarModal"
+                 x-cloak
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-xs"
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+
+                <div @click.away="openTratarModal = false"
+                     class="card-tw max-w-lg w-full p-6 space-y-4 shadow-xl border-surface-300">
+                    
+                    <div class="flex items-center justify-between border-b border-surface-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-surface-900">Conduta Clínica & Resolução do Alerta</h4>
+                                <span class="text-3xs text-surface-500" x-text="alertaTitulo"></span>
+                            </div>
+                        </div>
+                        <button type="button" @click="openTratarModal = false" class="text-surface-400 hover:text-surface-600 text-sm">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    {{-- Alerta Info Box --}}
+                    <div class="p-3 bg-surface-50 rounded-xl border border-surface-200 text-xs text-surface-700">
+                        <span class="font-semibold block text-surface-900 mb-1">Motivo do Alerta:</span>
+                        <p x-text="alertaMensagem" class="text-xs"></p>
+                    </div>
+
+                    {{-- Formulário de Resolução --}}
+                    <form :action="'{{ url('/alertas') }}/' + alertaId + '/transitar'" method="POST" class="space-y-4">
+                        @csrf
+
+                        <div>
+                            <label class="label-tw">Novo Status Clínico <span class="text-crimson-500">*</span></label>
+                            <div class="grid grid-cols-3 gap-2 mt-1">
+                                <label class="p-2.5 rounded-xl border cursor-pointer text-center flex flex-col items-center justify-center gap-1 transition-all"
+                                       :class="novoStatus === 'resolvido' ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold ring-2 ring-emerald-500' : 'border-surface-200 hover:bg-surface-50 text-surface-700'">
+                                    <input type="radio" name="status" value="resolvido" x-model="novoStatus" class="sr-only">
+                                    <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
+                                    <span class="text-3xs">Resolvido</span>
+                                </label>
+
+                                <label class="p-2.5 rounded-xl border cursor-pointer text-center flex flex-col items-center justify-center gap-1 transition-all"
+                                       :class="novoStatus === 'em_seguimento' ? 'border-gold-500 bg-gold-50 text-gold-900 font-bold ring-2 ring-gold-500' : 'border-surface-200 hover:bg-surface-50 text-surface-700'">
+                                    <input type="radio" name="status" value="em_seguimento" x-model="novoStatus" class="sr-only">
+                                    <i class="fas fa-user-clock text-gold-600 text-sm"></i>
+                                    <span class="text-3xs">Em Seguimento</span>
+                                </label>
+
+                                <label class="p-2.5 rounded-xl border cursor-pointer text-center flex flex-col items-center justify-center gap-1 transition-all"
+                                       :class="novoStatus === 'ignorado' ? 'border-surface-400 bg-surface-100 text-surface-900 font-bold ring-2 ring-surface-400' : 'border-surface-200 hover:bg-surface-50 text-surface-700'">
+                                    <input type="radio" name="status" value="ignorado" x-model="novoStatus" class="sr-only">
+                                    <i class="fas fa-ban text-surface-500 text-sm"></i>
+                                    <span class="text-3xs">Ignorado</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="label-tw">Conduta Clínica / Nota de Auditoria <span class="text-crimson-500">*</span></label>
+                            <textarea name="nota"
+                                      x-model="notaConduta"
+                                      rows="3"
+                                      required
+                                      placeholder="Descreva a conduta tomada (ex: administrada medicação anti-hipertensiva, solicitada ecografia obstétrica, agendada consulta de retorno em 48h)..."
+                                      class="input-tw text-xs w-full mt-1"></textarea>
+                            <span class="text-3xs text-surface-400 mt-1 block">Registo obrigatório segundo protocolos de auditoria clínica do MISAU.</span>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-100">
+                            <button type="button" @click="openTratarModal = false" class="btn-secondary-tw btn-sm-tw">
+                                <span>Cancelar</span>
+                            </button>
+                            <button type="submit" class="btn-primary-tw btn-sm-tw">
+                                <i class="fas fa-check text-xs"></i>
+                                <span>Gravar Conduta Clínica</span>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
         </div>
     @endif
 

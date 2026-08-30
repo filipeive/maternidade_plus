@@ -29,11 +29,11 @@ class DashboardController extends Controller
         // 1. Estatísticas Gerais / KPIs Principais
         $totalGestantes = Patient::where('ativo', true)->count();
         $totalGestantesARO = Patient::where('ativo', true)
-            ->where(function($q) {
-                $q->where('numero_abortos', '>', 0)
-                  ->orWhere('historico_medico', 'like', '%diabetes%')
-                  ->orWhere('historico_medico', 'like', '%hipertensao%')
-                  ->orWhere('alergias', '!=', null);
+            ->where(function ($subQuery) {
+                $subQuery->where('numero_abortos', '>', 0)
+                         ->orWhere('historico_medico', 'like', '%diabetes%')
+                         ->orWhere('historico_medico', 'like', '%hipertensao%')
+                         ->orWhere('alergias', '!=', null);
             })->count();
 
         $consultasHoje = Consultation::whereDate('data_consulta', today())->count();
@@ -57,8 +57,8 @@ class DashboardController extends Controller
             ->count();
 
         $faltosasCount = Patient::where('ativo', true)
-            ->whereHas('consultations', function($q) {
-                $q->where('status', 'agendada')->where('data_consulta', '<', now());
+            ->whereHas('consultations', function ($consultaQuery) {
+                $consultaQuery->where('status', 'agendada')->where('data_consulta', '<', now());
             })->count();
 
         // 2. Gráfico 1: Evolução de Consultas CPN & Partos (Últimos 6 Meses)
@@ -106,9 +106,9 @@ class DashboardController extends Controller
         $baseTotal = max($totalGestantes, 1);
         $iptp1Dose = MaternalProphylaxis::whereNotNull('sp_1_dose')->count();
         $iptp3Doses = MaternalProphylaxis::whereNotNull('sp_3_dose')->count();
-        $ferroFolato = MaternalProphylaxis::where(function($q) {
-            $q->where('sal_ferroso_folico_3doses', true)
-              ->orWhere('doses_sal_ferroso_entregues', '>=', 1);
+        $ferroFolato = MaternalProphylaxis::where(function ($profilaxiaSubQuery) {
+            $profilaxiaSubQuery->where('sal_ferroso_folico_3doses', true)
+                               ->orWhere('doses_sal_ferroso_entregues', '>=', 1);
         })->count();
         $mebendazol = MaternalProphylaxis::whereNotNull('mebendazol_administrado')->count();
         $tetano = MaternalProphylaxis::whereNotNull('vat_1_dose')->count();
@@ -155,11 +155,11 @@ class DashboardController extends Controller
             ->get();
 
         $pacientesFaltosas = Patient::where('ativo', true)
-            ->whereHas('consultations', function($q) {
-                $q->where('status', 'agendada')->where('data_consulta', '<', now());
+            ->whereHas('consultations', function ($consultaQuery) {
+                $consultaQuery->where('status', 'agendada')->where('data_consulta', '<', now());
             })
-            ->with(['consultations' => function($q) {
-                $q->where('status', 'agendada')->where('data_consulta', '<', now())->orderBy('data_consulta', 'desc');
+            ->with(['consultations' => function ($consultaQuery) {
+                $consultaQuery->where('status', 'agendada')->where('data_consulta', '<', now())->orderBy('data_consulta', 'desc');
             }])
             ->limit(5)
             ->get();
