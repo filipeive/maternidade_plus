@@ -4,6 +4,15 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.16.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Destaque Visual & Sinalização de Risco na Lista de Gestantes (`/patients`)**:
+  - Linhas da tabela destacadas com cores contextuais (borda vermelha e fundo subtil para risco alto 🔴; borda dourada para alertas médios 🟡) até que a conduta seja resolvida.
+  - Badges pulsantes de severidade (`Risco Alto`, `Alerta (X)`) e indicação da regra clínica disparada ao lado do nome da gestante.
+  - Nova aba de filtro rápido no topo: **"Com Risco / Alertas (X)"** para isolar em 1 clique todas as gestantes com condutas pendentes.
+
+---
+
 ## [2.15.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Padronização da Central de Alertas Clínicos (`/alertas`)**:

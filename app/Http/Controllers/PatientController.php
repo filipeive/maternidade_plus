@@ -12,13 +12,20 @@ class PatientController extends Controller
     {
         $status = $request->get('status', 'ativas');
 
-        $query = Patient::with(['consultations' => function($q) {
-                $q->where('data_consulta', '>', now())
-                  ->orderBy('data_consulta')
-                  ->limit(1);
-            }]);
+        $query = Patient::with([
+            'consultations' => function ($consultaQuery) {
+                $consultaQuery->where('data_consulta', '>', now())
+                              ->orderBy('data_consulta')
+                              ->limit(1);
+            },
+            'alertasAtivos' => function ($alertaQuery) {
+                $alertaQuery->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END");
+            }
+        ]);
 
-        if ($status === 'transferidas') {
+        if ($status === 'com_alertas') {
+            $query->where('ativo', true)->whereHas('alertasAtivos');
+        } elseif ($status === 'transferidas') {
             $query->where('ativo', false)->whereIn('motivo_inativacao', ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia']);
         } elseif ($status === 'inativas') {
             $query->where('ativo', false);
@@ -32,12 +39,12 @@ class PatientController extends Controller
         // Funcionalidade de pesquisa
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('nome_completo', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('contacto', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('unidade_sanitaria_destino', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('provincia_destino', 'LIKE', "%{$searchTerm}%");
+            $query->where(function ($subQuery) use ($searchTerm) {
+                $subQuery->where('nome_completo', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('documento_bi', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('contacto', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('unidade_sanitaria_destino', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('provincia_destino', 'LIKE', "%{$searchTerm}%");
             });
         }
 
@@ -45,6 +52,7 @@ class PatientController extends Controller
 
         $stats = [
             'total_ativas' => Patient::where('ativo', true)->count(),
+            'total_com_alertas' => Patient::where('ativo', true)->whereHas('alertasAtivos')->count(),
             'total_transferidas' => Patient::where('ativo', false)->whereIn('motivo_inativacao', ['transferencia_us', 'transferencia_provincia', 'mudanca_residencia'])->count(),
             'total_inativas' => Patient::where('ativo', false)->count(),
             'total_geral' => Patient::count()

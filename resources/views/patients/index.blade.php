@@ -30,25 +30,31 @@
 
 {{-- Filter Pills --}}
 <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4">
-    <a href="{{ route('patients.index', ['status' => 'ativas']) }}"
+    <a href="{{ route('patients.index', ['status' => 'ativas', 'search' => request('search')]) }}"
        class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? 'ativas') === 'ativas' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
         <i class="fas fa-person-pregnant"></i>
         <span>Ativas no Centro ({{ $stats['total_ativas'] ?? 0 }})</span>
     </a>
 
-    <a href="{{ route('patients.index', ['status' => 'transferidas']) }}"
+    <a href="{{ route('patients.index', ['status' => 'com_alertas', 'search' => request('search')]) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'com_alertas' ? 'bg-crimson-600 text-white shadow-xs' : 'bg-white text-crimson-700 hover:bg-crimson-50 border border-crimson-200' }}">
+        <i class="fas fa-triangle-exclamation text-xs animate-pulse"></i>
+        <span>Com Risco / Alertas ({{ $stats['total_com_alertas'] ?? 0 }})</span>
+    </a>
+
+    <a href="{{ route('patients.index', ['status' => 'transferidas', 'search' => request('search')]) }}"
        class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'transferidas' ? 'bg-gold-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
         <i class="fas fa-arrow-right-from-bracket"></i>
         <span>Transferidas ({{ $stats['total_transferidas'] ?? 0 }})</span>
     </a>
 
-    <a href="{{ route('patients.index', ['status' => 'inativas']) }}"
-       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'inativas' ? 'bg-crimson-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
+    <a href="{{ route('patients.index', ['status' => 'inativas', 'search' => request('search')]) }}"
+       class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'inativas' ? 'bg-surface-600 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
         <i class="fas fa-user-slash"></i>
         <span>Inativas ({{ $stats['total_inativas'] ?? 0 }})</span>
     </a>
 
-    <a href="{{ route('patients.index', ['status' => 'todas']) }}"
+    <a href="{{ route('patients.index', ['status' => 'todas', 'search' => request('search')]) }}"
        class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 {{ ($status ?? '') === 'todas' ? 'bg-surface-800 text-white shadow-xs' : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200' }}">
         <i class="fas fa-users"></i>
         <span>Todas ({{ $stats['total_geral'] ?? 0 }})</span>
@@ -101,16 +107,40 @@
                 </thead>
                 <tbody>
                     @foreach($patients as $patient)
-                    <tr>
+                    @php
+                        $alertasAtivos = $patient->alertasAtivos;
+                        $temAlertaAlto = $alertasAtivos->where('nivel', 'alto')->count() > 0;
+                        $temAlerta = $alertasAtivos->count() > 0;
+                        $primeiroAlerta = $alertasAtivos->first();
+                        
+                        $rowClass = '';
+                        if ($temAlertaAlto) {
+                            $rowClass = 'bg-crimson-50/40 hover:bg-crimson-50/70 border-l-4 border-l-crimson-500';
+                        } elseif ($temAlerta) {
+                            $rowClass = 'bg-gold-50/30 hover:bg-gold-50/60 border-l-4 border-l-gold-500';
+                        }
+                    @endphp
+                    <tr class="{{ $rowClass }} transition-colors">
                         <td>
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-bold text-sm flex items-center justify-center shrink-0">
+                                <div class="w-9 h-9 rounded-full {{ $temAlertaAlto ? 'bg-crimson-100 text-crimson-700 border border-crimson-300 font-bold' : ($temAlerta ? 'bg-gold-100 text-gold-800 border border-gold-300 font-bold' : 'bg-brand-100 text-brand-700 font-bold') }} text-sm flex items-center justify-center shrink-0 shadow-2xs">
                                     {{ strtoupper(substr($patient->nome_completo ?? 'G', 0, 1)) }}
                                 </div>
                                 <div class="min-w-0">
-                                    <a href="{{ route('patients.show', $patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
-                                        {{ $patient->nome_completo }}
-                                    </a>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <a href="{{ route('patients.show', $patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
+                                            {{ $patient->nome_completo }}
+                                        </a>
+                                        @if($temAlertaAlto)
+                                            <span class="badge-danger text-3xs font-bold uppercase animate-pulse inline-flex items-center gap-1" title="{{ $primeiroAlerta->mensagem ?? 'Risco Obstétrico Alto' }}">
+                                                <i class="fas fa-triangle-exclamation"></i> Risco Alto
+                                            </span>
+                                        @elseif($temAlerta)
+                                            <span class="badge-warning text-3xs font-bold uppercase inline-flex items-center gap-1" title="{{ $primeiroAlerta->mensagem ?? 'Alerta Ativo' }}">
+                                                <i class="fas fa-bell"></i> Alerta ({{ $alertasAtivos->count() }})
+                                            </span>
+                                        @endif
+                                    </div>
                                     <p class="text-2xs text-surface-400">
                                         GPA: G{{ $patient->numero_gestacoes }}P{{ $patient->numero_partos }}A{{ $patient->numero_abortos }}
                                     </p>
@@ -148,15 +178,20 @@
                                 @endif
                             @else
                                 @php
-                                    $status = $patient->status_gravidez;
-                                    $badgeClass = match($status) {
+                                    $statusGravidez = $patient->status_gravidez;
+                                    $badgeClass = match($statusGravidez) {
                                         'Gestante' => 'badge-success',
                                         'A termo' => 'badge-warning',
                                         'Pós-parto' => 'badge-neutral',
                                         default => 'badge-neutral'
                                     };
                                 @endphp
-                                <span class="{{ $badgeClass }}">{{ $status }}</span>
+                                <span class="{{ $badgeClass }}">{{ $statusGravidez }}</span>
+                                @if($temAlerta)
+                                    <span class="text-3xs font-semibold {{ $temAlertaAlto ? 'text-crimson-700' : 'text-gold-700' }} block truncate max-w-[130px] mt-0.5" title="{{ $primeiroAlerta->mensagem }}">
+                                        <i class="fas {{ $temAlertaAlto ? 'fa-triangle-exclamation' : 'fa-bell' }} text-3xs"></i> {{ $primeiroAlerta->tipo_label }}
+                                    </span>
+                                @endif
                             @endif
                         </td>
                         <td>
