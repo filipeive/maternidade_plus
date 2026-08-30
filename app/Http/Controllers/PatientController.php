@@ -192,6 +192,7 @@ class PatientController extends Controller
             'vaccines',
             'births',
             'prophylaxis',
+            'alertas',
             'alertasAtivos'
         ]);
         
