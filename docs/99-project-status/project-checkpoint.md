@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 30 de Agosto de 2026
-- **Versão Atual**: 2.12.0 (Ciclo de Vida de Alertas, Transição de Parto & Histórico Clínico - Produção)
+- **Versão Atual**: 2.13.0 (Leitura Automática de Alertas, UX Otimizada & Documentação Viva MISAU - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---

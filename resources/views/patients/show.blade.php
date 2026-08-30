@@ -15,7 +15,6 @@
     @php
         $alertasAtivosPaciente = $patient->alertasAtivos()->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")->get();
         $temAlertaAlto = $alertasAtivosPaciente->where('nivel', 'alto')->count() > 0;
-        $alertasResolvidosPaciente = $patient->alertas()->where('status', \App\Models\Alerta::STATUS_RESOLVIDO)->orderByDesc('updated_at')->limit(10)->get();
     @endphp
 
     {{-- Banner de Paciente Transferida / Inativa --}}
@@ -72,6 +71,14 @@
                     this.novoStatus = statusAtual === 'em_seguimento' ? 'em_seguimento' : 'resolvido';
                     this.notaConduta = '';
                     this.openTratarModal = true;
+                    // Marcar como lido automaticamente no backend
+                    fetch('{{ url('/alertas') }}/' + id + '/marcar-lido', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    }).catch(() => {});
                 }
             }"
             class="card-tw mb-6 border-l-4 {{ $temAlertaAlto ? 'border-l-crimson-500' : ($alertasAtivosPaciente->count() > 0 ? 'border-l-gold-500' : 'border-l-emerald-500') }} shadow-sm">
@@ -128,24 +135,11 @@
                                     <span class="text-3xs text-surface-400 font-mono">
                                         <i class="far fa-clock mr-0.5"></i>{{ $alerta->created_at->format('d/m/Y H:i') }}
                                     </span>
-                                    @if(!$alerta->lido)
-                                        <span class="badge-neutral text-3xs bg-brand-50 text-brand-700 border border-brand-200">Não Lido</span>
-                                    @endif
                                 </div>
                                 <p class="text-xs text-surface-700 leading-relaxed">{{ $alerta->mensagem }}</p>
                             </div>
 
                             <div class="flex items-center gap-2 shrink-0 self-end md:self-center">
-                                @if(!$alerta->lido)
-                                    <form method="POST" action="{{ route('alertas.marcar-lido', $alerta) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="btn-secondary-tw btn-xs-tw text-surface-600 hover:text-brand-700" title="Marcar como lido">
-                                            <i class="fas fa-check text-3xs"></i>
-                                            <span>Lido</span>
-                                        </button>
-                                    </form>
-                                @endif
-
                                 @if($alerta->status === 'em_seguimento')
                                     <button type="button"
                                             @click="abrirTratamento({{ $alerta->id }}, '{{ addslashes($alerta->tipo_label) }}', '{{ $alerta->nivel }}', '{{ addslashes($alerta->mensagem) }}', 'em_seguimento')"

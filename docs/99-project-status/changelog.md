@@ -4,6 +4,17 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.13.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Simplificação da Experiência de Triagem & Leitura Automática de Alertas**:
+  - Removido o botão ambíguo "Lido" da interface do prontuário da paciente (`/patients/{id}`).
+  - Implementada leitura e marcação automática no backend assim que o profissional clica em **"Tratar / Resolver"** ou **"Atualizar Conduta"**, reduzindo cliques desnecessários.
+  - Assegurado que qualquer transição de estado (`transitarStatus`) marca o alerta como lido por omissão.
+- **Nova Documentação Técnica & Clínica**:
+  - Criado o documento detalhado [`docs/06-features/alertas-precoces-e-fluxo-clinico.md`](file:///home/fdev-ms/Filipe/maternidade_plus/docs/06-features/alertas-precoces-e-fluxo-clinico.md) cobrindo as 9 regras clínicas MISAU, o parser de linguagem natural com exclusão de negações médicas, o ciclo de vida dos alertas no prontuário e a automação do pós-parto.
+
+---
+
 ## [2.12.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Aprimoramento do Ciclo de Vida dos Alertas Clínicos & Transição Gestação-Parto**:
