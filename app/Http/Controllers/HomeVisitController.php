@@ -418,37 +418,69 @@ class HomeVisitController extends Controller
     {
         $search = $request->get('search');
 
-        // Buscar pacientes com consultas agendadas atrasadas
-        $query = Patient::where('ativo', true);
+        // Buscar pacientes gestantes ativas com critérios de falta / abandono
+        $query = Patient::where('ativo', true)
+            ->where('status_atual', Patient::STATUS_GESTANTE);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('nome_completo', 'LIKE', "%{$search}%")
-                  ->orWhere('documento_bi', 'LIKE', "%{$search}%")
-                  ->orWhere('contacto', 'LIKE', "%{$search}%")
-                  ->orWhere('endereco', 'LIKE', "%{$search}%");
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('nome_completo', 'LIKE', "%{$search}%")
+                         ->orWhere('documento_bi', 'LIKE', "%{$search}%")
+                         ->orWhere('contacto', 'LIKE', "%{$search}%")
+                         ->orWhere('endereco', 'LIKE', "%{$search}%");
             });
         }
 
-        $faltosas = $query->whereHas('consultations', function($q) {
-                              $q->where('status', 'agendada')
-                                ->where('data_consulta', '<', now());
-                          })
-                          ->with(['consultations' => function($q) {
-                              $q->where('status', 'agendada')
-                                ->where('data_consulta', '<', now())
-                                ->orderBy('data_consulta', 'desc');
-                          }, 'homeVisits' => function($q) {
-                              $q->orderBy('data_visita', 'desc');
-                          }, 'alertas' => function($q) {
-                              $q->where('status', 'ativo')->where('nivel', 'alto');
-                          }])
-                          ->get();
+        // Critérios de Busca Ativa (Alinhados com o AlertaPrecoceService):
+        // 1. Possui alerta de gestante faltosa ativo ou em seguimento
+        // 2. OU possui consulta agendada com data vencida
+        // 3. OU está há mais de 30 dias sem consulta
+        $faltosas = $query->where(function ($filterQuery) {
+            $filterQuery->whereHas('alertas', function ($alertaQuery) {
+                $alertaQuery->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO])
+                            ->whereIn('tipo', ['gestante_faltosa', 'consulta_atrasada', 'faltosa_recorrente']);
+            })
+            ->orWhereHas('consultations', function ($consultaQuery) {
+                $consultaQuery->where('status', 'agendada')
+                              ->where(function ($dateQuery) {
+                                  $dateQuery->where('data_consulta', '<=', now())
+                                            ->orWhere('proxima_consulta', '<=', now());
+                              });
+            })
+            ->orWhere(function ($noConsultQuery) {
+                $noConsultQuery->whereDoesntHave('consultations', function ($futureQuery) {
+                    $futureQuery->where('status', 'agendada')->where('data_consulta', '>', now());
+                })
+                ->where(function ($dateCheckQuery) {
+                    $dateCheckQuery->whereHas('consultations', function ($pastConsultQuery) {
+                        $pastConsultQuery->where('status', 'realizada')
+                                         ->where('data_consulta', '<', now()->subDays(30));
+                    })
+                    ->orWhere(function ($createdCheckQuery) {
+                        $createdCheckQuery->whereDoesntHave('consultations')
+                                          ->where('created_at', '<', now()->subDays(30));
+                    });
+                });
+            });
+        })
+        ->with([
+            'consultations' => function ($consultaQuery) {
+                $consultaQuery->orderBy('data_consulta', 'desc');
+            },
+            'homeVisits' => function ($visitQuery) {
+                $visitQuery->orderBy('data_visita', 'desc');
+            },
+            'alertas' => function ($alertaQuery) {
+                $alertaQuery->whereIn('status', [Alerta::STATUS_ATIVO, Alerta::STATUS_EM_SEGUIMENTO]);
+            }
+        ])
+        ->get();
 
         // Agentes comunitários disponíveis para atribuição
-        $communityAgents = \App\Models\User::whereHas('roles', function($q) {
-            $q->whereIn('name', ['Agente Comunitário', 'Enfermeiro', 'Activista']);
+        $communityAgents = \App\Models\User::whereHas('roles', function ($roleQuery) {
+            $roleQuery->whereIn('name', ['Agente Comunitário', 'Enfermeiro', 'Activista', 'Médico', 'Parteira']);
         })->get(['id', 'name']);
+
         if ($communityAgents->isEmpty()) {
             $communityAgents = \App\Models\User::all(['id', 'name']);
         }

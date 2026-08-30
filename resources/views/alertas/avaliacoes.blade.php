@@ -60,31 +60,41 @@
         </a>
 
         <a href="{{ route('alertas.avaliacoes', ['filtro' => 'normais']) }}" class="card-tw p-3.5 hover:border-emerald-500 transition-all {{ $filtro === 'normais' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : '' }}">
-            <span class="text-3xs font-semibold text-emerald-600 uppercase tracking-wider block">🟢 Normais</span>
+            <span class="text-3xs font-semibold text-emerald-600 uppercase tracking-wider block flex items-center gap-1">
+                <i class="fas fa-circle-check text-emerald-600 text-3xs"></i> Normais
+            </span>
             <span class="text-xl font-bold text-emerald-700 mt-1 block">{{ $stats['normais'] }}</span>
             <span class="text-3xs text-emerald-600 font-medium">Sem sinais de risco</span>
         </a>
 
         <a href="{{ route('alertas.avaliacoes', ['filtro' => 'atencao']) }}" class="card-tw p-3.5 hover:border-gold-500 transition-all {{ $filtro === 'atencao' ? 'ring-2 ring-gold-500 bg-gold-50/20' : '' }}">
-            <span class="text-3xs font-semibold text-gold-600 uppercase tracking-wider block">🟡 Atenção</span>
+            <span class="text-3xs font-semibold text-gold-600 uppercase tracking-wider block flex items-center gap-1">
+                <i class="fas fa-bell text-gold-600 text-3xs"></i> Atenção
+            </span>
             <span class="text-xl font-bold text-gold-700 mt-1 block">{{ $stats['atencao'] }}</span>
             <span class="text-3xs text-gold-600 font-medium">Alerta Médio / Faltosa</span>
         </a>
 
         <a href="{{ route('alertas.avaliacoes', ['filtro' => 'criticos']) }}" class="card-tw p-3.5 hover:border-crimson-500 transition-all {{ $filtro === 'criticos' ? 'ring-2 ring-crimson-500 bg-crimson-50/20' : '' }}">
-            <span class="text-3xs font-semibold text-crimson-600 uppercase tracking-wider block">🔴 Críticas / Alto</span>
+            <span class="text-3xs font-semibold text-crimson-600 uppercase tracking-wider block flex items-center gap-1">
+                <i class="fas fa-triangle-exclamation text-crimson-600 text-3xs"></i> Críticas / Alto
+            </span>
             <span class="text-xl font-bold text-crimson-700 mt-1 block">{{ $stats['criticos'] }}</span>
             <span class="text-3xs text-crimson-600 font-medium">Risco Iminente</span>
         </a>
 
         <a href="{{ route('alertas.avaliacoes', ['filtro' => 'faltosas']) }}" class="card-tw p-3.5 hover:border-amber-500 transition-all {{ $filtro === 'faltosas' ? 'ring-2 ring-amber-500 bg-amber-50/20' : '' }}">
-            <span class="text-3xs font-semibold text-amber-600 uppercase tracking-wider block">⚠️ Faltosas</span>
+            <span class="text-3xs font-semibold text-amber-600 uppercase tracking-wider block flex items-center gap-1">
+                <i class="fas fa-person-walking-arrow-right text-amber-600 text-3xs"></i> Faltosas
+            </span>
             <span class="text-xl font-bold text-amber-700 mt-1 block">{{ $stats['faltosas'] }}</span>
             <span class="text-3xs text-amber-600 font-medium">Busca Ativa (APEs)</span>
         </a>
 
         <a href="{{ route('alertas.avaliacoes', ['filtro' => 'pos_termo']) }}" class="card-tw p-3.5 hover:border-purple-500 transition-all {{ $filtro === 'pos_termo' ? 'ring-2 ring-purple-500 bg-purple-50/20' : '' }}">
-            <span class="text-3xs font-semibold text-purple-600 uppercase tracking-wider block">⏳ Pós-Termo</span>
+            <span class="text-3xs font-semibold text-purple-600 uppercase tracking-wider block flex items-center gap-1">
+                <i class="fas fa-hourglass-half text-purple-600 text-3xs"></i> Pós-Termo
+            </span>
             <span class="text-xl font-bold text-purple-700 mt-1 block">{{ $stats['pos_termo'] }}</span>
             <span class="text-3xs text-purple-600 font-medium">&gt; 41 Semanas</span>
         </a>
@@ -155,7 +165,7 @@
                             <td class="text-center">
                                 @if($item->status_class === 'critico')
                                     <div class="w-7 h-7 rounded-full bg-crimson-100 text-crimson-700 flex items-center justify-center mx-auto text-xs font-bold shadow-2xs" title="Crítico / Alto Risco">
-                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <i class="fas fa-triangle-exclamation"></i>
                                     </div>
                                 @elseif($item->status_class === 'atencao')
                                     <div class="w-7 h-7 rounded-full bg-gold-100 text-gold-800 flex items-center justify-center mx-auto text-xs font-bold shadow-2xs" title="Atenção / Seguimento">
@@ -163,7 +173,7 @@
                                     </div>
                                 @else
                                     <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-xs font-bold shadow-2xs" title="Normal / Estável">
-                                        <i class="fas fa-check"></i>
+                                        <i class="fas fa-circle-check"></i>
                                     </div>
                                 @endif
                             </td>
@@ -216,7 +226,7 @@
                                     </div>
                                 @else
                                     <span class="badge-success text-3xs font-semibold block w-fit mb-0.5">
-                                        <i class="fas fa-check-circle mr-0.5"></i> Em Dia
+                                        <i class="fas fa-circle-check mr-0.5"></i> Em Dia
                                     </span>
                                     <div class="text-3xs text-surface-500">
                                         {{ $item->dias_sem_consulta }} dias da última CPN
@@ -233,7 +243,9 @@
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-3xs text-surface-400 font-medium">PA:</span>
                                         @if($item->is_pa_grave)
-                                            <span class="font-bold text-crimson-600 text-xs bg-crimson-100 px-1.5 py-0.5 rounded">{{ $item->pressao_arterial }} ⚠️</span>
+                                            <span class="font-bold text-crimson-600 text-xs bg-crimson-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                {{ $item->pressao_arterial }} <i class="fas fa-triangle-exclamation text-3xs"></i>
+                                            </span>
                                         @elseif($item->is_pa_alta)
                                             <span class="font-bold text-gold-700 text-xs bg-gold-100 px-1.5 py-0.5 rounded">{{ $item->pressao_arterial }}</span>
                                         @elseif($item->pressao_arterial)
@@ -246,7 +258,9 @@
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-3xs text-surface-400 font-medium">BCF:</span>
                                         @if($item->is_bcf_anormal)
-                                            <span class="font-bold text-crimson-600 text-xs bg-crimson-100 px-1.5 py-0.5 rounded">{{ $item->bcf }} bpm ⚠️</span>
+                                            <span class="font-bold text-crimson-600 text-xs bg-crimson-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                {{ $item->bcf }} bpm <i class="fas fa-triangle-exclamation text-3xs"></i>
+                                            </span>
                                         @elseif($item->bcf)
                                             <span class="font-semibold text-surface-800">{{ $item->bcf }} bpm</span>
                                         @else

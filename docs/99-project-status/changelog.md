@@ -4,6 +4,17 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.14.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Unificação dos Critérios de Faltosas & Busca Ativa (`/home_visits/active-search`)**:
+  - Alinhada a query do controlador `HomeVisitController@activeSearch` com o `AlertaPrecoceService` e as normas do MISAU: agora captura gestantes com alertas de faltosa ativos, consultas agendadas vencidas e pacientes sem consulta há $> 30$ dias.
+- **Substituição de Emojis por Ícones Profissionais**:
+  - Substituídos todos os emojis por ícones vetoriais FontAwesome e Tailwind nas interfaces de avaliações clínicas (`/alertas/avaliacoes`).
+- **Resolução Definitiva de Variáveis de Alerta no Prontuário**:
+  - Injeção explícita de `$alertasResolvidosPaciente` e `$alertasAtivosPaciente` diretamente do `PatientController@show` com fallback defensivo no Blade, evitando erros de variável indefinida tanto localmente quanto em produção.
+
+---
+
 ## [2.13.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Simplificação da Experiência de Triagem & Leitura Automática de Alertas**:

@@ -195,8 +195,18 @@ class PatientController extends Controller
             'alertas',
             'alertasAtivos'
         ]);
+
+        $alertasAtivosPaciente = $patient->alertasAtivos()
+            ->orderByRaw("CASE nivel WHEN 'alto' THEN 1 WHEN 'medio' THEN 2 WHEN 'baixo' THEN 3 ELSE 4 END")
+            ->get();
+        $temAlertaAlto = $alertasAtivosPaciente->where('nivel', 'alto')->count() > 0;
+        $alertasResolvidosPaciente = $patient->alertas()
+            ->where('status', \App\Models\Alerta::STATUS_RESOLVIDO)
+            ->orderByDesc('updated_at')
+            ->limit(10)
+            ->get();
         
-        return view('patients.show', compact('patient'));
+        return view('patients.show', compact('patient', 'alertasAtivosPaciente', 'temAlertaAlto', 'alertasResolvidosPaciente'));
     }
 
     public function card(Patient $patient)
