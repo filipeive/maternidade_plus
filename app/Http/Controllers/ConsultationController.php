@@ -11,15 +11,31 @@ class ConsultationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Consultation::with(['patient', 'user']);
+        $query = Consultation::with(['patient.alertasAtivos', 'user']);
 
         if ($request->boolean('hoje')) {
             $query->whereDate('data_consulta', now()->toDateString());
         }
 
         if ($request->boolean('atrasadas')) {
-            $query->whereIn('status', ['agendada', 'confirmada'])
-                  ->where('data_consulta', '<', now()->startOfDay());
+            $query->where(function ($subQuery) {
+                // 1. Consultas com status agendada / confirmada / pendente e data anterior
+                $subQuery->where(function ($dateQuery) {
+                    $dateQuery->whereIn('status', ['agendada', 'confirmada', 'pendente'])
+                              ->where(function ($dQuery) {
+                                  $dQuery->where('data_consulta', '<=', now())
+                                         ->orWhere('proxima_consulta', '<=', now());
+                              });
+                })
+                // 2. OU consultas de pacientes com alerta ativo/em seguimento de faltosa
+                ->orWhereHas('patient', function ($patientQuery) {
+                    $patientQuery->where('ativo', true)
+                                 ->whereHas('alertas', function ($alertaQuery) {
+                                     $alertaQuery->whereIn('status', [\App\Models\Alerta::STATUS_ATIVO, \App\Models\Alerta::STATUS_EM_SEGUIMENTO])
+                                                 ->whereIn('tipo', ['gestante_faltosa', 'consulta_atrasada', 'faltosa_recorrente']);
+                                 });
+                });
+            });
         }
 
         if ($request->filled('status')) {
@@ -36,10 +52,10 @@ class ConsultationController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('patient', function ($q) use ($search) {
-                $q->where('nome_completo', 'like', "%{$search}%")
-                  ->orWhere('documento_bi', 'like', "%{$search}%")
-                  ->orWhere('contacto', 'like', "%{$search}%");
+            $query->whereHas('patient', function ($subQuery) use ($search) {
+                $subQuery->where('nome_completo', 'like', "%{$search}%")
+                         ->orWhere('documento_bi', 'like', "%{$search}%")
+                         ->orWhere('contacto', 'like', "%{$search}%");
             });
         }
 

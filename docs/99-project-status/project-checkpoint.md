@@ -1,7 +1,7 @@
 # 📌 Project Checkpoint & Estado Atual — Maternidade+
 
 - **Data do Checkpoint**: 30 de Agosto de 2026
-- **Versão Atual**: 2.16.0 (Sinalização e Destaque Visual de Risco na Lista de Gestantes - Produção)
+- **Versão Atual**: 2.17.0 (Sincronização de Consultas Faltosas & Destaques de Risco - Produção)
 - **Status Geral**: 🟢 Totalmente Operacional e Implantado em Produção.
 
 ---

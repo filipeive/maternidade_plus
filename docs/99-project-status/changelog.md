@@ -4,6 +4,14 @@ Todas as alterações notáveis efetuadas no projeto **Maternidade+**.
 
 ---
 
+## [2.17.0] - 2026-08-30
+### Adicionado / Melhorado
+- **Unificação das Consultas Faltosas / Atrasadas (`/consultations?atrasadas=1`)**:
+  - Ajustado o filtro `atrasadas=1` no `ConsultationController` para capturar todas as consultas com datas ultrapassadas e gestantes ativas com alertas clínicos de assiduidade/abandono (`gestante_faltosa`).
+  - Destaque visual na tabela de consultas com cores de alerta, badges pulsantes de *Faltosa* e botão rápido de encaminhamento para busca comunitária com activistas (**APE**).
+
+---
+
 ## [2.16.0] - 2026-08-30
 ### Adicionado / Melhorado
 - **Destaque Visual & Sinalização de Risco na Lista de Gestantes (`/patients`)**:

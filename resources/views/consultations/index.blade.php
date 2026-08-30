@@ -188,22 +188,40 @@
                     </thead>
                     <tbody>
                         @foreach($consultations as $consultation)
-                        <tr>
+                        @php
+                            $patient = $consultation->patient;
+                            $isAtrasada = in_array($consultation->status, ['agendada', 'confirmada', 'pendente']) && $consultation->data_consulta->isPast();
+                            $temAlertaFaltosa = $patient && $patient->alertasAtivos->whereIn('tipo', ['gestante_faltosa', 'consulta_atrasada', 'faltosa_recorrente'])->count() > 0;
+                            $temAlertaAlto = $patient && $patient->alertasAtivos->where('nivel', 'alto')->count() > 0;
+                            
+                            $rowClass = '';
+                            if ($temAlertaAlto || $temAlertaFaltosa || $isAtrasada) {
+                                $rowClass = $temAlertaAlto ? 'bg-crimson-50/40 hover:bg-crimson-50/70 border-l-4 border-l-crimson-500' : 'bg-gold-50/30 hover:bg-gold-50/60 border-l-4 border-l-gold-500';
+                            }
+                        @endphp
+                        <tr class="{{ $rowClass }} transition-colors">
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-bold text-sm flex items-center justify-center shrink-0">
-                                        {{ strtoupper(substr($consultation->patient->nome_completo ?? 'G', 0, 1)) }}
+                                    <div class="w-9 h-9 rounded-full {{ $temAlertaAlto ? 'bg-crimson-100 text-crimson-700 border border-crimson-300' : ($temAlertaFaltosa || $isAtrasada ? 'bg-gold-100 text-gold-800 border border-gold-300' : 'bg-brand-100 text-brand-700') }} font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
+                                        {{ strtoupper(substr($patient->nome_completo ?? 'G', 0, 1)) }}
                                     </div>
                                     <div class="min-w-0">
-                                        <a href="{{ route('patients.show', $consultation->patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
-                                            {{ $consultation->patient->nome_completo }}
-                                        </a>
-                                        <p class="text-2xs text-surface-400">BI: {{ $consultation->patient->documento_bi }}</p>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <a href="{{ route('patients.show', $patient) }}" class="font-semibold text-surface-900 hover:text-brand-600 transition-colors">
+                                                {{ $patient->nome_completo ?? 'Paciente N/D' }}
+                                            </a>
+                                            @if($isAtrasada || $temAlertaFaltosa)
+                                                <span class="badge-danger text-3xs font-bold uppercase animate-pulse inline-flex items-center gap-1">
+                                                    <i class="fas fa-clock-rotate-left"></i> Faltosa
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-2xs text-surface-400">BI: {{ $patient->documento_bi ?? 'N/D' }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <p class="font-medium text-surface-800">{{ $consultation->data_consulta->format('d/m/Y') }}</p>
+                                <p class="font-medium text-surface-800 {{ $isAtrasada ? 'text-crimson-600 font-bold' : '' }}">{{ $consultation->data_consulta->format('d/m/Y') }}</p>
                                 <p class="text-2xs text-surface-400">{{ $consultation->data_consulta->format('H:i') }}</p>
                             </td>
                             <td>
@@ -217,12 +235,14 @@
                                     $badgeClass = match($consultation->status) {
                                         'realizada' => 'badge-success',
                                         'confirmada' => 'badge-info',
-                                        'agendada' => 'badge-warning',
+                                        'agendada' => $isAtrasada ? 'badge-danger' : 'badge-warning',
                                         'cancelada' => 'badge-danger',
                                         default => 'badge-neutral'
                                     };
                                 @endphp
-                                <span class="{{ $badgeClass }}">{{ ucfirst($consultation->status) }}</span>
+                                <span class="{{ $badgeClass }}">
+                                    {{ $isAtrasada && $consultation->status === 'agendada' ? 'Atrasada / Faltosa' : ucfirst($consultation->status) }}
+                                </span>
                             </td>
                             <td>
                                 <span class="text-xs text-surface-600">{{ $consultation->user->name ?? 'Sistema' }}</span>
@@ -234,6 +254,15 @@
                                        title="Ver Detalhes">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
+
+                                    @if($isAtrasada || $temAlertaFaltosa)
+                                        <a href="{{ route('home_visits.active-search') }}"
+                                           class="btn-tw bg-gold-400 hover:bg-gold-300 text-surface-950 btn-xs-tw font-bold"
+                                           title="Encaminhar Busca Ativa APE">
+                                            <i class="fas fa-person-walking text-3xs"></i>
+                                            <span>APE</span>
+                                        </a>
+                                    @endif
 
                                     <a href="{{ route('consultations.create', ['patient_id' => $consultation->patient_id]) }}"
                                        class="btn-icon-tw text-brand-600 hover:bg-brand-50"
